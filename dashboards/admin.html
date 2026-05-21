@@ -550,6 +550,67 @@
 
   .tab-pane { display: none; }
   .tab-pane.active { display: block; }
+  /* ── TEAM MEMBERS TAB ─────────────────────────────────── */
+  .tm-table { width:100%; border-collapse:collapse; }
+  .tm-table th {
+    text-align:left; padding:11px 16px; font-size:11px; font-weight:600;
+    letter-spacing:.5px; text-transform:uppercase; color:var(--text-muted);
+    background:#F8FAFC; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .tm-table td { padding:14px 16px; border-bottom:1px solid #F1F5F9; vertical-align:middle; }
+  .tm-table tr:last-child td { border-bottom:none; }
+  .tm-table tr:hover td { background:#FAFBFC; }
+  .tm-avatar {
+    width:34px; height:34px; border-radius:50%; color:#fff;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12px; flex-shrink:0; margin-right:10px;
+  }
+  .tm-name { font-weight:600; font-size:13px; }
+  .tm-email { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .role-select {
+    padding:5px 10px; border:1px solid var(--border); border-radius:6px;
+    font-size:12px; font-family:inherit; background:var(--white);
+    outline:none; cursor:pointer; min-width:120px;
+  }
+  .role-select:focus { border-color:var(--blue); }
+  .perm-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
+  }
+  .perm-item {
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:var(--text-muted);
+  }
+  .perm-item input[type=checkbox] { width:14px; height:14px; cursor:pointer; accent-color:var(--blue); }
+  .perm-item.enabled { color:var(--text); font-weight:500; }
+  .tm-pass { font-family:'IBM Plex Mono',monospace; font-size:12px;
+    background:#F8FAFC; border:1px solid var(--border); border-radius:5px;
+    padding:4px 8px; width:110px; outline:none; }
+  .tm-pass:focus { border-color:var(--blue); }
+
+  /* ── CHANGELOG TABLE ──────────────────────────────────── */
+  .cl-table { width:100%; border-collapse:collapse; }
+  .cl-table th {
+    text-align:left; padding:10px 14px; font-size:11px; font-weight:600;
+    letter-spacing:.5px; text-transform:uppercase; color:var(--text-muted);
+    background:#F8FAFC; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .cl-table td { padding:11px 14px; border-bottom:1px solid #F1F5F9; font-size:13px; vertical-align:middle; }
+  .cl-table tr:last-child td { border-bottom:none; }
+  .cl-table tr:hover td { background:#FAFBFC; }
+  .cl-ts { font-size:11px; color:var(--text-muted); white-space:nowrap; font-family:'IBM Plex Mono',monospace; }
+  .cl-who { font-weight:600; font-size:12px; }
+  .cl-action-badge {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:11px; font-weight:600; white-space:nowrap;
+  }
+  .cl-add    { background:#DCFCE7; color:#15803D; }
+  .cl-update { background:#DBEAFE; color:#1D4ED8; }
+  .cl-delete { background:#FEE2E2; color:#DC2626; }
+  .cl-other  { background:#F1F5F9; color:#64748B; }
+  .cl-proj { font-weight:500; }
+  .cl-change { font-size:12px; color:var(--text-muted); }
+  .cl-change strong { color:var(--text); }
+
   /* ── ADMIN LOGIN OVERLAY ──────────────────────────────── */
   .login-overlay {
     position: fixed; inset: 0;
@@ -649,8 +710,8 @@
         <span class="icon">📊</span> Projects
         <span class="sidebar-badge" id="sb-projects">0</span>
       </div>
-      <div class="sidebar-item" onclick="switchTab('resources')">
-        <span class="icon">👥</span> Resources
+      <div class="sidebar-item" onclick="switchTab('team')">
+        <span class="icon">👥</span> Team Members
         <span class="sidebar-badge" id="sb-resources">0</span>
       </div>
       <div class="sidebar-item" onclick="switchTab('changelog')">
@@ -725,28 +786,61 @@
       </div>
     </div>
 
-    <!-- RESOURCES TAB -->
-    <div class="tab-pane" id="tab-resources">
+    <!-- TEAM MEMBERS TAB -->
+    <div class="tab-pane" id="tab-team">
       <div class="page-header">
-        <div><h1>Resources</h1><p>Team members and capacity</p></div>
+        <div>
+          <h1>Team Members</h1>
+          <p>Manage team accounts, roles and individual permissions</p>
+        </div>
         <div class="header-actions">
-          <button class="btn btn-primary" onclick="openAddResourceModal()">＋ Add Resource</button>
+          <button class="btn btn-primary" onclick="openAddMemberModal()">＋ Add Member</button>
         </div>
       </div>
-      <div class="card">
-        <div class="resource-grid" id="resource-grid">
-          <div class="empty-state" style="grid-column:1/-1">
-            <div class="icon">👥</div><h3>No resources yet</h3>
-            <p>Add team members to track capacity</p>
-          </div>
+
+      <!-- ROLE LEGEND -->
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)">
+          <span style="background:#DBEAFE;color:#1D4ED8;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px">VIEWER</span>
+          <span style="font-size:12px;color:var(--text-muted)">View projects only</span>
         </div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)">
+          <span style="background:#DCFCE7;color:#15803D;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px">EDITOR</span>
+          <span style="font-size:12px;color:var(--text-muted)">View + Add + Edit projects & tasks</span>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow)">
+          <span style="background:#F3E8FF;color:#7C3AED;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px">MANAGER</span>
+          <span style="font-size:12px;color:var(--text-muted)">Full access except delete</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="tm-table" id="tm-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Password</th>
+              <th>Role Preset</th>
+              <th>View Projects</th>
+              <th>Add Projects</th>
+              <th>Edit Projects</th>
+              <th>Edit Tasks</th>
+              <th>Manage Resources</th>
+              <th>View Changelog</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tm-tbody">
+            <tr><td colspan="10" style="text-align:center;padding:40px;color:#94A3B8">Loading...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <!-- CHANGELOG TAB -->
     <div class="tab-pane" id="tab-changelog">
       <div class="page-header">
-        <div><h1>Changelog</h1><p>Recent updates and changes</p></div>
+        <div><h1>Changelog</h1><p>Full audit trail of all changes</p></div>
         <div class="header-actions">
           <button class="btn btn-secondary btn-sm" onclick="loadChangelog()">🔄 Refresh</button>
         </div>
@@ -887,28 +981,45 @@
   </div>
 </div>
 
-<!-- RESOURCE MODAL -->
-<div class="modal-overlay" id="resourceModal">
-  <div class="adv-modal" style="max-width:400px">
+<!-- TEAM MEMBER MODAL -->
+<div class="modal-overlay" id="tmModal">
+  <div class="adv-modal" style="max-width:480px">
     <div class="adv-modal-header">
-      <h3 id="resModalTitle">Add Resource</h3>
-      <button class="close-btn" onclick="document.getElementById('resourceModal').classList.remove('open')">✕</button>
+      <h3>＋ Add Team Member</h3>
+      <button class="close-btn" onclick="document.getElementById('tmModal').classList.remove('open')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group">
+      <div class="form-grid form-grid-2">
+        <div class="form-group" style="grid-column:1/-1">
           <label>Full Name *</label>
-          <input type="text" id="res_name" placeholder="e.g. Sarah Khalil" />
+          <input type="text" id="tm-modal-name" placeholder="e.g. Sarah Khalil" />
         </div>
         <div class="form-group">
-          <label>Role</label>
-          <input type="text" id="res_role" placeholder="e.g. Frontend Developer" />
+          <label>Email *</label>
+          <input type="email" id="tm-modal-email" placeholder="sarah@company.com" />
+        </div>
+        <div class="form-group">
+          <label>Password *</label>
+          <input type="text" id="tm-modal-pass" placeholder="Set login password" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Role Preset</label>
+          <select id="tm-modal-role" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;">
+            <option value="viewer">👁 Viewer — View projects only</option>
+            <option value="editor" selected>✏️ Editor — View + Add + Edit</option>
+            <option value="manager">⭐ Manager — Full access except delete</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <p style="font-size:12px;color:var(--text-muted);background:#F8FAFC;padding:10px 12px;border-radius:6px;border:1px solid var(--border)">
+            💡 Permissions are set automatically based on the role. You can fine-tune them per-member after adding.
+          </p>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="document.getElementById('resourceModal').classList.remove('open')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveResource()">Save Resource</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('tmModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewMember()">Add Member</button>
     </div>
   </div>
 </div>
@@ -932,6 +1043,15 @@ const SHEETS = {
 };
 
 // ═══════════════════════════════════════════════════════════
+// ROLE PRESETS
+// ═══════════════════════════════════════════════════════════
+const ROLE_PRESETS = {
+  viewer:  { viewProjects:true,  addProjects:false, editProjects:false, editTasks:false, manageResources:false, viewChangelog:false },
+  editor:  { viewProjects:true,  addProjects:true,  editProjects:true,  editTasks:true,  manageResources:false, viewChangelog:false },
+  manager: { viewProjects:true,  addProjects:true,  editProjects:true,  editTasks:true,  manageResources:true,  viewChangelog:true  },
+};
+
+// ═══════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════
 let allProjectsData = {};     // { sheetKey: [{...}, ...] }
@@ -943,6 +1063,14 @@ let currentSheet = null;      // sheet key being edited
 let currentTasks = [];        // tasks array for modal
 let deleteTarget = null;
 let editingResourceName = null;
+
+// Team members — persisted in localStorage so team.html reads them
+function loadTeamMembers() {
+  try { return JSON.parse(localStorage.getItem('pmo_team_members') || '[]'); } catch(e) { return []; }
+}
+function saveTeamMembers(arr) {
+  localStorage.setItem('pmo_team_members', JSON.stringify(arr));
+}
 
 // ═══════════════════════════════════════════════════════════
 // JSONP — bypasses CORS for Apps Script (works from GitHub Pages)
@@ -1068,7 +1196,6 @@ function loadDemoData() {
 function renderAll() {
   renderKPIs();
   renderProjects();
-  renderResources();
   updateSidebar();
 }
 
@@ -1163,7 +1290,7 @@ function renderResources() {
 function updateSidebar() {
   const all = getAllProjects();
   document.getElementById('sb-projects').textContent = all.length;
-  document.getElementById('sb-resources').textContent = allResources.length;
+  document.getElementById('sb-resources').textContent = loadTeamMembers().length;
   const green = all.filter(p=>p.rag==='Green').length;
   const amber = all.filter(p=>p.rag==='Amber').length;
   const red = all.filter(p=>p.rag==='Red').length;
@@ -1180,9 +1307,10 @@ function updateSidebar() {
 function switchTab(name) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  document.getElementById(`tab-${name}`).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
   event.currentTarget.classList.add('active');
   if (name === 'changelog') loadChangelog();
+  if (name === 'team')      renderTeamMembers();
 }
 
 function filterType(type, el) {
@@ -1613,51 +1741,129 @@ async function confirmDelete() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// RESOURCES
+// TEAM MEMBERS
 // ═══════════════════════════════════════════════════════════
-function openAddResourceModal() {
-  editingResourceName = null;
-  document.getElementById('resModalTitle').textContent = 'Add Resource';
-  document.getElementById('res_name').value = '';
-  document.getElementById('res_role').value = '';
-  document.getElementById('resourceModal').classList.add('open');
-}
+const PERM_KEYS = ['viewProjects','addProjects','editProjects','editTasks','manageResources','viewChangelog'];
+const PERM_LABELS = {
+  viewProjects:'View Projects', addProjects:'Add Projects', editProjects:'Edit Projects',
+  editTasks:'Edit Tasks', manageResources:'Manage Resources', viewChangelog:'View Changelog'
+};
+const AV_COLORS = ['#1A5FCC','#16A34A','#D97706','#7C3AED','#DC2626','#0D7377','#0F766E','#B45309'];
 
-async function saveResource() {
-  const name = document.getElementById('res_name').value.trim();
-  const role = document.getElementById('res_role').value.trim();
-  if (!name) { showToast('Name is required', 'error'); return; }
+function renderTeamMembers() {
+  const members = loadTeamMembers();
+  const tbody = document.getElementById('tm-tbody');
+  document.getElementById('sb-resources').textContent = members.length;
 
-  if (!SCRIPT_URL) {
-    if (!editingResourceName) allResources.push({ name, role });
-    renderResources();
-    document.getElementById('resourceModal').classList.remove('open');
-    showToast(`Resource "${name}" saved`, 'success');
+  if (!members.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">👥</div><h3>No team members yet</h3><p>Click "+ Add Member" to get started</p></div></td></tr>`;
     return;
   }
 
-  try {
-    const url = `${SCRIPT_URL}?action=addResource&name=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}`;
-    const data = await apiFetch(url);
-    if (data.success || data.message) {
-      await loadData();
-      document.getElementById('resourceModal').classList.remove('open');
-      showToast(`Resource "${name}" saved`, 'success');
-    }
-  } catch(e) { showToast('Save failed', 'error'); }
+  tbody.innerHTML = members.map((m, idx) => {
+    const color = AV_COLORS[idx % AV_COLORS.length];
+    const roleLabel = {'viewer':'VIEWER','editor':'EDITOR','manager':'MANAGER'}[m.role] || m.role.toUpperCase();
+    const roleBadgeColor = {'viewer':'#DBEAFE;color:#1D4ED8','editor':'#DCFCE7;color:#15803D','manager':'#F3E8FF;color:#7C3AED'}[m.role] || '#F1F5F9;color:#64748B';
+
+    const permCells = PERM_KEYS.map(key => `
+      <td style="text-align:center">
+        <input type="checkbox" ${m.permissions[key] ? 'checked' : ''}
+          onchange="togglePerm(${idx},'${key}',this.checked)"
+          title="${PERM_LABELS[key]}" />
+      </td>`).join('');
+
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="tm-avatar" style="background:${color}">${initials(m.name)}</div>
+          <div>
+            <div class="tm-name">${esc(m.name)}</div>
+            <div class="tm-email">${esc(m.email)}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <input class="tm-pass" type="text" value="${esc(m.password)}"
+          onchange="updateMemberField(${idx},'password',this.value)"
+          title="Password for team login" />
+      </td>
+      <td>
+        <select class="role-select" onchange="applyRolePreset(${idx},this.value)">
+          <option value="viewer"  ${m.role==='viewer'  ?'selected':''}>👁 Viewer</option>
+          <option value="editor"  ${m.role==='editor'  ?'selected':''}>✏️ Editor</option>
+          <option value="manager" ${m.role==='manager' ?'selected':''}>⭐ Manager</option>
+          <option value="custom"  ${m.role==='custom'  ?'selected':''}>⚙️ Custom</option>
+        </select>
+      </td>
+      ${permCells}
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="removeMember(${idx})">🗑 Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function promptDeleteResource(name) {
-  if (!confirm(`Remove resource "${name}"?`)) return;
-  if (!SCRIPT_URL) {
-    allResources = allResources.filter(r => r.name !== name);
-    renderResources();
-    updateSidebar();
-    showToast(`"${name}" removed`, 'info');
-    return;
-  }
-  apiFetch(`${SCRIPT_URL}?action=deleteResource&name=${encodeURIComponent(name)}`)
-    .then(() => loadData());
+function openAddMemberModal() {
+  document.getElementById('tm-modal-name').value  = '';
+  document.getElementById('tm-modal-email').value = '';
+  document.getElementById('tm-modal-pass').value  = '';
+  document.getElementById('tm-modal-role').value  = 'editor';
+  document.getElementById('tmModal').classList.add('open');
+}
+
+function saveNewMember() {
+  const name  = document.getElementById('tm-modal-name').value.trim();
+  const email = document.getElementById('tm-modal-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('tm-modal-pass').value.trim();
+  const role  = document.getElementById('tm-modal-role').value;
+  if (!name || !email || !pass) { showToast('Name, email and password are required', 'error'); return; }
+
+  const members = loadTeamMembers();
+  if (members.find(m => m.email === email)) { showToast('Email already exists', 'error'); return; }
+
+  const permissions = {...ROLE_PRESETS[role] || ROLE_PRESETS.editor};
+  members.push({ name, email, password: pass, role, permissions });
+  saveTeamMembers(members);
+  document.getElementById('tmModal').classList.remove('open');
+  renderTeamMembers();
+  showToast(`✅ "${name}" added`, 'success');
+}
+
+function applyRolePreset(idx, role) {
+  const members = loadTeamMembers();
+  if (!members[idx]) return;
+  members[idx].role = role;
+  if (role !== 'custom') members[idx].permissions = {...ROLE_PRESETS[role] || ROLE_PRESETS.viewer};
+  saveTeamMembers(members);
+  renderTeamMembers();
+}
+
+function togglePerm(idx, key, val) {
+  const members = loadTeamMembers();
+  if (!members[idx]) return;
+  members[idx].permissions[key] = val;
+  members[idx].role = 'custom'; // switching individual = custom
+  saveTeamMembers(members);
+  // Re-render only the role select for this row
+  const selects = document.querySelectorAll('#tm-tbody .role-select');
+  if (selects[idx]) selects[idx].value = 'custom';
+}
+
+function updateMemberField(idx, field, val) {
+  const members = loadTeamMembers();
+  if (!members[idx]) return;
+  members[idx][field] = val;
+  saveTeamMembers(members);
+}
+
+function removeMember(idx) {
+  const members = loadTeamMembers();
+  const name = members[idx]?.name || 'member';
+  if (!confirm(`Remove "${name}"? They will no longer be able to log in.`)) return;
+  members.splice(idx, 1);
+  saveTeamMembers(members);
+  renderTeamMembers();
+  showToast(`"${name}" removed`, 'info');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1675,16 +1881,37 @@ async function loadChangelog() {
       document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>No entries yet</h3></div>`;
       return;
     }
-    document.getElementById('changelog-list').innerHTML = entries.map(e => `
-      <div class="changelog-entry">
-        <span class="cl-time">${e.timestamp || '—'}</span>
-        <span class="cl-action">
-          <strong>${esc(e.action||'')}</strong> —
-          ${esc(e.projectName||'')} in ${esc(e.sheet||'')}
-          ${e.fieldChanged ? `<br><span style="font-size:11px;color:var(--text-muted)">${esc(e.fieldChanged)}: ${esc(e.oldValue||'')} → ${esc(e.newValue||'')}</span>` : ''}
-        </span>
-      </div>
-    `).join('');
+    const actionBadge = (a) => {
+      const s = (a||'').toLowerCase();
+      if (s.includes('add'))    return `<span class="cl-action-badge cl-add">${esc(a)}</span>`;
+      if (s.includes('update')) return `<span class="cl-action-badge cl-update">${esc(a)}</span>`;
+      if (s.includes('delete')) return `<span class="cl-action-badge cl-delete">${esc(a)}</span>`;
+      return `<span class="cl-action-badge cl-other">${esc(a)}</span>`;
+    };
+    document.getElementById('changelog-list').innerHTML = `
+      <table class="cl-table">
+        <thead>
+          <tr>
+            <th style="width:160px">Date &amp; Time</th>
+            <th style="width:120px">Who</th>
+            <th style="width:130px">Action</th>
+            <th style="width:180px">Project</th>
+            <th>What Changed</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${entries.map(e => `<tr>
+            <td class="cl-ts">${esc(e.timestamp||'—')}</td>
+            <td class="cl-who">${esc(e.user||'admin')}</td>
+            <td>${actionBadge(e.action)}</td>
+            <td class="cl-proj">${esc(e.projectName||'—')} ${e.sheet?`<span style="font-size:10px;color:var(--text-muted);">(${esc(e.sheet)})</span>`:''}</td>
+            <td class="cl-change">${e.fieldChanged && e.fieldChanged !== 'N/A'
+              ? `<strong>${esc(e.fieldChanged)}</strong>: ${esc(e.oldValue||'—')} → ${esc(e.newValue||'—')}`
+              : `<span style="color:var(--text-muted)">${esc(e.newValue||'—')}</span>`
+            }</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
   } catch(e) {
     document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Failed to load</h3></div>`;
   }

@@ -388,11 +388,16 @@
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdGO7NFR5EH-EBTXh3ul0nirvtj_9EL44qv3ZvQp4KPNgqRzRNQURwBPY61MI0s8xjrA/exec';
 
-// ── TEAM MEMBERS ──────────────────────────────────────────────
-// Edit this list to manage team access
-const TEAM_MEMBERS = [
-  { email: 'meid1137@gmail.com', password: '123', name: 'Eid Member', role: 'Coordinator' },
-  // { email: 'jane@company.com', password: 'pass123', name: 'Jane Doe', role: 'Developer' },
+// ── TEAM MEMBERS — read from localStorage (set by admin) ──────
+function getTeamMembers() {
+  try { return JSON.parse(localStorage.getItem('pmo_team_members') || '[]'); } catch(e) { return []; }
+}
+// Fallback hardcoded members (used if admin hasn't set up localStorage yet)
+const FALLBACK_MEMBERS = [
+  {
+    email: 'meid1137@gmail.com', password: '123', name: 'Eid Member', role: 'editor',
+    permissions: { viewProjects:true, addProjects:true, editProjects:true, editTasks:true, manageResources:false, viewChangelog:false }
+  },
 ];
 
 const SHEETS_MAP = {
@@ -431,7 +436,10 @@ window.addEventListener('DOMContentLoaded', () => {
 function doLogin() {
   const email = document.getElementById('l-email').value.trim().toLowerCase();
   const pass  = document.getElementById('l-pass').value;
-  const user  = TEAM_MEMBERS.find(u => u.email.toLowerCase() === email && u.password === pass);
+  // Try localStorage members first (set by admin), then fallback
+  const lsMembers = getTeamMembers();
+  const allMembers = lsMembers.length ? lsMembers : FALLBACK_MEMBERS;
+  const user = allMembers.find(u => u.email.toLowerCase() === email && u.password === pass);
   if (!user) {
     const el = document.getElementById('login-error');
     el.style.display = 'block';
@@ -451,13 +459,20 @@ function doLogout() {
   document.getElementById('mainApp').style.display     = 'none';
 }
 
+function hasPerm(key) {
+  if (!currentUser) return false;
+  if (currentUser.permissions) return !!currentUser.permissions[key];
+  // Legacy fallback
+  return true;
+}
+
 function showApp() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainTopbar').style.display   = 'flex';
   document.getElementById('mainApp').style.display      = 'block';
   document.getElementById('u-av').textContent   = initials(currentUser.name);
-  document.getElementById('u-name').textContent = currentUser.name + ' · ' + currentUser.role;
-  document.getElementById('add-btn').style.display = 'inline-flex'; // all team can add
+  document.getElementById('u-name').textContent = currentUser.name + ' · ' + (currentUser.role || 'Team');
+  document.getElementById('add-btn').style.display = hasPerm('addProjects') ? 'inline-flex' : 'none';
   loadData();
 }
 
@@ -567,9 +582,9 @@ function projectCard(p) {
     ${tasks.length?`
       <button class="expand-btn" id="ebtn-${cid}" onclick="toggleTasks('${cid}')">▶ Show ${tasks.length} tasks</button>
       <div class="task-panel" id="ep-${cid}">${taskViewHTML}</div>`:''}
-    <div class="pc-actions">
+    ${hasPerm('editProjects') ? `<div class="pc-actions">
       <button class="btn btn-secondary btn-sm" onclick="openEditModal('${esc(p.sheetKey)}','${esc(p.projectName)}')">✏️ Edit Project</button>
-    </div>
+    </div>` : ''}
   </div>`;
 }
 
