@@ -985,7 +985,9 @@ function renderKPIs() {
 function getAllProjects() {
   const arr = [];
   for (const [sheet, projects] of Object.entries(allProjectsData)) {
-    (projects || []).forEach(p => arr.push({ ...p, sheetName: sheet }));
+    // sheet is a short key (e.g. 'content') — normalise to full sheet name for filtering
+    const fullName = SHEETS[sheet] || sheet;
+    (projects || []).forEach(p => arr.push({ ...p, sheetName: fullName, sheetKey: sheet }));
   }
   return arr;
 }
@@ -1006,7 +1008,7 @@ function renderProjects(searchVal) {
   }
   tbody.innerHTML = all.map(p => {
     const pct = parseInt(p.progress) || 0;
-    const key = sheetNameToKey(p.sheetName);
+    const key = p.sheetKey || sheetNameToKey(p.sheetName);
     const taskCount = p.taskCount || (p.tasks ? p.tasks.filter(t => t.taskType !== 'project').length : 0);
     return `<tr>
       <td><span style="font-weight:600">${esc(p.projectName)}</span></td>
@@ -1117,7 +1119,7 @@ async function openEditProjectModal(sheetKey, name) {
 
   // Find project in local data first
   const sheetName = keyToSheetName(sheetKey);
-  const projects = allProjectsData[sheetName] || [];
+  const projects = allProjectsData[sheetKey] || allProjectsData[sheetName] || [];
   const proj = projects.find(p => p.projectName === name);
 
   if (proj) {
@@ -1489,7 +1491,7 @@ async function confirmDelete() {
 
   if (!SCRIPT_URL) {
     const sheetName = keyToSheetName(sheetKey);
-    allProjectsData[sheetName] = (allProjectsData[sheetName] || []).filter(p => p.projectName !== name);
+    allProjectsData[sheetKey] = (allProjectsData[sheetKey] || allProjectsData[sheetName] || []).filter(p => p.projectName !== name);
     renderAll();
     showToast(`"${name}" deleted`, 'info');
     return;

@@ -231,9 +231,11 @@ async function loadData() {
 }
 
 function getAllFrom(data) {
+  const SHEETS_MAP = {'content':'Content Projects','software':'Software Projects','marketing':'Marketing & Growth','initiatives':'Initiatives','sales':'Sales Projects'};
   const arr = [];
   for(const [sheet, list] of Object.entries(data)) {
-    (list||[]).forEach(p => arr.push({...p, sheetName: sheet}));
+    const fullName = SHEETS_MAP[sheet] || sheet;
+    (list||[]).forEach(p => arr.push({...p, sheetName: fullName, sheetKey: sheet}));
   }
   return arr;
 }
