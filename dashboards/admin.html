@@ -541,6 +541,12 @@
   .cl-action strong { color: var(--text); }
 
   /* Responsive */
+
+  @keyframes shimmer {
+    0%   { background: #F1F5F9; }
+    50%  { background: #E2E8F0; }
+    100% { background: #F1F5F9; }
+  }
   @media (max-width: 768px) {
     .stats-row { grid-template-columns: repeat(3, 1fr); }
     .layout { flex-direction: column; }
@@ -747,7 +753,7 @@
           <p>Manage all department projects across all categories</p>
         </div>
         <div class="header-actions">
-          <button class="btn btn-secondary btn-sm" onclick="loadData()">🔄 Refresh</button>
+          <button class="btn btn-secondary btn-sm" onclick="loadData(true)">🔄 Refresh</button>
           <button class="btn btn-primary" onclick="openAddProjectModal()">＋ Add Project</button>
         </div>
       </div>
@@ -1031,7 +1037,7 @@
 // ═══════════════════════════════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdGO7NFR5EH-EBTXh3ul0nirvtj_9EL44qv3ZvQp4KPNgqRzRNQURwBPY61MI0s8xjrA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6-GNNrc41J32GZjsaBh1Rhy0vNXWVXyNrAL7ojgi3DIPrbIeVDNvh1rZ7GOGZxReWBw/exec';
 
 // Sheet names
 const SHEETS = {
@@ -1134,22 +1140,82 @@ function doAdminLogout() {
   document.getElementById('admin-pass-input').value = '';
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// CACHE — localStorage for instant load
+// ═══════════════════════════════════════════════════════════
+const CACHE_KEY = 'pmo_data_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCached() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+function setCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+
+function clearCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch(e) {}
+}
 // ═══════════════════════════════════════════════════════════
 // DATA LOADING
 // ═══════════════════════════════════════════════════════════
-async function loadData() {
+async function loadData(forceRefresh = false) {
   if (!SCRIPT_URL) { loadDemoData(); return; }
-  document.getElementById('projects-loading').classList.add('show');
+
+  // ── Show cached data instantly ──
+  if (!forceRefresh) {
+    const cached = getCached();
+    if (cached) {
+      allProjectsData = cached.projects || {};
+      allResources    = cached.resources || [];
+      renderAll();
+      // Silently refresh in background
+      refreshInBackground();
+      return;
+    }
+  }
+
+  // ── No cache: show skeleton then load ──
+  showSkeleton();
   try {
     const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
     allProjectsData = data.projects || {};
-    allResources = data.resources || [];
+    allResources    = data.resources || [];
+    setCache(data);
     renderAll();
   } catch (e) {
-    showToast('Failed to load data — showing demo', 'warning');
+    showToast('Failed to load — showing demo', 'warning');
     loadDemoData();
   } finally {
     document.getElementById('projects-loading').classList.remove('show');
+  }
+}
+
+async function refreshInBackground() {
+  try {
+    const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
+    allProjectsData = data.projects || {};
+    allResources    = data.resources || [];
+    setCache(data);
+    renderAll();
+  } catch(e) { /* silent fail — cached data still showing */ }
+}
+
+function showSkeleton() {
+  document.getElementById('projects-loading').classList.add('show');
+  const tbody = document.getElementById('projectsBody');
+  if (tbody) {
+    tbody.innerHTML = Array(4).fill(`
+      <tr>${Array(9).fill('<td><div style="height:14px;background:#F1F5F9;border-radius:4px;animation:shimmer 1.2s infinite"></div></td>').join('')}</tr>
+    `).join('');
   }
 }
 
@@ -1689,8 +1755,9 @@ async function saveProject() {
     const url = `${SCRIPT_URL}?action=${action}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
     const data = await apiFetch(url);
     if (data.success || data.message) {
-      await loadData();
-      closeAdvModal();
+      clearCache();
+    await loadData(true);
+    closeAdvModal();
       showToast(`✅ "${name}" saved`, 'success');
     } else {
       throw new Error(data.error || 'Save failed');
@@ -1734,8 +1801,9 @@ async function confirmDelete() {
     const url = `${SCRIPT_URL}?action=deleteProject&sheet=${sheetKey}&projectName=${encodeURIComponent(name)}`;
     const data = await apiFetch(url);
     if (data.success || data.message) {
-      await loadData();
-      showToast(`"${name}" deleted`, 'info');
+      clearCache();
+    await loadData(true);
+    showToast(`"${name}" deleted`, 'info');
     } else throw new Error(data.error || 'Delete failed');
   } catch(e) { showToast('Delete failed: ' + e.message, 'error'); }
 }

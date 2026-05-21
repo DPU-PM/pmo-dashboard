@@ -186,7 +186,7 @@
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdGO7NFR5EH-EBTXh3ul0nirvtj_9EL44qv3ZvQp4KPNgqRzRNQURwBPY61MI0s8xjrA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6-GNNrc41J32GZjsaBh1Rhy0vNXWVXyNrAL7ojgi3DIPrbIeVDNvh1rZ7GOGZxReWBw/exec';
 
 // JSONP
 function apiFetch(url) {
@@ -202,28 +202,56 @@ function apiFetch(url) {
   });
 }
 
+
+// ── CACHE — localStorage for instant load ──────────────────
+const CACHE_KEY = 'pmo_data_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+function getCached() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    return (Date.now() - ts < CACHE_TTL) ? data : null;
+  } catch(e) { return null; }
+}
+function setCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+
 window.addEventListener('DOMContentLoaded', loadData);
 
+function applyData(data) {
+  const projects = data.projects || {};
+  const publicProjects = {};
+  for(const [sheet, list] of Object.entries(projects)) {
+    publicProjects[sheet] = (list||[]).filter(p => p.publicVisibility === 'Yes');
+  }
+  renderHero(publicProjects);
+  renderRAG(publicProjects);
+  renderCategories(publicProjects);
+  renderTable(publicProjects);
+  document.getElementById('live-badge').textContent = '🟢 Live';
+  document.getElementById('live-badge').style.background = 'rgba(22,163,74,.2)';
+  document.getElementById('footer-ts').textContent = 'Last updated: ' + new Date().toLocaleString();
+}
+
 async function loadData() {
+  // Show cached instantly
+  const cached = getCached();
+  if (cached) {
+    applyData(cached);
+    // Refresh in background silently
+    apiFetch(`${SCRIPT_URL}?action=getData`).then(data => {
+      setCache(data); applyData(data);
+    }).catch(() => {});
+    return;
+  }
+  // No cache
   try {
     const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
-    const projects = data.projects || {};
-    const kpis = data.kpis || {};
-
-    // Only show public projects (publicVisibility === 'Yes')
-    const publicProjects = {};
-    for(const [sheet, list] of Object.entries(projects)) {
-      publicProjects[sheet] = (list||[]).filter(p => p.publicVisibility === 'Yes');
-    }
-
-    renderHero(publicProjects);
-    renderRAG(publicProjects);
-    renderCategories(publicProjects);
-    renderTable(publicProjects);
-
-    document.getElementById('live-badge').textContent = '🟢 Live';
-    document.getElementById('live-badge').style.background = 'rgba(22,163,74,.2)';
-    document.getElementById('footer-ts').textContent = 'Last updated: ' + new Date().toLocaleString();
+    setCache(data);
+    applyData(data);
   } catch(e) {
     document.getElementById('live-badge').textContent = '🔴 Offline';
     document.getElementById('projects-body').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Failed to load. <a href="javascript:loadData()" style="color:var(--blue)">Retry</a></td></tr>`;
