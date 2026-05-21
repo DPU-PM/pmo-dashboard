@@ -4,31 +4,315 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PMO Public Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#1B3A6B;--blue:#2563A8;--green:#1E7E34;--amber:#B8860B;--red:#C0392B;--teal:#0D7377;--purple:#6C3483;--orange:#E67E22;--gray:#6B7A99;--bg:#F0F3F8;--surface:#FFFFFF;--border:#D0D7E2;--text:#1A1A2E;--muted:#6B7A99}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}.topbar{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}.topbar-left{display:flex;align-items:center;gap:12px}.topbar-logo{font-size:20px}.topbar-title{font-size:16px;font-weight:700;color:#fff}.topbar-badge{background:rgba(34,197,94,.15);color:#22C55E;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid rgba(34,197,94,.3)}.topbar-right{display:flex;align-items:center;gap:16px;color:#fff;font-size:13px}.topbar-right button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:7px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;transition:.2s}.topbar-right button:hover{background:rgba(255,255,255,.2)}.sync-dot{width:8px;height:8px;border-radius:50%;background:#1E7E34;display:inline-block;margin-right:6px;animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.tabs{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:4px}.tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;font-family:inherit}.tab:hover{color:var(--navy)}.tab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:600}.content{padding:24px;max-width:1400px;margin:0 auto}.tab-pane{display:none}.tab-pane.active{display:block}.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}.kpi-card{background:var(--surface);border-radius:12px;padding:16px 20px;border:1px solid var(--border);transition:.2s}.kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}.kpi-val{font-size:32px;font-weight:700;line-height:1}.kpi-lbl{font-size:11px;font-weight:600;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}.kpi-card.navy .kpi-val{color:var(--navy)}.kpi-card.blue .kpi-val{color:var(--blue)}.kpi-card.green .kpi-val{color:var(--green)}.kpi-card.teal .kpi-val{color:var(--teal)}.kpi-card.gray .kpi-val{color:var(--gray)}.kpi-card.red .kpi-val{color:var(--red)}.type-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:.2s}.pill.active,.pill:hover{opacity:1}.pill-all{background:#E8EDF5;color:var(--navy);border-color:#D0D7E2}.pill-content{background:#D0F0F0;color:var(--teal);border-color:var(--teal)}.pill-software{background:#EEF4FC;color:var(--blue);border-color:var(--blue)}.pill-marketing{background:#EDE0F5;color:var(--purple);border-color:var(--purple)}.pill-initiatives{background:#FDE8D8;color:var(--orange);border-color:var(--orange)}.pill-sales{background:#D4EDDA;color:var(--green);border-color:var(--green)}.tbl-wrap{background:var(--surface);border-radius:12px;border:1px solid var(--border);overflow:hidden}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th{background:var(--navy);color:#fff;padding:10px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:#F8FAFC}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}.badge-active{background:#D6E4F7;color:#2563A8}.badge-completed{background:#D4EDDA;color:#1E7E34}.badge-onhold{background:#FFF3CD;color:#B8860B}.badge-upcoming{background:#D0F0F0;color:#0D7377}.badge-cancelled{background:#F8D7DA;color:#C0392B}.badge-green{background:#D4EDDA;color:#1E7E34}.badge-amber{background:#FFF3CD;color:#B8860B}.badge-red{background:#F8D7DA;color:#C0392B}.prog-wrap{display:flex;align-items:center;gap:8px}.prog-bar{flex:1;height:6px;background:#E8EDF5;border-radius:3px;min-width:60px;overflow:hidden}.prog-fill{height:100%;border-radius:3px;transition:.3s}.prog-lbl{font-size:12px;font-weight:600;white-space:nowrap;min-width:32px}.type-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}.search-bar{position:relative;margin-bottom:16px}.search-bar input{width:300px;padding:9px 12px 9px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:.2s}.search-bar input:focus{border-color:var(--blue)}.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px}.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}.spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}@keyframes spin{to{transform:rotate(360deg)}}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}.public-notice{background:#D4EDDA;border-left:4px solid var(--green);padding:12px 16px;margin-bottom:16px;border-radius:8px;font-size:13px;color:var(--green);font-weight:600}
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root {
+    --navy:#0F1E35;--navy2:#1B2E4A;--blue:#1A5FCC;--blue-light:#2E7DE9;
+    --gold:#E8A838;--green:#16A34A;--green-bg:#DCFCE7;
+    --amber:#D97706;--amber-bg:#FEF3C7;--red:#DC2626;--red-bg:#FEE2E2;
+    --text:#0F1E35;--text-muted:#64748B;--border:#E2E8F0;
+    --bg:#F0F4FA;--white:#FFFFFF;
+    --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+    --radius:8px;--radius-lg:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+  /* HERO HEADER */
+  .hero{background:linear-gradient(135deg,var(--navy) 0%,#1B3A6B 60%,#243752 100%);color:#fff;padding:40px 32px 32px;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:rgba(232,168,56,.08);border-radius:50%;}
+  .hero::after{content:'';position:absolute;bottom:-80px;left:30%;width:200px;height:200px;background:rgba(26,95,204,.15);border-radius:50%;}
+  .hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+  .hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+  .hero-brand{display:flex;align-items:center;gap:12px;}
+  .hero-logo{width:40px;height:40px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--navy);}
+  .hero-title{font-size:20px;font-weight:700;}
+  .hero-subtitle{font-size:12px;color:#8BAAC4;margin-top:2px;}
+  .hero-badge{background:rgba(22,163,74,.2);border:1px solid rgba(22,163,74,.4);color:#4ADE80;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;}
+  .hero-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;}
+  .hero-stat .num{font-size:36px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+  .hero-stat .lbl{font-size:12px;color:#8BAAC4;margin-top:4px;}
+  .hero-stat .num.green{color:#4ADE80;}
+  .hero-stat .num.amber{color:#FCD34D;}
+  .hero-stat .num.red{color:#F87171;}
+  .hero-stat .num.blue{color:#60A5FA;}
+
+  /* MAIN */
+  .main{max-width:1200px;margin:0 auto;padding:24px 32px;}
+
+  /* SECTION */
+  .section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .section-header h2{font-size:16px;font-weight:600;}
+  .section-divider{width:3px;height:18px;background:var(--blue);border-radius:2px;}
+
+  /* SUMMARY TABLE */
+  .summary-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:28px;overflow:hidden;}
+  .tbl{width:100%;border-collapse:collapse;}
+  .tbl th{text-align:left;padding:11px 16px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);background:#F8FAFC;border-bottom:1px solid var(--border);}
+  .tbl td{padding:13px 16px;border-bottom:1px solid #F1F5F9;vertical-align:middle;font-size:13px;}
+  .tbl tr:last-child td{border-bottom:none;}
+  .tbl tr:hover td{background:#F8FAFC;}
+
+  /* RAG */
+  .rag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;}
+  .rag-dot{width:9px;height:9px;border-radius:50%;}
+  .rag-dot.green{background:var(--green);}
+  .rag-dot.amber{background:var(--amber);}
+  .rag-dot.red{background:var(--red);}
+
+  /* PROGRESS */
+  .prog-wrap{display:flex;align-items:center;gap:8px;}
+  .prog-bar{flex:1;height:6px;background:#E2E8F0;border-radius:4px;overflow:hidden;min-width:80px;}
+  .prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--blue-light));}
+  .prog-fill.done{background:linear-gradient(90deg,var(--green),#22C55E);}
+  .prog-fill.warn{background:linear-gradient(90deg,var(--amber),var(--gold));}
+  .prog-pct{font-size:12px;font-weight:600;color:var(--text-muted);width:34px;text-align:right;font-family:'IBM Plex Mono',monospace;}
+
+  /* TYPE TAG */
+  .type-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid;}
+  .type-content{color:#0D7377;background:#E6F9F9;border-color:#A7D9DA;}
+  .type-software{color:#1A5FCC;background:#DBEAFE;border-color:#93C5FD;}
+  .type-marketing{color:#6C3483;background:#F3E8FF;border-color:#C4B5FD;}
+  .type-initiatives{color:#C2410C;background:#FEF3C7;border-color:#FCD34D;}
+  .type-sales{color:#15803D;background:#DCFCE7;border-color:#86EFAC;}
+
+  /* BADGE */
+  .badge{display:inline-flex;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+  .badge-blue{background:#DBEAFE;color:#1D4ED8;}
+  .badge-green{background:var(--green-bg);color:var(--green);}
+  .badge-gray{background:#F1F5F9;color:#64748B;}
+  .badge-purple{background:#F3E8FF;color:#7C3AED;}
+  .badge-red{background:var(--red-bg);color:var(--red);}
+
+  /* CATEGORY BREAKDOWN */
+  .category-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px;}
+  .cat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);}
+  .cat-card .cat-name{font-weight:600;font-size:13px;margin-bottom:10px;}
+  .cat-card .cat-num{font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--blue);margin-bottom:4px;}
+  .cat-card .cat-sub{font-size:11px;color:var(--text-muted);}
+  .cat-prog{margin-top:10px;}
+
+  /* RAG LEGEND */
+  .rag-summary{display:flex;gap:16px;margin-bottom:28px;}
+  .rag-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;flex:1;}
+  .rag-item .big-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+  .rag-item .rag-count{font-size:24px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .rag-item .rag-label{font-size:12px;color:var(--text-muted);}
+
+  /* FOOTER */
+  .footer{text-align:center;padding:24px;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border);margin-top:8px;}
+
+  /* LOADING */
+  .loading-wrap{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text-muted);}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;margin-right:10px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  @media(max-width:768px){
+    .hero-stats{grid-template-columns:repeat(3,1fr);}
+    .hero{padding:24px 16px 20px;}
+    .main{padding:16px;}
+  }
 </style>
 </head>
 <body>
-<div class="topbar"><div class="topbar-left"><span class="topbar-logo">🌐</span><span class="topbar-title">PMO DASHBOARD</span><span class="topbar-badge">PUBLIC</span></div><div class="topbar-right"><span><span class="sync-dot"></span><span id="lastSync">Ready</span></span><button onclick="loadData()">↺ Refresh</button></div></div>
-<div class="tabs"><button class="tab active" onclick="switchTab('overview')">📊 Overview</button><button class="tab" onclick="switchTab('projects')">📁 Projects</button></div>
-<div class="content"><div class="tab-pane active" id="tab-overview"><div class="kpi-grid" id="kpiCards"><div class="loading"><div class="spinner"></div><br>Loading...</div></div></div><div class="tab-pane" id="tab-projects"><div class="public-notice">🌐 Public View - Showing approved projects only</div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div class="type-pills"><span class="pill pill-all active" onclick="filterType('all',this)">All</span><span class="pill pill-content" onclick="filterType('content',this)">📄 Content</span><span class="pill pill-software" onclick="filterType('software',this)">💻 Software</span><span class="pill pill-marketing" onclick="filterType('marketing',this)">📈 Marketing</span><span class="pill pill-initiatives" onclick="filterType('initiatives',this)">🚀 Initiatives</span><span class="pill pill-sales" onclick="filterType('sales',this)">💼 Sales</span></div></div><div class="search-bar"><span class="search-icon">🔍</span><input type="text" placeholder="Search..." oninput="searchProjects(this.value)"></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th>Project</th><th>Type</th><th>Status</th><th>Phase</th><th>Progress</th><th>Milestone</th><th>Date</th><th>RAG</th><th>Owner</th></tr></thead><tbody id="projectsBody"><tr><td colspan="10" class="loading"><div class="spinner"></div><br>Loading...</td></tr></tbody></table></div></div></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-brand">
+        <div class="hero-logo">PMO</div>
+        <div>
+          <div class="hero-title">Department Portfolio</div>
+          <div class="hero-subtitle">Public Dashboard — Live Data</div>
+        </div>
+      </div>
+      <span class="hero-badge" id="live-badge">⏳ Loading...</span>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num blue" id="h-total">—</div><div class="lbl">Total Projects</div></div>
+      <div class="hero-stat"><div class="num" id="h-active">—</div><div class="lbl">Active</div></div>
+      <div class="hero-stat"><div class="num green" id="h-green">—</div><div class="lbl">On Track</div></div>
+      <div class="hero-stat"><div class="num amber" id="h-amber">—</div><div class="lbl">At Risk</div></div>
+      <div class="hero-stat"><div class="num" id="h-avg">—</div><div class="lbl">Avg Progress</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- RAG SUMMARY -->
+  <div class="rag-summary" id="rag-summary">
+    <div class="rag-item"><span class="big-dot" style="background:var(--green)"></span><div><div class="rag-count" id="rag-green">—</div><div class="rag-label">Green — On Track</div></div></div>
+    <div class="rag-item"><span class="big-dot" style="background:var(--amber)"></span><div><div class="rag-count" id="rag-amber">—</div><div class="rag-label">Amber — At Risk</div></div></div>
+    <div class="rag-item"><span class="big-dot" style="background:var(--red)"></span><div><div class="rag-count" id="rag-red">—</div><div class="rag-label">Red — Critical</div></div></div>
+    <div class="rag-item"><span class="big-dot" style="background:var(--blue)"></span><div><div class="rag-count" id="rag-completed">—</div><div class="rag-label">Completed</div></div></div>
+  </div>
+
+  <!-- CATEGORY BREAKDOWN -->
+  <div class="section-header">
+    <div class="section-divider"></div>
+    <h2>Projects by Category</h2>
+  </div>
+  <div class="category-grid" id="category-grid">
+    <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div> Loading...</div>
+  </div>
+
+  <!-- PROJECT TABLE -->
+  <div class="section-header">
+    <div class="section-divider"></div>
+    <h2>Project Overview</h2>
+  </div>
+  <div class="summary-card">
+    <table class="tbl" id="projects-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Next Milestone</th>
+          <th>Health</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody id="projects-body">
+        <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div> Loading...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer" id="footer-ts">—</div>
+</div>
+
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzhhcsd1KB1HG92omuc8qHE_EO2A63xp687KyHTeaUMhXRAHbZG1nU54HM1kjcwVqgKHA/exec';
-let allData=null,currentFilter='all';
-const TYPE_LABELS={content:'📄 Content',software:'💻 Software',marketing:'📈 Marketing',initiatives:'🚀 Initiatives',sales:'💼 Sales'};
-const TYPE_COLORS={content:'#0D7377',software:'#2563A8',marketing:'#6C3483',initiatives:'#E67E22',sales:'#1E7E34'};
-const TYPE_BG={content:'#D0F0F0',software:'#EEF4FC',marketing:'#EDE0F5',initiatives:'#FDE8D8',sales:'#D4EDDA'};
-async function loadData(){try{const res=await fetch(`${SCRIPT_URL}?action=getData`);allData=await res.json();filterPublicProjects();document.getElementById('lastSync').textContent='Updated '+new Date().toLocaleTimeString();renderAll()}catch(e){allData=getDemoData();filterPublicProjects();renderAll()}}
-function filterPublicProjects(){Object.keys(allData.projects).forEach(key=>{allData.projects[key]=allData.projects[key].filter(p=>p.publicVisibility==='Yes')})}
-function renderAll(){renderKPIs();renderProjects()}
-function renderKPIs(){const k=allData.kpis;const cards=[{val:k.total,lbl:'Total',cls:'navy'},{val:k.active,lbl:'Active',cls:'blue'},{val:k.completed,lbl:'Completed',cls:'green'},{val:k.upcoming,lbl:'Upcoming',cls:'teal'},{val:k.onHold,lbl:'On Hold',cls:'gray'},{val:k.escalated,lbl:'Escalated',cls:'red'}];document.getElementById('kpiCards').innerHTML=cards.map(c=>`<div class="kpi-card ${c.cls}"><div class="kpi-val">${c.val}</div><div class="kpi-lbl">${c.lbl}</div></div>`).join('')}
-function renderProjects(filter='',typeFilter=null){const type=typeFilter||currentFilter;const search=filter.toLowerCase();let counter=0,rows='';Object.entries(allData.projects).forEach(([key,list])=>{if(type!=='all'&&type!==key)return;list.forEach(p=>{if(search&&!p.name.toLowerCase().includes(search))return;counter++;const pct=Number(p.progress||0);const pctColor=pct<40?'#C0392B':pct<70?'#FFC107':'#1E7E34';rows+=`<tr><td style="color:var(--muted);font-size:12px">${counter}</td><td style="font-weight:600">${p.name}</td><td><span class="type-tag" style="background:${TYPE_BG[key]};color:${TYPE_COLORS[key]}">${TYPE_LABELS[key]}</span></td><td><span class="badge badge-${p.status?.toLowerCase().replace(' ','')}">${p.status||''}</span></td><td style="font-size:12px">${p.phase||''}</td><td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${pctColor}"></div></div><span class="prog-lbl" style="color:${pctColor}">${pct}%</span></div></td><td style="font-size:12px">${p.nextMilestone||''}</td><td style="font-size:12px">${p.milestoneDate||''}</td><td><span class="badge badge-${p.rag?.toLowerCase()}">${p.rag||''}</span></td><td style="font-size:12px">${p.responsible||''}</td></tr>`})});document.getElementById('projectsBody').innerHTML=rows||`<tr><td colspan="10" style="text-align:center;padding:32px">No public projects available</td></tr>`}
-function filterType(type,el){currentFilter=type;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderProjects()}
-function searchProjects(val){renderProjects(val)}
-function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active')}
-function getDemoData(){const p=(name,status,phase,progress,milestone,date,rag,responsible,pubVis='Yes')=>({name,status,phase,progress,nextMilestone:milestone,milestoneDate:date,rag,responsible,publicVisibility:pubVis});const projects={content:[p('Website Redesign','Active','Design',65,'Launch','15-Jun-25','Green','Sarah K.','Yes')],software:[p('CRM v2','Active','Dev',70,'UAT','25-Jun-25','Green','Rami S.','Yes')],marketing:[p('Q3 Campaign','Active','Exec',60,'Assets','28-Jun-25','Green','Omar B.','Yes')],initiatives:[],sales:[p('Sales Playbook','Active','Draft',50,'Review','20-Jun-25','Green','Nour A.','Yes')]};const kpis={total:4,active:4,completed:0,upcoming:0,onHold:0,escalated:0};return{projects,kpis}}
-loadData();setInterval(loadData,60000);
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMy2NyWPM16Fj7pKwi1rs9yRO1J7u-NMiS_sHtK-3zMXhCW4_Xe5XJgLivwCm1ro39mA/exec';
+
+// JSONP
+function apiFetch(url) {
+  return new Promise((resolve, reject) => {
+    const cb = '_cb' + Date.now() + Math.floor(Math.random()*9999);
+    const s = document.createElement('script');
+    const t = setTimeout(() => { cleanup(); reject(new Error('Timeout')); }, 15000);
+    window[cb] = (d) => { cleanup(); resolve(d); };
+    function cleanup() { clearTimeout(t); delete window[cb]; if(s.parentNode) s.parentNode.removeChild(s); }
+    s.onerror = () => { cleanup(); reject(new Error('Failed')); };
+    s.src = url + (url.includes('?')?'&':'?') + 'callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+
+window.addEventListener('DOMContentLoaded', loadData);
+
+async function loadData() {
+  try {
+    const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
+    const projects = data.projects || {};
+    const kpis = data.kpis || {};
+
+    // Only show public projects (publicVisibility === 'Yes')
+    const publicProjects = {};
+    for(const [sheet, list] of Object.entries(projects)) {
+      publicProjects[sheet] = (list||[]).filter(p => p.publicVisibility === 'Yes');
+    }
+
+    renderHero(publicProjects);
+    renderRAG(publicProjects);
+    renderCategories(publicProjects);
+    renderTable(publicProjects);
+
+    document.getElementById('live-badge').textContent = '🟢 Live';
+    document.getElementById('live-badge').style.background = 'rgba(22,163,74,.2)';
+    document.getElementById('footer-ts').textContent = 'Last updated: ' + new Date().toLocaleString();
+  } catch(e) {
+    document.getElementById('live-badge').textContent = '🔴 Offline';
+    document.getElementById('projects-body').innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Failed to load. <a href="javascript:loadData()" style="color:var(--blue)">Retry</a></td></tr>`;
+  }
+}
+
+function getAllFrom(data) {
+  const arr = [];
+  for(const [sheet, list] of Object.entries(data)) {
+    (list||[]).forEach(p => arr.push({...p, sheetName: sheet}));
+  }
+  return arr;
+}
+
+function renderHero(data) {
+  const all = getAllFrom(data);
+  document.getElementById('h-total').textContent = all.length;
+  document.getElementById('h-active').textContent = all.filter(p=>p.status==='Active').length;
+  document.getElementById('h-green').textContent = all.filter(p=>p.rag==='Green').length;
+  document.getElementById('h-amber').textContent = all.filter(p=>p.rag==='Amber'||p.rag==='Red').length;
+  const avg = all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0;
+  document.getElementById('h-avg').textContent = avg + '%';
+}
+
+function renderRAG(data) {
+  const all = getAllFrom(data);
+  document.getElementById('rag-green').textContent = all.filter(p=>p.rag==='Green').length;
+  document.getElementById('rag-amber').textContent = all.filter(p=>p.rag==='Amber').length;
+  document.getElementById('rag-red').textContent = all.filter(p=>p.rag==='Red').length;
+  document.getElementById('rag-completed').textContent = all.filter(p=>p.status==='Completed').length;
+}
+
+function renderCategories(data) {
+  const cats = [
+    {key:'Content Projects', label:'Content', cls:'type-content'},
+    {key:'Software Projects', label:'Software', cls:'type-software'},
+    {key:'Marketing & Growth', label:'Marketing', cls:'type-marketing'},
+    {key:'Initiatives', label:'Initiatives', cls:'type-initiatives'},
+    {key:'Sales Projects', label:'Sales', cls:'type-sales'},
+  ];
+  const grid = document.getElementById('category-grid');
+  grid.innerHTML = cats.map(c => {
+    const list = data[c.key] || [];
+    const avg = list.length ? Math.round(list.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/list.length) : 0;
+    const active = list.filter(p=>p.status==='Active').length;
+    return `<div class="cat-card">
+      <div class="cat-name"><span class="type-tag ${c.cls}">${c.label}</span></div>
+      <div class="cat-num">${list.length}</div>
+      <div class="cat-sub">${active} active</div>
+      <div class="cat-prog">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:3px"><span>Avg Progress</span><span>${avg}%</span></div>
+        <div class="prog-bar" style="min-width:unset"><div class="prog-fill ${avg>=100?'done':avg<30?'warn':''}" style="width:${avg}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(data) {
+  const all = getAllFrom(data);
+  const tbody = document.getElementById('projects-body');
+  if(!all.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">No public projects to display</td></tr>`;
+    return;
+  }
+  const typeMap = {'Content Projects':'type-content','Software Projects':'type-software','Marketing & Growth':'type-marketing','Initiatives':'type-initiatives','Sales Projects':'type-sales'};
+  const typeShort = {'Content Projects':'Content','Software Projects':'Software','Marketing & Growth':'Marketing','Initiatives':'Initiatives','Sales Projects':'Sales'};
+  const statusBadge = {'Active':'badge-blue','Completed':'badge-green','On Hold':'badge-gray','Upcoming':'badge-purple','Cancelled':'badge-red'};
+
+  tbody.innerHTML = all.map(p => {
+    const pct = parseInt(p.progress)||0;
+    const rag = (p.rag||'Green').toLowerCase();
+    return `<tr>
+      <td><strong>${esc(p.projectName)}</strong>${p.comment?`<br><span style="font-size:11px;color:var(--text-muted)">${esc(p.comment.substring(0,60))}${p.comment.length>60?'…':''}</span>`:''}</td>
+      <td><span class="type-tag ${typeMap[p.sheetName]||''}">${typeShort[p.sheetName]||esc(p.sheetName)}</span></td>
+      <td><span class="badge ${statusBadge[p.status]||'badge-gray'}">${esc(p.status||'—')}</span></td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill ${pct>=100?'done':pct<30?'warn':''}" style="width:${pct}%"></div></div>
+          <span class="prog-pct">${pct}%</span>
+        </div>
+      </td>
+      <td style="color:var(--text-muted);font-size:12px">${esc(p.milestoneDate||'—')}</td>
+      <td><span class="rag"><span class="rag-dot ${rag}"></span>${esc(p.rag||'Green')}</span></td>
+      <td style="font-size:13px">${esc(p.responsible||'—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 </script>
 </body>
 </html>
