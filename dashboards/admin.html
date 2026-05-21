@@ -1430,11 +1430,8 @@ async function saveProject() {
 
   try {
     const action = currentProject ? 'updateProject' : 'addProject';
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ...payload })
-    });
+    const url = `${SCRIPT_URL}?action=${action}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+    const res = await fetch(url);
     const data = await res.json();
     if (data.success || data.message) {
       await loadData();
@@ -1479,11 +1476,8 @@ async function confirmDelete() {
   }
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'deleteProject', sheet: sheetKey, projectName: name })
-    });
+    const url = `${SCRIPT_URL}?action=deleteProject&sheet=${sheetKey}&projectName=${encodeURIComponent(name)}`;
+    const res = await fetch(url);
     const data = await res.json();
     if (data.success || data.message) {
       await loadData();
@@ -1517,11 +1511,8 @@ async function saveResource() {
   }
 
   try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addResource', name, role })
-    });
+    const url = `${SCRIPT_URL}?action=addResource&name=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}`;
+    const res = await fetch(url);
     const data = await res.json();
     if (data.success || data.message) {
       await loadData();
@@ -1540,11 +1531,8 @@ function promptDeleteResource(name) {
     showToast(`"${name}" removed`, 'info');
     return;
   }
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'deleteResource', name })
-  }).then(() => loadData());
+  fetch(`${SCRIPT_URL}?action=deleteResource&name=${encodeURIComponent(name)}`)
+    .then(() => loadData());
 }
 
 // ═══════════════════════════════════════════════════════════
