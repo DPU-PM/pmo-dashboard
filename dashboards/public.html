@@ -171,6 +171,90 @@
   .footer{text-align:center;padding:24px;color:var(--text-muted);font-size:12px;border-top:1px solid var(--border);}
 
   /* ── LOADING ── */
+
+  /* ── CHARTS ──────────────────────────────────────────── */
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .chart-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow); }
+  .chart-card h3 { font-size:13px; font-weight:600; margin-bottom:16px; color:var(--navy); }
+  .donut-wrap { display:flex; align-items:center; gap:20px; }
+  .donut-svg { flex-shrink:0; }
+  .donut-legend { display:flex; flex-direction:column; gap:8px; }
+  .donut-legend-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .donut-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .donut-legend-label { color:var(--text-muted); }
+  .donut-legend-val { font-weight:700; font-family:'IBM Plex Mono',monospace; margin-left:auto; padding-left:12px; }
+  .bar-chart-wrap { display:flex; flex-direction:column; gap:10px; }
+  .bar-chart-row { display:flex; align-items:center; gap:10px; }
+  .bar-chart-label { font-size:11px; color:var(--text-muted); width:80px; flex-shrink:0; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-chart-bar { flex:1; height:18px; background:#F1F5F9; border-radius:4px; overflow:hidden; position:relative; }
+  .bar-chart-fill { height:100%; border-radius:4px; transition:width .8s cubic-bezier(.4,0,.2,1); background:linear-gradient(90deg,var(--blue),var(--blue-light)); }
+  .bar-chart-fill.done { background:linear-gradient(90deg,var(--green),#22C55E); }
+  .bar-chart-fill.warn { background:linear-gradient(90deg,var(--amber),var(--gold)); }
+  .bar-chart-pct { font-size:11px; font-weight:600; color:var(--text-muted); width:32px; font-family:'IBM Plex Mono',monospace; }
+  @media(max-width:768px){ .charts-row { grid-template-columns:1fr; } }
+
+  /* ── ANIMATIONS ───────────────────────────────────────── */
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes progFill { from{width:0!important} to{} }
+  .prog-fill, .overall-prog-fill, .bar-chart-fill { animation:progFill .8s cubic-bezier(.4,0,.2,1) both; }
+  .project-card { transition:box-shadow .2s ease, transform .2s ease; }
+  .project-card:hover { box-shadow:0 12px 32px rgba(0,0,0,.14)!important; transform:translateY(-3px); }
+  .project-card { animation:fadeInUp .3s ease both; }
+  .tbl tr { animation:fadeInUp .25s ease both; }
+  .stat-card { animation:fadeInUp .3s ease both; }
+  /* Stagger project cards */
+  .projects-grid .project-card:nth-child(1){animation-delay:.05s}
+  .projects-grid .project-card:nth-child(2){animation-delay:.1s}
+  .projects-grid .project-card:nth-child(3){animation-delay:.15s}
+  .projects-grid .project-card:nth-child(4){animation-delay:.2s}
+  .projects-grid .project-card:nth-child(5){animation-delay:.25s}
+  .projects-grid .project-card:nth-child(6){animation-delay:.3s}
+  /* Smooth project view enter */
+  .proj-view.active { animation:fadeInUp .25s ease both; }
+
+  /* ── ALERT BANNER ─────────────────────────────────────── */
+  .alert-banner {
+    display:none; align-items:center; gap:12px;
+    background:#FEF3C7; border:1px solid #FCD34D;
+    border-left:4px solid var(--amber);
+    border-radius:var(--radius); padding:12px 16px;
+    margin-bottom:16px; font-size:13px;
+    animation:fadeInUp .3s ease both;
+  }
+  .alert-banner.show { display:flex; }
+  .alert-banner .alert-icon { font-size:18px; flex-shrink:0; }
+  .alert-banner .alert-text { flex:1; }
+  .alert-banner .alert-text strong { color:var(--amber); }
+  .alert-banner .alert-close {
+    background:none; border:none; cursor:pointer;
+    color:var(--amber); font-size:16px; padding:2px 6px;
+    border-radius:4px; flex-shrink:0;
+  }
+  .alert-banner .alert-close:hover { background:rgba(217,119,6,.1); }
+  .alert-banner .alert-list { margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; }
+  .alert-tag {
+    background:#FEF3C7; border:1px solid #FCD34D;
+    border-radius:10px; padding:2px 8px; font-size:11px;
+    font-weight:600; color:#92400E; cursor:pointer;
+  }
+  .alert-tag:hover { background:#FCD34D; }
+  .alert-tag.red-tag { background:var(--red-bg); border-color:#FECACA; color:var(--red); }
+
+  /* ── PDF EXPORT ───────────────────────────────────────── */
+  .export-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:var(--radius);
+    font-size:12px; font-weight:500; cursor:pointer;
+    border:1px solid var(--border); background:var(--white);
+    color:var(--text-muted); font-family:inherit; transition:all .15s;
+  }
+  .export-btn:hover { border-color:var(--blue); color:var(--blue); background:#F0F7FF; }
+  @media print {
+    body > *:not(#pdf-target) { display:none!important; }
+    #pdf-target { display:block!important; }
+    .no-print { display:none!important; }
+  }
+
   .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -258,6 +342,20 @@
 
 <!-- MAIN -->
 <div class="main-content" id="main-content">
+
+  <!-- Alert Banner -->
+  <div class="alert-banner" id="alert-banner"></div>
+
+  <!-- Charts Row -->
+  <div class="charts-row" id="charts-row">
+    <div class="chart-card"><h3>📊 Health Overview</h3><div id="donut-chart"></div></div>
+    <div class="chart-card"><h3>📈 Progress by Category</h3><div id="bar-chart"></div></div>
+  </div>
+
+  <!-- Export Button -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button class="export-btn no-print" onclick="triggerPublicPDF()">📄 Export PDF</button>
+  </div>
 
   <!-- RAG -->
   <div class="rag-summary" id="rag-section">
@@ -471,6 +569,7 @@ function applyData(data) {
   renderRAG(publicProjectsGlobal);
   renderCategories(publicProjectsGlobal);
   renderTable(publicProjectsGlobal);
+  renderPublicCharts();
   document.getElementById('live-badge').textContent = '🟢 Live';
   document.getElementById('live-badge').style.background = 'rgba(22,163,74,.2)';
   document.getElementById('live-badge').style.border = '1px solid rgba(22,163,74,.4)';
@@ -827,5 +926,234 @@ document.addEventListener('keydown', e => {
                 style="stroke:grey; stroke-width:0.3" />
         </pattern>`;for(let i=new Date(this.gantt_start);i<=this.gantt_end;i.setDate(i.getDate()+1)){if(!this.config.ignored_dates.find(r=>r.getTime()==i.getTime())&&(!this.config.ignored_function||!this.config.ignored_function(i)))continue;let s=d.convert_scales(d.diff(i,this.gantt_start)+"d",this.config.unit)/this.config.step;this.config.ignored_positions.push(s*this.config.column_width),f("rect",{x:s*this.config.column_width,y:this.config.header_height,width:this.config.column_width,height:t,class:"ignored-bar",style:"fill: url(#diagonalHatch);",append_to:this.$svg})}this.highlight_current(this.config.view_mode)}create_el({left:t,top:e,width:i,height:s,id:r,classes:a,append_to:o,type:h}){let g=document.createElement(h||"div");for(let l of a.split(" "))g.classList.add(l);return g.style.top=e+"px",g.style.left=t+"px",r&&(g.id=r),i&&(g.style.width=i+"px"),s&&(g.style.height=s+"px"),o&&o.appendChild(g),g}make_dates(){this.get_dates_to_draw().forEach((t,e)=>{if(t.lower_text){let i=this.create_el({left:t.x,top:t.lower_y,classes:"lower-text date_"+k(t.formatted_date),append_to:this.$lower_header});i.innerText=t.lower_text}if(t.upper_text){let i=this.create_el({left:t.x,top:t.upper_y,classes:"upper-text",append_to:this.$upper_header});i.innerText=t.upper_text}}),this.upperTexts=Array.from(this.$container.querySelectorAll(".upper-text")),this.lowerTexts=Array.from(this.$container.querySelectorAll(".lower-text"))}get_dates_to_draw(){let t=null;return this.dates.map((i,s)=>{const r=this.get_date_info(i,t,s);return t=r,r})}get_date_info(t,e){let i=e?e.date:null;this.config.column_width;const s=e?e.x+e.column_width:0;let r=this.config.view_mode.upper_text,a=this.config.view_mode.lower_text;return r?typeof r=="string"&&(this.config.view_mode.upper_text=o=>d.format(o,r,this.options.language)):this.config.view_mode.upper_text=()=>"",a?typeof a=="string"&&(this.config.view_mode.lower_text=o=>d.format(o,a,this.options.language)):this.config.view_mode.lower_text=()=>"",{date:t,formatted_date:k(d.format(t,this.config.date_format,this.options.language)),column_width:this.config.column_width,x:s,upper_text:this.config.view_mode.upper_text(t,i,this.options.language),lower_text:this.config.view_mode.lower_text(t,i,this.options.language),upper_y:17,lower_y:this.options.upper_header_height+5}}make_bars(){this.bars=this.tasks.map(t=>{const e=new q(this,t);return this.layers.bar.appendChild(e.group),e})}make_arrows(){this.arrows=[];for(let t of this.tasks){let e=[];e=t.dependencies.map(i=>{const s=this.get_task(i);if(!s)return;const r=new W(this,this.bars[s._index],this.bars[t._index]);return this.layers.arrow.appendChild(r.element),r}).filter(Boolean),this.arrows=this.arrows.concat(e)}}map_arrows_on_bars(){for(let t of this.bars)t.arrows=this.arrows.filter(e=>e.from_task.task.id===t.task.id||e.to_task.task.id===t.task.id)}set_dimensions(){const{width:t}=this.$svg.getBoundingClientRect(),e=this.$svg.querySelector(".grid .grid-row")?this.$svg.querySelector(".grid .grid-row").getAttribute("width"):0;t<e&&this.$svg.setAttribute("width",e)}set_scroll_position(t){if(this.options.infinite_padding&&(!t||t==="start")){let[a,...o]=this.get_start_end_positions();this.$container.scrollLeft=a;return}if(!t||t==="start")t=this.gantt_start;else if(t==="end")t=this.gantt_end;else{if(t==="today")return this.scroll_current();typeof t=="string"&&(t=d.parse(t))}const i=d.diff(t,this.gantt_start,this.config.unit)/this.config.step*this.config.column_width;this.$container.scrollTo({left:i-this.config.column_width/6,behavior:"smooth"}),this.$current&&this.$current.classList.remove("current-upper"),this.current_date=d.add(this.gantt_start,this.$container.scrollLeft/this.config.column_width,this.config.unit);let s=this.config.view_mode.upper_text(this.current_date,null,this.options.language),r=this.upperTexts.find(a=>a.textContent===s);this.current_date=d.add(this.gantt_start,(this.$container.scrollLeft+r.clientWidth)/this.config.column_width,this.config.unit),s=this.config.view_mode.upper_text(this.current_date,null,this.options.language),r=this.upperTexts.find(a=>a.textContent===s),r.classList.add("current-upper"),this.$current=r}scroll_current(){let t=this.get_closest_date();t&&this.set_scroll_position(t[0])}get_closest_date(){let t=new Date;if(t<this.gantt_start||t>this.gantt_end)return null;let e=new Date,i=this.$container.querySelector(".date_"+k(d.format(e,this.config.date_format,this.options.language))),s=0;for(;!i&&s<this.config.step;)e=d.add(e,-1,this.config.unit),i=this.$container.querySelector(".date_"+k(d.format(e,this.config.date_format,this.options.language))),s++;return[new Date(d.format(e,this.config.date_format,this.options.language)+" "),i]}bind_grid_click(){c.on(this.$container,"click",".grid-row, .grid-header, .ignored-bar, .holiday-highlight",()=>{this.unselect_all(),this.hide_popup()})}bind_holiday_labels(){const t=this.$container.querySelectorAll(".holiday-highlight");for(let e of t){const i=this.$container.querySelector(".label_"+e.classList[1]);if(!i)continue;let s;e.onmouseenter=r=>{s=setTimeout(()=>{i.classList.add("show"),i.style.left=(r.offsetX||r.layerX)+"px",i.style.top=(r.offsetY||r.layerY)+"px"},300)},e.onmouseleave=r=>{clearTimeout(s),i.classList.remove("show")}}}get_start_end_positions(){if(!this.bars.length)return[0,0,0];let{x:t,width:e}=this.bars[0].group.getBBox(),i=t,s=t,r=t+e;return Array.prototype.forEach.call(this.bars,function({group:a},o){let{x:h,width:g}=a.getBBox();h<i&&(i=h),h>s&&(s=h),h+g>r&&(r=h+g)}),[i,s,r]}bind_bar_events(){let t=!1,e=0,i=0,s=!1,r=!1,a=null,o=[];this.bar_being_dragged=null;const h=()=>t||s||r;this.$svg.onclick=l=>{l.target.classList.contains("grid-row")&&this.unselect_all()};let g=0;if(c.on(this.$svg,"mousemove",".bar-wrapper, .handle",l=>{this.bar_being_dragged===!1&&Math.abs((l.offsetX||l.layerX)-g)>10&&(this.bar_being_dragged=!0)}),c.on(this.$svg,"mousedown",".grid-column",l=>{this.trigger_event("date_click",[this.getDateFromClick(l)])}),c.on(this.$svg,"mousedown",".bar-wrapper, .handle",(l,_)=>{const p=c.closest(".bar-wrapper",_);_.classList.contains("left")?(s=!0,_.classList.add("visible")):_.classList.contains("right")?(r=!0,_.classList.add("visible")):_.classList.contains("bar-wrapper")&&(t=!0),this.popup&&this.popup.hide(),e=l.offsetX||l.layerX,a=p.getAttribute("data-id");let u;this.options.move_dependencies?u=[a,...this.get_all_dependent_tasks(a)]:u=[a],o=u.map($=>this.get_bar($)),this.bar_being_dragged=!1,g=e,o.forEach($=>{const m=$.$bar;m.ox=m.getX(),m.oy=m.getY(),m.owidth=m.getWidth(),m.finaldx=0})}),this.options.infinite_padding){let l=!1;c.on(this.$container,"mousewheel",_=>{let p=this.$container.scrollWidth/2;if(!l&&_.currentTarget.scrollLeft<=p){let u=_.currentTarget.scrollLeft;l=!0,this.gantt_start=d.add(this.gantt_start,-this.config.extend_by_units,this.config.unit),this.setup_date_values(),this.render(),_.currentTarget.scrollLeft=u+this.config.column_width*this.config.extend_by_units,setTimeout(()=>l=!1,300)}if(!l&&_.currentTarget.scrollWidth-(_.currentTarget.scrollLeft+_.currentTarget.clientWidth)<=p){let u=_.currentTarget.scrollLeft;l=!0,this.gantt_end=d.add(this.gantt_end,this.config.extend_by_units,this.config.unit),this.setup_date_values(),this.render(),_.currentTarget.scrollLeft=u,setTimeout(()=>l=!1,300)}})}c.on(this.$container,"scroll",l=>{let _=[];const p=this.bars.map(({group:b})=>b.getAttribute("data-id"));let u;i&&(u=l.currentTarget.scrollLeft-i),this.current_date=d.add(this.gantt_start,l.currentTarget.scrollLeft/this.config.column_width*this.config.step,this.config.unit);let $=this.config.view_mode.upper_text(this.current_date,null,this.options.language),m=this.upperTexts.find(b=>b.textContent===$);this.current_date=d.add(this.gantt_start,(l.currentTarget.scrollLeft+m.clientWidth)/this.config.column_width*this.config.step,this.config.unit),$=this.config.view_mode.upper_text(this.current_date,null,this.options.language),m=this.upperTexts.find(b=>b.textContent===$),m!==this.$current&&(this.$current&&this.$current.classList.remove("current-upper"),m.classList.add("current-upper"),this.$current=m),i=l.currentTarget.scrollLeft;let[H,B,j]=this.get_start_end_positions();i>j+100?(this.$adjust.innerHTML="&larr;",this.$adjust.classList.remove("hide"),this.$adjust.onclick=()=>{this.$container.scrollTo({left:B,behavior:"smooth"})}):i+l.currentTarget.offsetWidth<H-100?(this.$adjust.innerHTML="&rarr;",this.$adjust.classList.remove("hide"),this.$adjust.onclick=()=>{this.$container.scrollTo({left:H,behavior:"smooth"})}):this.$adjust.classList.add("hide"),u&&(_=p.map(b=>this.get_bar(b)),this.options.auto_move_label&&_.forEach(b=>{b.update_label_position_on_horizontal_scroll({x:u,sx:l.currentTarget.scrollLeft})}))}),c.on(this.$svg,"mousemove",l=>{if(!h())return;const _=(l.offsetX||l.layerX)-e;o.forEach(p=>{const u=p.$bar;u.finaldx=this.get_snap_position(_,u.ox),this.hide_popup(),s?a===p.task.id?p.update_bar_position({x:u.ox+u.finaldx,width:u.owidth-u.finaldx}):p.update_bar_position({x:u.ox+u.finaldx}):r?a===p.task.id&&p.update_bar_position({width:u.owidth+u.finaldx}):t&&!this.options.readonly&&!this.options.readonly_dates&&p.update_bar_position({x:u.ox+u.finaldx})})}),document.addEventListener("mouseup",()=>{var l,_,p;t=!1,s=!1,r=!1,(p=(_=(l=this.$container.querySelector(".visible"))==null?void 0:l.classList)==null?void 0:_.remove)==null||p.call(_,"visible")}),c.on(this.$svg,"mouseup",l=>{this.bar_being_dragged=null,o.forEach(_=>{_.$bar.finaldx&&(_.date_changed(),_.compute_progress(),_.set_action_completed())})}),this.bind_bar_progress()}bind_bar_progress(){let t=0,e=null,i=null,s=null,r=null;c.on(this.$svg,"mousedown",".handle.progress",(o,h)=>{e=!0,t=o.offsetX||o.layerX;const l=c.closest(".bar-wrapper",h).getAttribute("data-id");i=this.get_bar(l),s=i.$bar_progress,r=i.$bar,s.finaldx=0,s.owidth=s.getWidth(),s.min_dx=-s.owidth,s.max_dx=r.getWidth()-s.getWidth()});const a=this.config.ignored_positions.map(o=>[o,o+this.config.column_width]);c.on(this.$svg,"mousemove",o=>{if(!e)return;let h=o.offsetX||o.layerX;if(h>t){let _=a.find(([p,u])=>h>=p&&h<u);for(;_;)h=_[1],_=a.find(([p,u])=>h>=p&&h<u)}else{let _=a.find(([p,u])=>h>p&&h<=u);for(;_;)h=_[0],_=a.find(([p,u])=>h>p&&h<=u)}let l=h-t;l>s.max_dx&&(l=s.max_dx),l<s.min_dx&&(l=s.min_dx),s.setAttribute("width",s.owidth+l),c.attr(i.$handle_progress,"cx",s.getEndX()),s.finaldx=l}),c.on(this.$svg,"mouseup",()=>{e=!1,s&&s.finaldx&&(s.finaldx=0,i.progress_changed(),i.set_action_completed(),i=null,s=null,r=null)})}get_all_dependent_tasks(t){let e=[],i=[t];for(;i.length;){const s=i.reduce((r,a)=>(r=r.concat(this.dependency_map[a]),r),[]);e=e.concat(s),i=s.filter(r=>!i.includes(r)&&!e.includes(r))}return e.filter(Boolean)}get_snap_position(t,e){let i=1;const s=this.options.snap_at||this.config.view_mode.snap_at||"1d";if(s!=="unit"){const{duration:l,scale:_}=d.parse_duration(s);i=d.convert_scales(this.config.view_mode.step,_)/l}const r=t%(this.config.column_width/i);let a=t-r+(r<this.config.column_width/i*2?0:this.config.column_width/i),o=e+a;const h=a>0?1:-1;let g=this.get_ignored_region(o,h);for(;g.length;)o+=this.config.column_width*h,g=this.get_ignored_region(o,h),g.length||(o-=this.config.column_width*h);return o-e}get_ignored_region(t,e=1){return e===1?this.config.ignored_positions.filter(i=>t>i&&t<=i+this.config.column_width):this.config.ignored_positions.filter(i=>t>=i&&t<i+this.config.column_width)}unselect_all(){this.popup&&this.popup.parent.classList.add("hide"),this.$container.querySelectorAll(".date-range-highlight").forEach(t=>t.classList.add("hide"))}view_is(t){return typeof t=="string"?this.config.view_mode.name===t:Array.isArray(t)?t.some(view_is):this.config.view_mode.name===t.name}get_task(t){return this.tasks.find(e=>e.id===t)}get_bar(t){return this.bars.find(e=>e.task.id===t)}show_popup(t){this.options.popup!==!1&&(this.popup||(this.popup=new F(this.$popup_wrapper,this.options.popup,this)),this.popup.show(t))}hide_popup(){this.popup&&this.popup.hide()}trigger_event(t,e){this.options["on_"+t]&&this.options["on_"+t].apply(this,e)}view_is(t){return this.options.view_mode.name===t}getDateFromClick(t){const e=this.$svg.getBoundingClientRect(),i=t.clientX-e.left,s=this.lowerTexts;if(!s.length)return null;const r=Math.floor(i/this.config.column_width),a=s[r];if(!a)return null;const o=a.className.match(/date_(\d{4}-\d{2}-\d{2})/);return o?o[1]:null}get_oldest_starting_date(){return this.tasks.length?this.tasks.map(t=>t._start).reduce((t,e)=>e<=t?e:t):new Date}clear(){var t,e,i,s,r,a,o,h,g,l;this.$svg.innerHTML="",(e=(t=this.$header)==null?void 0:t.remove)==null||e.call(t),(s=(i=this.$side_header)==null?void 0:i.remove)==null||s.call(i),(a=(r=this.$current_highlight)==null?void 0:r.remove)==null||a.call(r),(h=(o=this.$extras)==null?void 0:o.remove)==null||h.call(o),(l=(g=this.popup)==null?void 0:g.hide)==null||l.call(g)}}S.VIEW_MODE={HOUR:w[0],QUARTER_DAY:w[1],HALF_DAY:w[2],DAY:w[3],WEEK:w[4],MONTH:w[5],YEAR:w[6]};function z(n){return n.name+"_"+Math.random().toString(36).slice(2,12)}function k(n){return n.replaceAll(" ","_").replaceAll(":","_").replaceAll(".","_")}return S});
 
+
+
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════════════
+function renderDonutChart(green, amber, red, containerId) {
+  const total = green + amber + red || 1;
+  const size = 120, cx = 60, cy = 60, r = 46, stroke = 16;
+  const circ = 2 * Math.PI * r;
+  const pcts = [
+    { val:green, color:'var(--green)', label:'Green',  key:'green'  },
+    { val:amber, color:'var(--amber)', label:'Amber',  key:'amber'  },
+    { val:red,   color:'var(--red)',   label:'Red',    key:'red'    },
+  ];
+  let offset = 0;
+  const arcs = pcts.map(p => {
+    const dash = (p.val / total) * circ;
+    const gap  = circ - dash;
+    const arc  = `<circle cx="${cx}" cy="${cy}" r="${r}"
+      fill="none" stroke="${p.color}" stroke-width="${stroke}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})"
+      style="transition:stroke-dasharray .8s ease"/>`;
+    offset += dash;
+    return arc;
+  }).join('');
+
+  const legend = pcts.map(p => `
+    <div class="donut-legend-item">
+      <span class="donut-legend-dot" style="background:${p.color}"></span>
+      <span class="donut-legend-label">${p.label}</span>
+      <span class="donut-legend-val">${p.val}</span>
+    </div>`).join('');
+
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#F1F5F9" stroke-width="${stroke}"/>
+        ${arcs}
+        <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
+          style="font-size:18px;font-weight:700;fill:var(--navy);font-family:'IBM Plex Mono',monospace">${total}</text>
+        <text x="${cx}" y="${cy+16}" text-anchor="middle"
+          style="font-size:9px;fill:var(--text-muted);font-family:'IBM Plex Sans',sans-serif">projects</text>
+      </svg>
+      <div class="donut-legend">${legend}</div>
+    </div>`;
+}
+
+function renderBarChart(categories, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const max = Math.max(...categories.map(c => c.avg), 1);
+  el.innerHTML = `<div class="bar-chart-wrap">
+    ${categories.map(c => {
+      const w   = (c.avg / 100) * 100;
+      const cls = c.avg >= 100 ? 'done' : c.avg < 30 ? 'warn' : '';
+      return `<div class="bar-chart-row">
+        <span class="bar-chart-label" title="${c.name}">${c.shortName}</span>
+        <div class="bar-chart-bar">
+          <div class="bar-chart-fill ${cls}" style="width:${w}%"></div>
+        </div>
+        <span class="bar-chart-pct">${c.avg}%</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALERT BANNER — overdue tasks
+// ═══════════════════════════════════════════════════════════
+function checkOverdueTasks(projects) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const overdue = [];
+  const critical = []; // RAG Red projects
+
+  for (const [key, list] of Object.entries(projects)) {
+    (list||[]).forEach(p => {
+      // Check project-level RAG
+      if (p.rag === 'Red') critical.push(p.projectName || p.name);
+      // Check task-level overdue
+      (p.tasks||[]).forEach(t => {
+        if (t.taskType === 'project') return;
+        if (!t.milestoneDate) return;
+        const due = new Date(t.milestoneDate);
+        due.setHours(0,0,0,0);
+        if (due < today && parseInt(t.progress||0) < 100) {
+          overdue.push({ project: p.projectName||p.name, task: t.taskName, due: t.milestoneDate });
+        }
+      });
+    });
+  }
+  return { overdue, critical };
+}
+
+function renderAlertBanner(bannerId, projects) {
+  const banner = document.getElementById(bannerId);
+  if (!banner) return;
+  const { overdue, critical } = checkOverdueTasks(projects);
+  if (!overdue.length && !critical.length) { banner.classList.remove('show'); return; }
+
+  const parts = [];
+  if (overdue.length) parts.push(`<strong>${overdue.length} overdue task${overdue.length!==1?'s':''}</strong>`);
+  if (critical.length) parts.push(`<strong>${critical.length} critical project${critical.length!==1?'s':''}</strong>`);
+
+  const tags = [
+    ...overdue.slice(0,4).map(o =>
+      `<span class="alert-tag" title="${esc(o.project)}: ${esc(o.task)} (due ${esc(o.due)})">${esc(o.task.length>18?o.task.substring(0,17)+'…':o.task)}</span>`
+    ),
+    ...critical.slice(0,3).map(p =>
+      `<span class="alert-tag red-tag">🔴 ${esc(p.length>18?p.substring(0,17)+'…':p)}</span>`
+    ),
+    (overdue.length > 4 || critical.length > 3) ?
+      `<span class="alert-tag">+${overdue.length + critical.length - 4} more</span>` : ''
+  ].filter(Boolean).join('');
+
+  banner.innerHTML = `
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-text">
+      ${parts.join(' · ')} detected
+      <div class="alert-list">${tags}</div>
+    </div>
+    <button class="alert-close no-print" onclick="this.closest('.alert-banner').classList.remove('show')" title="Dismiss">✕</button>
+  `;
+  banner.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportPDF(title, projects, kpis) {
+  const all = [];
+  for (const [key, list] of Object.entries(projects)) {
+    (list||[]).forEach(p => all.push({...p, sheetKey:key}));
+  }
+
+  const ragDot = r => {
+    const c = r==='Green'?'#16A34A':r==='Red'?'#DC2626':'#D97706';
+    return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:4px"></span>`;
+  };
+
+  const rows = all.map(p => {
+    const pct = parseInt(p.progress)||0;
+    const bar = `<div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:6px">
+      <div style="height:100%;width:${pct}%;background:${pct>=100?'#16A34A':pct<30?'#D97706':'#1A5FCC'};border-radius:3px"></div>
+    </div><span style="font-size:11px;font-weight:600">${pct}%</span>`;
+    return `<tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-weight:600;font-size:13px">${esc(p.projectName||p.name)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-size:12px;color:#64748B">${esc(p.status||'—')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9">${bar}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9">${ragDot(p.rag)}${esc(p.rag||'Green')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-size:12px;color:#64748B">${esc(p.responsible||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  const statBox = (val, lbl, color='#0F1E35') =>
+    `<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 18px;text-align:center;flex:1">
+      <div style="font-size:28px;font-weight:700;color:${color};font-family:monospace">${val}</div>
+      <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${lbl}</div>
+    </div>`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'Segoe UI',Arial,sans-serif; background:#fff; color:#0F1E35; padding:32px; }
+      h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
+      .sub { font-size:13px; color:#64748B; margin-bottom:24px; }
+      table { width:100%; border-collapse:collapse; margin-top:16px; }
+      th { text-align:left; padding:10px 12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:#64748B; background:#F8FAFC; border-bottom:2px solid #E2E8F0; }
+      .kpi-row { display:flex; gap:12px; margin-bottom:24px; }
+      .section-title { font-size:14px; font-weight:700; margin-bottom:8px; color:#0F1E35; padding-bottom:6px; border-bottom:2px solid #E2E8F0; }
+      .footer { margin-top:24px; font-size:11px; color:#94A3B8; text-align:center; padding-top:16px; border-top:1px solid #F1F5F9; }
+    </style></head><body>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div style="width:36px;height:36px;background:#E8A838;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#0F1E35">PMO</div>
+      <div><h1>${esc(title)}</h1><div class="sub">Generated ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>
+    <div class="kpi-row">
+      ${statBox(kpis.total||all.length, 'Total Projects','#1A5FCC')}
+      ${statBox(kpis.active||all.filter(p=>p.status==='Active').length, 'Active')}
+      ${statBox(kpis.green||all.filter(p=>p.rag==='Green').length, 'On Track','#16A34A')}
+      ${statBox((kpis.amber||0)+(kpis.red||0)||all.filter(p=>p.rag==='Amber'||p.rag==='Red').length, 'At Risk','#D97706')}
+      ${statBox(kpis.avgProgress!=null?kpis.avgProgress+'%':(all.length?Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length)+'%':'—'), 'Avg Progress','#1A5FCC')}
+    </div>
+    <div class="section-title">📋 Project Overview</div>
+    <table>
+      <thead><tr><th>Project</th><th>Status</th><th>Progress</th><th>Health</th><th>Owner</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">PMO Portfolio Dashboard · Confidential · ${all.length} projects listed</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.print(); };
+}
+
+function renderPublicCharts() {
+  const all = getAllFrom(publicProjectsGlobal);
+  const green = all.filter(p=>p.rag==='Green').length;
+  const amber = all.filter(p=>p.rag==='Amber').length;
+  const red   = all.filter(p=>p.rag==='Red').length;
+  renderDonutChart(green, amber, red, 'donut-chart');
+  const catData = Object.entries(SHEETS_MAP).map(([key, name]) => {
+    const list = publicProjectsGlobal[key] || [];
+    const avg  = list.length ? Math.round(list.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/list.length) : 0;
+    const shortNames = {'Content Projects':'Content','Software Projects':'Software','Marketing & Growth':'Marketing','Initiatives':'Init.','Sales Projects':'Sales'};
+    return { name, shortName: shortNames[name]||name, avg };
+  });
+  renderBarChart(catData, 'bar-chart');
+  renderAlertBanner('alert-banner', publicProjectsGlobal);
+}
+function triggerPublicPDF() {
+  const all = getAllFrom(publicProjectsGlobal);
+  const kpis = {
+    total: all.length,
+    active: all.filter(p=>p.status==='Active').length,
+    green: all.filter(p=>p.rag==='Green').length,
+    amber: all.filter(p=>p.rag==='Amber').length,
+    red: all.filter(p=>p.rag==='Red').length,
+    avgProgress: all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0
+  };
+  exportPDF('PMO Public Portfolio', publicProjectsGlobal, kpis);
+}
 
 </script>

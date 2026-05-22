@@ -645,6 +645,89 @@
 
   .tab-pane { display: none; }
   .tab-pane.active { display: block; }
+  /* ── CHARTS ──────────────────────────────────────────── */
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .chart-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow); }
+  .chart-card h3 { font-size:13px; font-weight:600; margin-bottom:16px; color:var(--navy); }
+  .donut-wrap { display:flex; align-items:center; gap:20px; }
+  .donut-svg { flex-shrink:0; }
+  .donut-legend { display:flex; flex-direction:column; gap:8px; }
+  .donut-legend-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .donut-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .donut-legend-label { color:var(--text-muted); }
+  .donut-legend-val { font-weight:700; font-family:'IBM Plex Mono',monospace; margin-left:auto; padding-left:12px; }
+  .bar-chart-wrap { display:flex; flex-direction:column; gap:10px; }
+  .bar-chart-row { display:flex; align-items:center; gap:10px; }
+  .bar-chart-label { font-size:11px; color:var(--text-muted); width:80px; flex-shrink:0; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-chart-bar { flex:1; height:18px; background:#F1F5F9; border-radius:4px; overflow:hidden; position:relative; }
+  .bar-chart-fill { height:100%; border-radius:4px; transition:width .8s cubic-bezier(.4,0,.2,1); background:linear-gradient(90deg,var(--blue),var(--blue-light)); }
+  .bar-chart-fill.done { background:linear-gradient(90deg,var(--green),#22C55E); }
+  .bar-chart-fill.warn { background:linear-gradient(90deg,var(--amber),var(--gold)); }
+  .bar-chart-pct { font-size:11px; font-weight:600; color:var(--text-muted); width:32px; font-family:'IBM Plex Mono',monospace; }
+  @media(max-width:768px){ .charts-row { grid-template-columns:1fr; } }
+
+  /* ── ANIMATIONS ───────────────────────────────────────── */
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes progFill { from{width:0!important} to{} }
+  .prog-fill, .overall-prog-fill, .bar-chart-fill { animation:progFill .8s cubic-bezier(.4,0,.2,1) both; }
+  .project-card { transition:box-shadow .2s ease, transform .2s ease; }
+  .project-card:hover { box-shadow:0 12px 32px rgba(0,0,0,.14)!important; transform:translateY(-3px); }
+  .project-card { animation:fadeInUp .3s ease both; }
+  .tbl tr { animation:fadeInUp .25s ease both; }
+  .stat-card { animation:fadeInUp .3s ease both; }
+  /* Stagger project cards */
+  .projects-grid .project-card:nth-child(1){animation-delay:.05s}
+  .projects-grid .project-card:nth-child(2){animation-delay:.1s}
+  .projects-grid .project-card:nth-child(3){animation-delay:.15s}
+  .projects-grid .project-card:nth-child(4){animation-delay:.2s}
+  .projects-grid .project-card:nth-child(5){animation-delay:.25s}
+  .projects-grid .project-card:nth-child(6){animation-delay:.3s}
+  /* Smooth project view enter */
+  .proj-view.active { animation:fadeInUp .25s ease both; }
+
+  /* ── ALERT BANNER ─────────────────────────────────────── */
+  .alert-banner {
+    display:none; align-items:center; gap:12px;
+    background:#FEF3C7; border:1px solid #FCD34D;
+    border-left:4px solid var(--amber);
+    border-radius:var(--radius); padding:12px 16px;
+    margin-bottom:16px; font-size:13px;
+    animation:fadeInUp .3s ease both;
+  }
+  .alert-banner.show { display:flex; }
+  .alert-banner .alert-icon { font-size:18px; flex-shrink:0; }
+  .alert-banner .alert-text { flex:1; }
+  .alert-banner .alert-text strong { color:var(--amber); }
+  .alert-banner .alert-close {
+    background:none; border:none; cursor:pointer;
+    color:var(--amber); font-size:16px; padding:2px 6px;
+    border-radius:4px; flex-shrink:0;
+  }
+  .alert-banner .alert-close:hover { background:rgba(217,119,6,.1); }
+  .alert-banner .alert-list { margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; }
+  .alert-tag {
+    background:#FEF3C7; border:1px solid #FCD34D;
+    border-radius:10px; padding:2px 8px; font-size:11px;
+    font-weight:600; color:#92400E; cursor:pointer;
+  }
+  .alert-tag:hover { background:#FCD34D; }
+  .alert-tag.red-tag { background:var(--red-bg); border-color:#FECACA; color:var(--red); }
+
+  /* ── PDF EXPORT ───────────────────────────────────────── */
+  .export-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 14px; border-radius:var(--radius);
+    font-size:12px; font-weight:500; cursor:pointer;
+    border:1px solid var(--border); background:var(--white);
+    color:var(--text-muted); font-family:inherit; transition:all .15s;
+  }
+  .export-btn:hover { border-color:var(--blue); color:var(--blue); background:#F0F7FF; }
+  @media print {
+    body > *:not(#pdf-target) { display:none!important; }
+    #pdf-target { display:block!important; }
+    .no-print { display:none!important; }
+  }
+
   /* ═══════════════════════════════════════════════════
      PROJECT DETAIL VIEW
   ═══════════════════════════════════════════════════ */
@@ -1063,14 +1146,28 @@
 
     <!-- PROJECTS TAB -->
     <div class="tab-pane active" id="tab-projects">
+      <!-- Alert Banner -->
+      <div class="alert-banner" id="alert-banner"></div>
       <div class="page-header">
         <div>
           <h1>Projects</h1>
           <p>Manage all department projects across all categories</p>
         </div>
         <div class="header-actions">
-          <button class="btn btn-secondary btn-sm" onclick="loadData(true)">🔄 Refresh</button>
-          <button class="btn btn-primary" onclick="openAddProjectModal()">＋ Add Project</button>
+          <button class="export-btn no-print" onclick="triggerAdminPDF()" title="Export PDF">📄 Export PDF</button>
+          <button class="btn btn-secondary btn-sm no-print" onclick="loadData(true)">🔄 Refresh</button>
+          <button class="btn btn-primary no-print" onclick="openAddProjectModal()">＋ Add Project</button>
+        </div>
+      </div>
+      <!-- Charts Row -->
+      <div class="charts-row" id="charts-row">
+        <div class="chart-card">
+          <h3>📊 Health Overview</h3>
+          <div id="donut-chart"></div>
+        </div>
+        <div class="chart-card">
+          <h3>📈 Progress by Category</h3>
+          <div id="bar-chart"></div>
         </div>
       </div>
 
@@ -1650,6 +1747,8 @@ function renderAll() {
   renderKPIs();
   renderProjects();
   updateSidebar();
+  renderAdminCharts();
+  renderAlertBanner('alert-banner', allProjectsData);
 }
 
 function renderKPIs() {
@@ -2696,6 +2795,237 @@ function renderVerticalTimeline(taskList) {
   }).join('');
 }
 
+
+
+// ═══════════════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════════════
+function renderDonutChart(green, amber, red, containerId) {
+  const total = green + amber + red || 1;
+  const size = 120, cx = 60, cy = 60, r = 46, stroke = 16;
+  const circ = 2 * Math.PI * r;
+  const pcts = [
+    { val:green, color:'var(--green)', label:'Green',  key:'green'  },
+    { val:amber, color:'var(--amber)', label:'Amber',  key:'amber'  },
+    { val:red,   color:'var(--red)',   label:'Red',    key:'red'    },
+  ];
+  let offset = 0;
+  const arcs = pcts.map(p => {
+    const dash = (p.val / total) * circ;
+    const gap  = circ - dash;
+    const arc  = `<circle cx="${cx}" cy="${cy}" r="${r}"
+      fill="none" stroke="${p.color}" stroke-width="${stroke}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      transform="rotate(-90 ${cx} ${cy})"
+      style="transition:stroke-dasharray .8s ease"/>`;
+    offset += dash;
+    return arc;
+  }).join('');
+
+  const legend = pcts.map(p => `
+    <div class="donut-legend-item">
+      <span class="donut-legend-dot" style="background:${p.color}"></span>
+      <span class="donut-legend-label">${p.label}</span>
+      <span class="donut-legend-val">${p.val}</span>
+    </div>`).join('');
+
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#F1F5F9" stroke-width="${stroke}"/>
+        ${arcs}
+        <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central"
+          style="font-size:18px;font-weight:700;fill:var(--navy);font-family:'IBM Plex Mono',monospace">${total}</text>
+        <text x="${cx}" y="${cy+16}" text-anchor="middle"
+          style="font-size:9px;fill:var(--text-muted);font-family:'IBM Plex Sans',sans-serif">projects</text>
+      </svg>
+      <div class="donut-legend">${legend}</div>
+    </div>`;
+}
+
+function renderBarChart(categories, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const max = Math.max(...categories.map(c => c.avg), 1);
+  el.innerHTML = `<div class="bar-chart-wrap">
+    ${categories.map(c => {
+      const w   = (c.avg / 100) * 100;
+      const cls = c.avg >= 100 ? 'done' : c.avg < 30 ? 'warn' : '';
+      return `<div class="bar-chart-row">
+        <span class="bar-chart-label" title="${c.name}">${c.shortName}</span>
+        <div class="bar-chart-bar">
+          <div class="bar-chart-fill ${cls}" style="width:${w}%"></div>
+        </div>
+        <span class="bar-chart-pct">${c.avg}%</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALERT BANNER — overdue tasks
+// ═══════════════════════════════════════════════════════════
+function checkOverdueTasks(projects) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const overdue = [];
+  const critical = []; // RAG Red projects
+
+  for (const [key, list] of Object.entries(projects)) {
+    (list||[]).forEach(p => {
+      // Check project-level RAG
+      if (p.rag === 'Red') critical.push(p.projectName || p.name);
+      // Check task-level overdue
+      (p.tasks||[]).forEach(t => {
+        if (t.taskType === 'project') return;
+        if (!t.milestoneDate) return;
+        const due = new Date(t.milestoneDate);
+        due.setHours(0,0,0,0);
+        if (due < today && parseInt(t.progress||0) < 100) {
+          overdue.push({ project: p.projectName||p.name, task: t.taskName, due: t.milestoneDate });
+        }
+      });
+    });
+  }
+  return { overdue, critical };
+}
+
+function renderAlertBanner(bannerId, projects) {
+  const banner = document.getElementById(bannerId);
+  if (!banner) return;
+  const { overdue, critical } = checkOverdueTasks(projects);
+  if (!overdue.length && !critical.length) { banner.classList.remove('show'); return; }
+
+  const parts = [];
+  if (overdue.length) parts.push(`<strong>${overdue.length} overdue task${overdue.length!==1?'s':''}</strong>`);
+  if (critical.length) parts.push(`<strong>${critical.length} critical project${critical.length!==1?'s':''}</strong>`);
+
+  const tags = [
+    ...overdue.slice(0,4).map(o =>
+      `<span class="alert-tag" title="${esc(o.project)}: ${esc(o.task)} (due ${esc(o.due)})">${esc(o.task.length>18?o.task.substring(0,17)+'…':o.task)}</span>`
+    ),
+    ...critical.slice(0,3).map(p =>
+      `<span class="alert-tag red-tag">🔴 ${esc(p.length>18?p.substring(0,17)+'…':p)}</span>`
+    ),
+    (overdue.length > 4 || critical.length > 3) ?
+      `<span class="alert-tag">+${overdue.length + critical.length - 4} more</span>` : ''
+  ].filter(Boolean).join('');
+
+  banner.innerHTML = `
+    <span class="alert-icon">⚠️</span>
+    <div class="alert-text">
+      ${parts.join(' · ')} detected
+      <div class="alert-list">${tags}</div>
+    </div>
+    <button class="alert-close no-print" onclick="this.closest('.alert-banner').classList.remove('show')" title="Dismiss">✕</button>
+  `;
+  banner.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportPDF(title, projects, kpis) {
+  const all = [];
+  for (const [key, list] of Object.entries(projects)) {
+    (list||[]).forEach(p => all.push({...p, sheetKey:key}));
+  }
+
+  const ragDot = r => {
+    const c = r==='Green'?'#16A34A':r==='Red'?'#DC2626':'#D97706';
+    return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:4px"></span>`;
+  };
+
+  const rows = all.map(p => {
+    const pct = parseInt(p.progress)||0;
+    const bar = `<div style="height:6px;background:#E2E8F0;border-radius:3px;overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:6px">
+      <div style="height:100%;width:${pct}%;background:${pct>=100?'#16A34A':pct<30?'#D97706':'#1A5FCC'};border-radius:3px"></div>
+    </div><span style="font-size:11px;font-weight:600">${pct}%</span>`;
+    return `<tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-weight:600;font-size:13px">${esc(p.projectName||p.name)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-size:12px;color:#64748B">${esc(p.status||'—')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9">${bar}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9">${ragDot(p.rag)}${esc(p.rag||'Green')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #F1F5F9;font-size:12px;color:#64748B">${esc(p.responsible||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  const statBox = (val, lbl, color='#0F1E35') =>
+    `<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 18px;text-align:center;flex:1">
+      <div style="font-size:28px;font-weight:700;color:${color};font-family:monospace">${val}</div>
+      <div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${lbl}</div>
+    </div>`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'Segoe UI',Arial,sans-serif; background:#fff; color:#0F1E35; padding:32px; }
+      h1 { font-size:22px; font-weight:700; margin-bottom:4px; }
+      .sub { font-size:13px; color:#64748B; margin-bottom:24px; }
+      table { width:100%; border-collapse:collapse; margin-top:16px; }
+      th { text-align:left; padding:10px 12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:#64748B; background:#F8FAFC; border-bottom:2px solid #E2E8F0; }
+      .kpi-row { display:flex; gap:12px; margin-bottom:24px; }
+      .section-title { font-size:14px; font-weight:700; margin-bottom:8px; color:#0F1E35; padding-bottom:6px; border-bottom:2px solid #E2E8F0; }
+      .footer { margin-top:24px; font-size:11px; color:#94A3B8; text-align:center; padding-top:16px; border-top:1px solid #F1F5F9; }
+    </style></head><body>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div style="width:36px;height:36px;background:#E8A838;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#0F1E35">PMO</div>
+      <div><h1>${esc(title)}</h1><div class="sub">Generated ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>
+    </div>
+    <div class="kpi-row">
+      ${statBox(kpis.total||all.length, 'Total Projects','#1A5FCC')}
+      ${statBox(kpis.active||all.filter(p=>p.status==='Active').length, 'Active')}
+      ${statBox(kpis.green||all.filter(p=>p.rag==='Green').length, 'On Track','#16A34A')}
+      ${statBox((kpis.amber||0)+(kpis.red||0)||all.filter(p=>p.rag==='Amber'||p.rag==='Red').length, 'At Risk','#D97706')}
+      ${statBox(kpis.avgProgress!=null?kpis.avgProgress+'%':(all.length?Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length)+'%':'—'), 'Avg Progress','#1A5FCC')}
+    </div>
+    <div class="section-title">📋 Project Overview</div>
+    <table>
+      <thead><tr><th>Project</th><th>Status</th><th>Progress</th><th>Health</th><th>Owner</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">PMO Portfolio Dashboard · Confidential · ${all.length} projects listed</div>
+  </body></html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.print(); };
+}
+
+
+
+function renderAdminCharts() {
+  const all = getAllProjects();
+  const green = all.filter(p=>p.rag==='Green').length;
+  const amber = all.filter(p=>p.rag==='Amber').length;
+  const red   = all.filter(p=>p.rag==='Red').length;
+  renderDonutChart(green, amber, red, 'donut-chart');
+
+  const catData = Object.entries(SHEETS).map(([key, name]) => {
+    const list = allProjectsData[key] || [];
+    const avg  = list.length ? Math.round(list.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/list.length) : 0;
+    const shortNames = {'Content Projects':'Content','Software Projects':'Software','Marketing & Growth':'Marketing','Initiatives':'Init.','Sales Projects':'Sales'};
+    return { name, shortName: shortNames[name]||name, avg };
+  });
+  renderBarChart(catData, 'bar-chart');
+}
+
+function triggerAdminPDF() {
+  const all = getAllProjects();
+  const kpis = {
+    total: all.length,
+    active: all.filter(p=>p.status==='Active').length,
+    green: all.filter(p=>p.rag==='Green').length,
+    amber: all.filter(p=>p.rag==='Amber').length,
+    red:   all.filter(p=>p.rag==='Red').length,
+    avgProgress: all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0
+  };
+  exportPDF('PMO Admin Dashboard', allProjectsData, kpis);
+}
 
 // ═══════════════════════════════════════════════════════════
 // TOAST
