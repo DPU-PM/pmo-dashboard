@@ -109,6 +109,235 @@
 
 
   /* ── Tablet (≤1024px) ── */
+
+  /* ═══════════════════════════════════════════════════
+     PROJECT DETAIL VIEW
+  ═══════════════════════════════════════════════════ */
+  .proj-view { display:none; }
+  .proj-view.active { display:block; }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--text-muted); margin-bottom:20px;
+  }
+  .breadcrumb .back-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--white); border:1px solid var(--border);
+    border-radius:6px; padding:6px 12px; font-size:13px;
+    font-family:inherit; cursor:pointer; color:var(--text);
+    transition:all .15s; font-weight:500;
+  }
+  .breadcrumb .back-btn:hover { background:var(--bg); border-color:var(--blue); color:var(--blue); }
+  .breadcrumb .sep { color:#CBD5E1; }
+  .breadcrumb .current { font-weight:600; color:var(--text); }
+
+  /* Project Header Card */
+  .proj-header-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    border:1px solid var(--border); box-shadow:var(--shadow);
+    padding:24px; margin-bottom:20px; position:relative; overflow:hidden;
+  }
+  .proj-header-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  }
+  .proj-header-card.rag-green::before { background:var(--green); }
+  .proj-header-card.rag-amber::before { background:var(--amber); }
+  .proj-header-card.rag-red::before   { background:var(--red); }
+  .proj-header-top {
+    display:flex; align-items:flex-start;
+    justify-content:space-between; gap:16px; margin-bottom:20px;
+  }
+  .proj-header-name { font-size:22px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  .proj-header-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .proj-header-actions { display:flex; gap:8px; flex-shrink:0; }
+  .proj-stats-row {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:16px; margin-top:16px; padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  .proj-stat { text-align:center; }
+  .proj-stat .ps-val {
+    font-size:24px; font-weight:700;
+    font-family:'IBM Plex Mono',monospace; color:var(--navy);
+  }
+  .proj-stat .ps-lbl { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
+  .overall-prog-wrap { margin-top:16px; }
+  .overall-prog-label {
+    display:flex; justify-content:space-between;
+    font-size:13px; margin-bottom:6px; font-weight:500;
+  }
+  .overall-prog-bar {
+    height:10px; background:#E2E8F0;
+    border-radius:6px; overflow:hidden;
+  }
+  .overall-prog-fill {
+    height:100%; border-radius:6px;
+    background:linear-gradient(90deg,var(--blue),var(--blue-light));
+    transition:width .6s ease;
+  }
+  .overall-prog-fill.done { background:linear-gradient(90deg,var(--green),#22C55E); }
+  .overall-prog-fill.warn { background:linear-gradient(90deg,var(--amber),var(--gold)); }
+
+  /* ── GANTT CHART ── */
+  .gantt-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    border:1px solid var(--border); box-shadow:var(--shadow);
+    margin-bottom:20px; overflow:hidden;
+  }
+  .gantt-card-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    background:#F8FAFC;
+  }
+  .gantt-card-header h3 { font-size:14px; font-weight:600; }
+  .gantt-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .gantt-inner { min-width:700px; padding:16px 20px; }
+  .gantt-header-row {
+    display:grid; margin-bottom:8px;
+    font-size:10px; font-weight:600; color:var(--text-muted);
+    text-transform:uppercase; letter-spacing:.5px;
+  }
+  .gantt-row {
+    display:grid; align-items:center;
+    min-height:36px; margin-bottom:4px; gap:0;
+  }
+  .gantt-label {
+    padding:4px 8px 4px 0; font-size:12px; font-weight:500;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    display:flex; align-items:center; gap:6px;
+  }
+  .gantt-label .gl-rag { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .gantt-timeline { position:relative; height:28px; }
+  .gantt-bar {
+    position:absolute; top:4px; height:20px;
+    border-radius:4px; display:flex; align-items:center;
+    padding:0 8px; font-size:10px; font-weight:600;
+    color:#fff; white-space:nowrap; overflow:hidden;
+    transition:opacity .15s; cursor:default; min-width:4px;
+  }
+  .gantt-bar:hover { opacity:.85; }
+  .gantt-bar.done  { background:linear-gradient(90deg,var(--green),#22C55E); }
+  .gantt-bar.warn  { background:linear-gradient(90deg,var(--amber),var(--gold)); }
+  .gantt-bar.prog  { background:linear-gradient(90deg,var(--blue),var(--blue-light)); }
+  .gantt-bar.todo  { background:#CBD5E1; color:var(--text-muted); }
+  .gantt-today-line {
+    position:absolute; top:0; bottom:0; width:2px;
+    background:var(--red); opacity:.6; z-index:2;
+  }
+  .gantt-today-line::before {
+    content:'Today'; position:absolute; top:-18px; left:50%;
+    transform:translateX(-50%); font-size:9px; font-weight:700;
+    color:var(--red); white-space:nowrap;
+  }
+  .gantt-grid-line {
+    position:absolute; top:0; bottom:0; width:1px;
+    background:var(--border); z-index:1;
+  }
+  .gantt-no-date {
+    font-size:11px; color:var(--text-muted); font-style:italic;
+    padding:6px 8px;
+  }
+  .gantt-month-labels {
+    display:flex; position:relative; height:20px;
+    margin-bottom:4px;
+  }
+  .gantt-month-label {
+    position:absolute; font-size:10px; font-weight:600;
+    color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px;
+  }
+
+  /* ── VERTICAL TIMELINE ── */
+  .timeline-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    border:1px solid var(--border); box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  .timeline-card-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    background:#F8FAFC;
+  }
+  .timeline-card-header h3 { font-size:14px; font-weight:600; }
+  .timeline-body { padding:20px; }
+  .phase-block { margin-bottom:28px; }
+  .phase-block:last-child { margin-bottom:0; }
+  .phase-title {
+    display:flex; align-items:center; gap:10px;
+    font-size:13px; font-weight:700; color:var(--navy);
+    margin-bottom:14px; padding-bottom:8px;
+    border-bottom:2px solid var(--border);
+  }
+  .phase-badge {
+    background:var(--navy); color:#fff;
+    font-size:10px; padding:2px 8px; border-radius:10px;
+    font-weight:600;
+  }
+  .phase-prog {
+    margin-left:auto; font-size:11px; color:var(--text-muted);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .task-timeline-item {
+    display:flex; gap:14px; margin-bottom:12px;
+    padding:12px 14px; border-radius:var(--radius);
+    border:1px solid var(--border); background:#FAFBFC;
+    transition:box-shadow .15s;
+  }
+  .task-timeline-item:hover { box-shadow:var(--shadow); background:var(--white); }
+  .task-timeline-item.done-task { opacity:.7; }
+  .tti-left { display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; }
+  .tti-status-icon {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; flex-shrink:0;
+  }
+  .tti-status-icon.done  { background:var(--green-bg); }
+  .tti-status-icon.prog  { background:#DBEAFE; }
+  .tti-status-icon.warn  { background:var(--amber-bg); }
+  .tti-status-icon.late  { background:var(--red-bg); }
+  .tti-status-icon.todo  { background:#F1F5F9; }
+  .tti-body { flex:1; min-width:0; }
+  .tti-name { font-weight:600; font-size:13px; margin-bottom:4px; }
+  .tti-meta { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--text-muted); }
+  .tti-meta .dep-tag {
+    background:#EFF6FF; color:var(--blue);
+    padding:1px 6px; border-radius:8px; font-weight:500;
+  }
+  .tti-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+  .tti-pct {
+    font-size:16px; font-weight:700; color:var(--navy);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .tti-mini-bar { width:60px; height:5px; background:#E2E8F0; border-radius:3px; overflow:hidden; }
+  .tti-mini-fill { height:100%; border-radius:3px; background:var(--blue); }
+  .tti-mini-fill.done { background:var(--green); }
+  .tti-mini-fill.warn { background:var(--amber); }
+
+  /* Summary chips row */
+  .summary-chips {
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;
+  }
+  .summary-chip {
+    display:flex; align-items:center; gap:6px;
+    padding:6px 14px; border-radius:20px; font-size:12px;
+    font-weight:600; border:1px solid;
+  }
+  .chip-done   { background:var(--green-bg); color:var(--green); border-color:#BBF7D0; }
+  .chip-prog   { background:#DBEAFE; color:#1D4ED8; border-color:#BFDBFE; }
+  .chip-todo   { background:#F1F5F9; color:#475569; border-color:#E2E8F0; }
+  .chip-late   { background:var(--red-bg); color:var(--red); border-color:#FECACA; }
+
+  @media(max-width:768px){
+    .proj-header-top { flex-direction:column; }
+    .proj-header-actions { width:100%; justify-content:flex-end; }
+    .proj-stats-row { grid-template-columns:repeat(2,1fr); }
+    .gantt-inner { min-width:600px; }
+  }
+  @media(max-width:480px){
+    .proj-stats-row { grid-template-columns:repeat(2,1fr); gap:10px; }
+    .proj-header-name { font-size:18px; }
+  }
+
   @media(max-width:1024px){
     .hero-stats{grid-template-columns:repeat(3,1fr);}
     .category-grid{grid-template-columns:repeat(3,1fr);}
@@ -361,8 +590,8 @@ function renderTable(data) {
   tbody.innerHTML = all.map(p => {
     const pct = parseInt(p.progress)||0;
     const rag = (p.rag||'Green').toLowerCase();
-    return `<tr>
-      <td><strong>${esc(p.projectName)}</strong>${p.comment?`<br><span style="font-size:11px;color:var(--text-muted)">${esc(p.comment.substring(0,60))}${p.comment.length>60?'…':''}</span>`:''}</td>
+    return `<tr style="cursor:pointer" onclick="openProjectView('${esc(p.sheetKey)}','${esc(p.projectName)}')"> 
+      <td><strong style="color:var(--blue)">${esc(p.projectName)}</strong>${p.comment?`<br><span style="font-size:11px;color:var(--text-muted)">${esc(p.comment.substring(0,60))}${p.comment.length>60?'…':''}</span>`:''}</td>
       <td><span class="type-tag ${typeMap[p.sheetName]||''}">${typeShort[p.sheetName]||esc(p.sheetName)}</span></td>
       <td><span class="badge ${statusBadge[p.status]||'badge-gray'}">${esc(p.status||'—')}</span></td>
       <td>
@@ -375,6 +604,287 @@ function renderTable(data) {
       <td><span class="rag"><span class="rag-dot ${rag}"></span>${esc(p.rag||'Green')}</span></td>
       <td style="font-size:13px">${esc(p.responsible||'—')}</td>
     </tr>`;
+  }).join('');
+}
+
+var SHEETS = {'content':'Content Projects','software':'Software Projects','marketing':'Marketing & Growth','initiatives':'Initiatives','sales':'Sales Projects'};
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT DETAIL VIEW
+// ═══════════════════════════════════════════════════════════
+let currentProjView = null; // { sheetKey, projectName }
+
+async function openProjectView(sheetKey, projectName) {
+  currentProjView = { sheetKey, projectName };
+
+  // Show view, hide projects list
+  const pubMain = document.querySelector('.main'); if(pubMain) pubMain.querySelector('.section-header') && (pubMain.style.opacity='0',pubMain.style.pointerEvents='none');
+  document.querySelectorAll('.main > *:not(#proj-view)').forEach(el => el.style.display='none');
+  const pv = document.getElementById('proj-view');
+  pv.classList.add('active');
+
+  // Set breadcrumb immediately
+  document.getElementById('pv-breadcrumb').textContent = projectName;
+
+  // Show loading state
+  document.getElementById('pv-name').textContent = projectName;
+  document.getElementById('pv-timeline').innerHTML =
+    '<div style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading project...</div>';
+  document.getElementById('pv-gantt').innerHTML =
+    '<div style="text-align:center;padding:30px;color:var(--text-muted)">Loading timeline...</div>';
+
+  // Fetch full project details (with tasks)
+  let tasks = [];
+  let proj = null;
+  try {
+    const data = await apiFetch(`${SCRIPT_URL}?action=getProjectDetails&sheet=${sheetKey}&projectName=${encodeURIComponent(projectName)}`);
+    tasks = (data.project?.tasks || []);
+    // Get project-level row
+    proj = tasks.find(t => t.taskType === 'project');
+  } catch(e) {
+    // Fall back to summary data if available
+    const all = getAllProjects();
+    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName);
+    tasks = proj?.tasks || [];
+  }
+
+  if (!proj) {
+    // Build proj from allProjectsData summary
+    const all = getAllProjects();
+    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName) || { projectName, rag:'Green', status:'Active', responsible:'', progress:'0', comment:'' };
+  }
+
+  const taskList = tasks.filter(t => t.taskType === 'task');
+  renderProjectHeader(proj, taskList, sheetKey);
+  renderGantt(taskList);
+  renderVerticalTimeline(taskList);
+}
+
+function closeProjectView() {
+  document.getElementById('proj-view').classList.remove('active');
+  document.getElementById('tab-projects').style.display = '';
+  currentProjView = null;
+}
+
+function renderProjectHeader(proj, taskList, sheetKey) {
+  const pct = taskList.length
+    ? Math.round(taskList.reduce((s,t) => s + (parseInt(t.progress)||0), 0) / taskList.length)
+    : parseInt(proj.progress)||0;
+
+  const rag = (proj.rag||'Green').toLowerCase();
+  const done  = taskList.filter(t => parseInt(t.progress) === 100).length;
+  const inprog = taskList.filter(t => { const p=parseInt(t.progress)||0; return p>0 && p<100; }).length;
+  const todo  = taskList.filter(t => (parseInt(t.progress)||0) === 0).length;
+  const late  = taskList.filter(t => {
+    if (!t.milestoneDate || parseInt(t.progress)===100) return false;
+    return new Date(t.milestoneDate) < new Date();
+  }).length;
+
+  // Header card RAG class
+  const card = document.getElementById('pv-header-card');
+  card.className = 'proj-header-card rag-' + rag;
+
+  // Name
+  document.getElementById('pv-name').textContent = proj.projectName;
+
+  // Meta badges
+  const TYPE_MAP = {'Content Projects':'type-content','Software Projects':'type-software','Marketing & Growth':'type-marketing','Initiatives':'type-initiatives','Sales Projects':'type-sales'};
+  const TYPE_SHORT = {'Content Projects':'Content','Software Projects':'Software','Marketing & Growth':'Marketing','Initiatives':'Initiatives','Sales Projects':'Sales'};
+  const STATUS_BADGE = {'Active':'badge-blue','Completed':'badge-green','On Hold':'badge-gray','Upcoming':'badge-purple','Cancelled':'badge-red'};
+  const sheetName = SHEETS[sheetKey] || sheetKey;
+
+  document.getElementById('pv-meta').innerHTML = `
+    <span class="badge ${STATUS_BADGE[proj.status]||'badge-gray'}">${esc(proj.status||'Active')}</span>
+    <span class="type-tag ${TYPE_MAP[sheetName]||''}" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid">${TYPE_SHORT[sheetName]||esc(sheetName)}</span>
+    <span class="rag"><span class="rag-dot ${rag}"></span>${esc(proj.rag||'Green')}</span>
+    <span style="font-size:12px;color:var(--text-muted)">👤 ${esc(proj.responsible||'—')}</span>
+    ${proj.milestoneDate ? `<span style="font-size:12px;color:var(--text-muted)">📅 ${esc(proj.milestoneDate)}</span>` : ''}
+  `;
+
+  // Actions — Edit button opens existing modal
+  document.getElementById('pv-actions').innerHTML = ''; // public = read only
+
+  // Progress
+  document.getElementById('pv-prog-pct').textContent = pct + '%';
+  const fill = document.getElementById('pv-prog-fill');
+  fill.style.width = pct + '%';
+  fill.className = 'overall-prog-fill' + (pct>=100?' done':pct<30?' warn':'');
+
+  // Stats
+  document.getElementById('pv-total-tasks').textContent = taskList.length;
+  document.getElementById('pv-done-tasks').textContent  = done;
+  document.getElementById('pv-inprog-tasks').textContent = inprog;
+  document.getElementById('pv-todo-tasks').textContent  = todo;
+
+  // Summary chips
+  let chips = '';
+  if (done)   chips += `<span class="summary-chip chip-done">✅ ${done} Completed</span>`;
+  if (inprog) chips += `<span class="summary-chip chip-prog">🔵 ${inprog} In Progress</span>`;
+  if (todo)   chips += `<span class="summary-chip chip-todo">⬜ ${todo} Not Started</span>`;
+  if (late)   chips += `<span class="summary-chip chip-late">⚠️ ${late} Overdue</span>`;
+  document.getElementById('pv-summary-chips').innerHTML = chips;
+
+  // Comment banner
+  if (proj.comment) {
+    document.getElementById('pv-summary-chips').innerHTML += `
+      <div style="width:100%;background:#FFFBEB;border:1px solid #FEF08A;border-radius:6px;padding:8px 14px;font-size:12px;color:#854D0E;margin-top:4px">
+        💬 ${esc(proj.comment)}
+      </div>`;
+  }
+}
+
+function renderGantt(taskList) {
+  const gantt = document.getElementById('pv-gantt');
+  const tasksWithDates = taskList.filter(t => t.milestoneDate && t.milestoneDate.trim());
+
+  if (!tasksWithDates.length) {
+    gantt.innerHTML = '<div class="gantt-no-date">No milestone dates set — add due dates to tasks to see the Gantt chart.</div>';
+    document.getElementById('pv-gantt-range').textContent = '';
+    return;
+  }
+
+  // Calculate date range
+  const dates = tasksWithDates.map(t => new Date(t.milestoneDate)).filter(d => !isNaN(d));
+  if (!dates.length) { gantt.innerHTML = '<div class="gantt-no-date">Invalid dates on tasks.</div>'; return; }
+
+  let minDate = new Date(Math.min(...dates));
+  let maxDate = new Date(Math.max(...dates));
+
+  // Pad by 10% on each side
+  const range = maxDate - minDate || 30*24*60*60*1000;
+  minDate = new Date(minDate - range * 0.08);
+  maxDate = new Date(maxDate + range * 0.08);
+  const totalMs = maxDate - minDate;
+
+  const pct = (d) => Math.max(0, Math.min(100, ((new Date(d) - minDate) / totalMs) * 100));
+  const today = new Date();
+  const todayPct = pct(today);
+  const LABEL_COL = 160; // px for label column
+
+  // Month labels
+  const months = [];
+  let cur = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  while (cur <= maxDate) {
+    const p = pct(cur);
+    months.push({ label: cur.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}), pct: p });
+    cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+
+  const monthLabelsHTML = months.map(m =>
+    `<span class="gantt-month-label" style="left:calc(${LABEL_COL}px + ${m.pct}% * (100% - ${LABEL_COL}px) / 100)">${m.label}</span>`
+  ).join('');
+
+  // Task bars
+  const barsHTML = tasksWithDates.map(t => {
+    const p = parseInt(t.progress)||0;
+    const d = new Date(t.milestoneDate);
+    if (isNaN(d)) return '';
+    const isLate = d < today && p < 100;
+    const barCls = p===100 ? 'done' : isLate ? 'warn' : p>0 ? 'prog' : 'todo';
+    const barLeft = pct(d);
+    // Bar width: 2% minimum, scale with task name length slightly
+    const barW = Math.max(2, Math.min(18, 2 + t.taskName.length * 0.15));
+    const ragCls = (t.rag||'Green').toLowerCase();
+    const label = t.taskName.length > 14 ? t.taskName.substring(0,13)+'…' : t.taskName;
+
+    return `
+      <div class="gantt-row" style="grid-template-columns:${LABEL_COL}px 1fr">
+        <div class="gantt-label">
+          <span class="gl-rag rag-dot ${ragCls}"></span>
+          <span title="${esc(t.taskName)}">${esc(t.taskName.length>20?t.taskName.substring(0,19)+'…':t.taskName)}</span>
+        </div>
+        <div class="gantt-timeline" style="position:relative">
+          ${months.map(m => `<div class="gantt-grid-line" style="left:${m.pct}%"></div>`).join('')}
+          ${todayPct >= 0 && todayPct <= 100 ? `<div class="gantt-today-line" style="left:${todayPct}%"></div>` : ''}
+          <div class="gantt-bar ${barCls}"
+            style="left:calc(${barLeft}% - 1px);width:${barW}%;min-width:40px"
+            title="${esc(t.taskName)} — ${t.milestoneDate} (${p}%)">
+            ${p}%
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  gantt.innerHTML = `
+    <div style="position:relative;margin-bottom:8px">
+      <div style="height:20px;position:relative;margin-left:${LABEL_COL}px">
+        ${monthLabelsHTML}
+      </div>
+    </div>
+    ${barsHTML}
+  `;
+
+  document.getElementById('pv-gantt-range').textContent =
+    minDate.toLocaleDateString('en-GB',{month:'short',year:'numeric'}) + ' – ' +
+    maxDate.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+}
+
+function renderVerticalTimeline(taskList) {
+  const container = document.getElementById('pv-timeline');
+
+  // Group by phase
+  const phases = {};
+  const phaseOrder = [];
+  taskList.forEach(t => {
+    const ph = t.phase || 'General';
+    if (!phases[ph]) { phases[ph] = []; phaseOrder.push(ph); }
+    phases[ph].push(t);
+  });
+
+  if (!phaseOrder.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>No tasks yet</h3><p>Add tasks via the Edit Project button</p></div>';
+    document.getElementById('pv-phase-count').textContent = '';
+    return;
+  }
+
+  document.getElementById('pv-phase-count').textContent = phaseOrder.length + ' phase' + (phaseOrder.length!==1?'s':'');
+
+  container.innerHTML = phaseOrder.map(ph => {
+    const tasks = phases[ph];
+    const phDone = tasks.filter(t=>parseInt(t.progress)===100).length;
+    const phPct  = tasks.length ? Math.round(tasks.reduce((s,t)=>s+(parseInt(t.progress)||0),0)/tasks.length) : 0;
+    const today  = new Date();
+
+    const taskItems = tasks.map(t => {
+      const p = parseInt(t.progress)||0;
+      const isLate = t.milestoneDate && new Date(t.milestoneDate) < today && p < 100;
+      const statusCls = p===100 ? 'done' : isLate ? 'late' : p>0 ? 'prog' : 'todo';
+      const statusIcon = p===100 ? '✅' : isLate ? '⚠️' : p>0 ? '🔵' : '⬜';
+      const ragCls = (t.rag||'Green').toLowerCase();
+      const miniFillCls = p>=100?'done':p<30?'warn':'';
+
+      return `
+        <div class="task-timeline-item ${p===100?'done-task':''}">
+          <div class="tti-left">
+            <div class="tti-status-icon ${statusCls}">${statusIcon}</div>
+          </div>
+          <div class="tti-body">
+            <div class="tti-name">${esc(t.taskName||'—')}</div>
+            <div class="tti-meta">
+              ${t.responsible ? `<span>👤 ${esc(t.responsible)}</span>` : ''}
+              ${t.milestoneDate ? `<span>📅 ${esc(t.milestoneDate)}${isLate?' <span style="color:var(--red);font-weight:600">Overdue</span>':''}</span>` : ''}
+              <span class="rag"><span class="rag-dot ${ragCls}" style="width:7px;height:7px"></span>${esc(t.rag||'Green')}</span>
+              ${t.dependsOn ? `<span class="dep-tag">↳ ${esc(t.dependsOn.substring(0,18))}${t.dependsOn.length>18?'…':''}</span>` : ''}
+            </div>
+          </div>
+          <div class="tti-right">
+            <span class="tti-pct">${p}%</span>
+            <div class="tti-mini-bar">
+              <div class="tti-mini-fill ${miniFillCls}" style="width:${p}%"></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="phase-block">
+        <div class="phase-title">
+          <span class="phase-badge">${esc(ph)}</span>
+          <span>${phDone}/${tasks.length} tasks done</span>
+          <span class="phase-prog">${phPct}%</span>
+        </div>
+        ${taskItems}
+      </div>`;
   }).join('');
 }
 
