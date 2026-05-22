@@ -345,6 +345,37 @@
     padding: 0; overflow: hidden;
   }
 
+
+  /* ── Gantt fullscreen + resize ── */
+  .gantt-card { transition: all .3s ease; }
+  .gantt-card.gantt-fullscreen {
+    position: fixed; inset: 0; z-index: 500;
+    border-radius: 0; margin: 0;
+    display: flex; flex-direction: column;
+  }
+  .gantt-card.gantt-fullscreen .gantt-card-header { flex-shrink: 0; }
+  .gantt-card.gantt-fullscreen .gantt-scroll { flex: 1; overflow: auto; }
+  .gantt-card.gantt-fullscreen #pv-gantt { height: 100% !important; min-height: unset !important; }
+  .gantt-scroll {
+    resize: vertical;
+    overflow: auto;
+    min-height: 200px;
+    max-height: 80vh;
+    height: 360px;
+  }
+  .gantt-fullscreen-btn {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px; font-size: 12px;
+    cursor: pointer; font-family: inherit; color: var(--text-muted);
+    transition: all .15s;
+  }
+  .gantt-fullscreen-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .gantt-resize-hint {
+    text-align: center; font-size: 10px; color: #CBD5E1;
+    padding: 3px; cursor: ns-resize; user-select: none;
+    border-top: 1px solid var(--border);
+  }
+  .gantt-resize-hint::after { content: '⋯ drag to resize'; }
 </style>
 </head>
 <body>
@@ -451,10 +482,10 @@
     </div>
     <div class="summary-chips" id="pv-summary-chips"></div>
     <!-- Gantt Chart -->
-    <div class="gantt-card">
+    <div class="gantt-card" id="gantt-card">
       <div class="gantt-card-header">
         <h3>📅 Timeline (Gantt)</h3>
-        <div style="display:flex;align-items:center;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span id="pv-gantt-range" style="font-size:11px;color:var(--text-muted)"></span>
           <div class="gantt-controls">
             <button class="gantt-view-btn" data-mode="Day" onclick="changeGanttView('Day')">Day</button>
@@ -462,11 +493,13 @@
             <button class="gantt-view-btn active" data-mode="Month" onclick="changeGanttView('Month')">Month</button>
             <button class="gantt-view-btn" data-mode="Year" onclick="changeGanttView('Year')">Year</button>
           </div>
+          <button class="gantt-fullscreen-btn" id="gantt-fs-btn" onclick="toggleGanttFullscreen()" title="Expand to full screen">⛶ Expand</button>
         </div>
       </div>
-      <div class="gantt-scroll">
+      <div class="gantt-scroll" id="gantt-scroll">
         <div id="pv-gantt" style="padding:16px 20px"></div>
       </div>
+      <div class="gantt-resize-hint"></div>
     </div>
     <div class="timeline-card">
       <div class="timeline-card-header">
@@ -647,47 +680,47 @@ let currentProjView = null; // { sheetKey, projectName }
 async function openProjectView(sheetKey, projectName) {
   currentProjView = { sheetKey, projectName };
 
-  // Show view, hide projects list
-  const pubMain = document.querySelector('.main'); if(pubMain) pubMain.querySelector('.section-header') && (pubMain.style.opacity='0',pubMain.style.pointerEvents='none');
+  // Hide main content, show project view
   document.querySelectorAll('.main > *:not(#proj-view)').forEach(el => el.style.display='none');
   const pv = document.getElementById('proj-view');
   pv.classList.add('active');
-
-  // Set breadcrumb immediately
   document.getElementById('pv-breadcrumb').textContent = projectName;
 
-  // Show loading state
-  document.getElementById('pv-name').textContent = projectName;
-  document.getElementById('pv-timeline').innerHTML =
-    '<div style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading project...</div>';
-  document.getElementById('pv-gantt').innerHTML =
-    '<div style="text-align:center;padding:30px;color:var(--text-muted)">Loading timeline...</div>';
-
-  // Fetch full project details (with tasks)
-  let tasks = [];
+  // ── STEP 1: Show summary from cache IMMEDIATELY ──────────
+  const cached = getCached();
   let proj = null;
+  if (cached) {
+    const allProjs = getAllFrom(cached.projects || {});
+    proj = allProjs.find(p => p.sheetKey === sheetKey && p.projectName === projectName);
+  }
+  if (!proj) {
+    proj = { projectName, rag:'Green', status:'Active', responsible:'', progress:'0', comment:'' };
+  }
+  // Render header instantly from cache (no tasks yet)
+  renderProjectHeader(proj, [], sheetKey);
+
+  // Show skeleton for gantt + timeline while tasks load
+  document.getElementById('pv-timeline').innerHTML = `
+    <div style="padding:16px">
+      ${Array(3).fill('<div style="height:60px;background:#F1F5F9;border-radius:8px;margin-bottom:10px;animation:shimmer 1.2s infinite"></div>').join('')}
+    </div>`;
+  document.getElementById('pv-gantt').innerHTML =
+    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">⏳ Loading timeline...</div>';
+
+  // ── STEP 2: Fetch full tasks in background ───────────────
   try {
     const data = await apiFetch(`${SCRIPT_URL}?action=getProjectDetails&sheet=${sheetKey}&projectName=${encodeURIComponent(projectName)}`);
-    tasks = (data.project?.tasks || []);
-    // Get project-level row
-    proj = tasks.find(t => t.taskType === 'project');
+    const tasks = data.project?.tasks || [];
+    const fullProj = tasks.find(t => t.taskType === 'project') || proj;
+    const taskList = tasks.filter(t => t.taskType === 'task');
+    renderProjectHeader(fullProj, taskList, sheetKey);
+    renderGantt(taskList);
+    renderVerticalTimeline(taskList);
   } catch(e) {
-    // Fall back to summary data if available
-    const all = getAllProjects();
-    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName);
-    tasks = proj?.tasks || [];
+    document.getElementById('pv-timeline').innerHTML =
+      '<div style="text-align:center;padding:30px;color:var(--text-muted)">⚠️ Could not load tasks. <button onclick="openProjectView(\'' + sheetKey + '\',\'' + projectName.replace(/'/g,\'\') + '\')" style="color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit">Retry</button></div>';
+    document.getElementById('pv-gantt').innerHTML = '';
   }
-
-  if (!proj) {
-    // Build proj from allProjectsData summary
-    const all = getAllProjects();
-    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName) || { projectName, rag:'Green', status:'Active', responsible:'', progress:'0', comment:'' };
-  }
-
-  const taskList = tasks.filter(t => t.taskType === 'task');
-  renderProjectHeader(proj, taskList, sheetKey);
-  renderGantt(taskList);
-  renderVerticalTimeline(taskList);
 }
 
 function closeProjectView() {
@@ -1039,6 +1072,30 @@ function renderGantt(taskList) {
     container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--red);font-size:13px">⚠️ Could not render Gantt: ${err.message}</div>`;
   }
 }
+
+
+function toggleGanttFullscreen() {
+  const card = document.getElementById('gantt-card');
+  const btn  = document.getElementById('gantt-fs-btn');
+  const isFs = card.classList.toggle('gantt-fullscreen');
+  btn.textContent = isFs ? '✕ Exit' : '⛶ Expand';
+  btn.title = isFs ? 'Exit full screen' : 'Expand to full screen';
+  // Scroll body lock
+  document.body.style.overflow = isFs ? 'hidden' : '';
+  // Re-render gantt to fill new dimensions
+  if (ganttInstance) {
+    setTimeout(() => {
+      try { ganttInstance.change_view_mode(currentViewMode); } catch(e) {}
+    }, 350);
+  }
+}
+// ESC key exits fullscreen
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const card = document.getElementById('gantt-card');
+    if (card && card.classList.contains('gantt-fullscreen')) toggleGanttFullscreen();
+  }
+});
 
 function changeGanttView(mode) {
   currentViewMode = mode;

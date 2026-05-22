@@ -465,6 +465,37 @@
     padding: 0; overflow: hidden;
   }
 
+
+  /* ── Gantt fullscreen + resize ── */
+  .gantt-card { transition: all .3s ease; }
+  .gantt-card.gantt-fullscreen {
+    position: fixed; inset: 0; z-index: 500;
+    border-radius: 0; margin: 0;
+    display: flex; flex-direction: column;
+  }
+  .gantt-card.gantt-fullscreen .gantt-card-header { flex-shrink: 0; }
+  .gantt-card.gantt-fullscreen .gantt-scroll { flex: 1; overflow: auto; }
+  .gantt-card.gantt-fullscreen #pv-gantt { height: 100% !important; min-height: unset !important; }
+  .gantt-scroll {
+    resize: vertical;
+    overflow: auto;
+    min-height: 200px;
+    max-height: 80vh;
+    height: 360px;
+  }
+  .gantt-fullscreen-btn {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px; font-size: 12px;
+    cursor: pointer; font-family: inherit; color: var(--text-muted);
+    transition: all .15s;
+  }
+  .gantt-fullscreen-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .gantt-resize-hint {
+    text-align: center; font-size: 10px; color: #CBD5E1;
+    padding: 3px; cursor: ns-resize; user-select: none;
+    border-top: 1px solid var(--border);
+  }
+  .gantt-resize-hint::after { content: '⋯ drag to resize'; }
 </style>
 </head>
 <body>
@@ -578,10 +609,10 @@
     <div class="summary-chips" id="pv-summary-chips"></div>
 
     <!-- Gantt Chart -->
-    <div class="gantt-card">
+    <div class="gantt-card" id="gantt-card">
       <div class="gantt-card-header">
         <h3>📅 Timeline (Gantt)</h3>
-        <div style="display:flex;align-items:center;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span id="pv-gantt-range" style="font-size:11px;color:var(--text-muted)"></span>
           <div class="gantt-controls">
             <button class="gantt-view-btn" data-mode="Day" onclick="changeGanttView('Day')">Day</button>
@@ -589,11 +620,13 @@
             <button class="gantt-view-btn active" data-mode="Month" onclick="changeGanttView('Month')">Month</button>
             <button class="gantt-view-btn" data-mode="Year" onclick="changeGanttView('Year')">Year</button>
           </div>
+          <button class="gantt-fullscreen-btn" id="gantt-fs-btn" onclick="toggleGanttFullscreen()" title="Expand to full screen">⛶ Expand</button>
         </div>
       </div>
-      <div class="gantt-scroll">
+      <div class="gantt-scroll" id="gantt-scroll">
         <div id="pv-gantt" style="padding:16px 20px"></div>
       </div>
+      <div class="gantt-resize-hint"></div>
     </div>
 
     <!-- Vertical Timeline -->
@@ -1209,26 +1242,28 @@ async function saveProject() {
     tasks:            allTasks
   };
 
-  const btn = document.getElementById('modal-save-btn');
-  btn.textContent = '⏳ Saving...'; btn.disabled = true;
-  document.getElementById('modal-save-info').textContent = 'Saving...';
-
+  // ── OPTIMISTIC SAVE ──────────────────────────────────────
   const action = editingProject ? 'updateProject' : 'addProject';
-  try {
-    const url  = `${SCRIPT_URL}?action=${action}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
-    const data = await apiFetch(url);
+  const localProj = { ...projectRow, sheetName: SHEETS_MAP[sheetKey]||sheetKey, sheetKey,
+    taskCount: taskList.length, tasks: allTasks, projectName: name, name };
+  if (!allData[sheetKey]) allData[sheetKey] = [];
+  const eIdx = allData[sheetKey].findIndex(p => p.projectName === (editingProject?.projectName || name));
+  if (eIdx > -1) allData[sheetKey][eIdx] = localProj; else allData[sheetKey].push(localProj);
+  renderKPIs(); renderProjects();
+  closeModal();
+  showToast(`💾 Saving "${name}"...`, 'info');
+
+  // Background save
+  const bgUrl = `${SCRIPT_URL}?action=${action}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+  apiFetch(bgUrl).then(data => {
     if (data.success || data.message) {
-      setCache(null); localStorage.removeItem('pmo_data_cache');
-    await loadData(true);
-    closeModal();
+      localStorage.removeItem('pmo_data_cache');
       showToast(`✅ "${name}" saved`, 'success');
-    } else throw new Error(data.error || 'Save failed');
-  } catch(e) {
-    showToast('Save failed: ' + e.message, 'error');
-    document.getElementById('modal-save-info').textContent = 'Error: ' + e.message;
-  } finally {
-    btn.textContent = '💾 Save Project'; btn.disabled = false;
-  }
+      loadData(true);
+    } else {
+      showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
+    }
+  }).catch(e => showToast(`❌ Save failed: ${e.message}`, 'error'));
 }
 
 
@@ -1648,6 +1683,30 @@ function renderGantt(taskList) {
     container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--red);font-size:13px">⚠️ Could not render Gantt: ${err.message}</div>`;
   }
 }
+
+
+function toggleGanttFullscreen() {
+  const card = document.getElementById('gantt-card');
+  const btn  = document.getElementById('gantt-fs-btn');
+  const isFs = card.classList.toggle('gantt-fullscreen');
+  btn.textContent = isFs ? '✕ Exit' : '⛶ Expand';
+  btn.title = isFs ? 'Exit full screen' : 'Expand to full screen';
+  // Scroll body lock
+  document.body.style.overflow = isFs ? 'hidden' : '';
+  // Re-render gantt to fill new dimensions
+  if (ganttInstance) {
+    setTimeout(() => {
+      try { ganttInstance.change_view_mode(currentViewMode); } catch(e) {}
+    }, 350);
+  }
+}
+// ESC key exits fullscreen
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const card = document.getElementById('gantt-card');
+    if (card && card.classList.contains('gantt-fullscreen')) toggleGanttFullscreen();
+  }
+});
 
 function changeGanttView(mode) {
   currentViewMode = mode;
