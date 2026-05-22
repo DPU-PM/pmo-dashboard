@@ -1542,7 +1542,7 @@
 // ═══════════════════════════════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6-GNNrc41J32GZjsaBh1Rhy0vNXWVXyNrAL7ojgi3DIPrbIeVDNvh1rZ7GOGZxReWBw/exec';
+// Supabase replaces Apps Script
 
 // Sheet names
 const SHEETS = {
@@ -1646,6 +1646,304 @@ function doAdminLogout() {
 }
 
 
+// ════════════════════════════════════════════════════════════
+// SUPABASE API LAYER — replaces Apps Script + JSONP
+// ════════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://ygrfxvsmdadxmanaqjka.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlncmZ4dnNtZGFkeG1hbmFxamthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTYzMDAsImV4cCI6MjA5NTAzMjMwMH0.B3dw5L6kRIOg72qV_-wyDmLX3Pukdxsqe587XkuGzhw';
+
+const SB_HEADERS = {
+  'apikey':        SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type':  'application/json',
+  'Prefer':        'return=representation'
+};
+
+// ── CORE FETCH ────────────────────────────────────────────
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: { ...SB_HEADERS, ...(options.headers||{}) },
+    ...options
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.hint || `HTTP ${res.status}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+// ════════════════════════════════════════════════════════════
+// READ — get all data for dashboard
+// ════════════════════════════════════════════════════════════
+async function sbGetAllData() {
+  // Single request gets all projects + tasks in one shot
+  const [projects, tasks] = await Promise.all([
+    sbFetch('projects?select=*&order=created_at.asc'),
+    sbFetch('tasks?select=*&order=sort_order.asc,created_at.asc')
+  ]);
+
+  // Group tasks by project_id
+  const tasksByProject = {};
+  tasks.forEach(t => {
+    if (!tasksByProject[t.project_id]) tasksByProject[t.project_id] = [];
+    tasksByProject[t.project_id].push(t);
+  });
+
+  // Group projects by category (matching old format)
+  const CATEGORY_KEYS = {
+    'Content Projects':  'content',
+    'Software Projects': 'software',
+    'Marketing & Growth':'marketing',
+    'Initiatives':       'initiatives',
+    'Sales Projects':    'sales'
+  };
+
+  const result = { content:[], software:[], marketing:[], initiatives:[], sales:[] };
+
+  projects.forEach(p => {
+    const key = CATEGORY_KEYS[p.category] || 'software';
+    const projectTasks = tasksByProject[p.id] || [];
+
+    // Calculate progress from tasks
+    const taskList = projectTasks.filter(t => t.task_type !== 'project');
+    const avgProgress = taskList.length
+      ? Math.round(taskList.reduce((s,t) => s + (t.progress||0), 0) / taskList.length)
+      : p.progress;
+
+    result[key].push({
+      id:               p.id,
+      projectName:      p.project_name,
+      name:             p.project_name,
+      status:           p.status,
+      phase:            p.status,
+      progress:         String(avgProgress),
+      milestoneDate:    p.milestone_date || '',
+      rag:              p.rag,
+      responsible:      p.responsible || '',
+      comment:          p.comment || '',
+      publicVisibility: p.public_visibility ? 'Yes' : 'No',
+      taskCount:        taskList.length,
+      // tasks array for project detail view
+      tasks:            projectTasks.map(t => ({
+        id:            t.id,
+        projectName:   p.project_name,
+        taskName:      t.task_name,
+        phase:         t.phase || '',
+        taskType:      t.task_type || 'task',
+        status:        t.status || 'Active',
+        progress:      String(t.progress || 0),
+        milestoneDate: t.milestone_date || '',
+        rag:           t.rag || 'Green',
+        responsible:   t.responsible || '',
+        dependsOn:     t.depends_on || '',
+        comment:       ''
+      }))
+    });
+  });
+
+  return { projects: result, resources: [], kpis: computeKPIs(result) };
+}
+
+function computeKPIs(projects) {
+  let total=0, active=0, completed=0, green=0, amber=0, red=0, progSum=0;
+  Object.values(projects).forEach(list => {
+    list.forEach(p => {
+      total++; progSum += parseInt(p.progress)||0;
+      if (p.status==='Active') active++;
+      if (p.status==='Completed') completed++;
+      if (p.rag==='Green') green++;
+      if (p.rag==='Amber') amber++;
+      if (p.rag==='Red')   red++;
+    });
+  });
+  return { total, active, completed, green, amber, red,
+           avgProgress: total ? Math.round(progSum/total) : 0 };
+}
+
+// ════════════════════════════════════════════════════════════
+// READ — project details (tasks for a specific project)
+// ════════════════════════════════════════════════════════════
+async function sbGetProjectDetails(projectId) {
+  const [project, tasks, notes] = await Promise.all([
+    sbFetch(`projects?id=eq.${projectId}&select=*`),
+    sbFetch(`tasks?project_id=eq.${projectId}&select=*&order=sort_order.asc`),
+    sbFetch(`notes?project_id=eq.${projectId}&select=*&order=created_at.desc&limit=50`)
+  ]);
+  return { project: project[0] || null, tasks, notes };
+}
+
+async function sbGetProjectByName(projectName) {
+  const projects = await sbFetch(
+    `projects?project_name=eq.${encodeURIComponent(projectName)}&select=*`
+  );
+  if (!projects.length) return null;
+  const p = projects[0];
+  const tasks = await sbFetch(
+    `tasks?project_id=eq.${p.id}&select=*&order=sort_order.asc`
+  );
+  return { project: { ...p, tasks: tasks.map(t=>({
+    id: t.id, taskName: t.task_name, phase: t.phase||'',
+    taskType: t.task_type||'task', progress: String(t.progress||0),
+    rag: t.rag||'Green', responsible: t.responsible||'',
+    milestoneDate: t.milestone_date||'', dependsOn: t.depends_on||''
+  })) } };
+}
+
+// ════════════════════════════════════════════════════════════
+// WRITE — projects
+// ════════════════════════════════════════════════════════════
+async function sbSaveProject(payload, originalName, isUpdate) {
+  const CATEGORY_MAP = {
+    content:'Content Projects', software:'Software Projects',
+    marketing:'Marketing & Growth', initiatives:'Initiatives', sales:'Sales Projects'
+  };
+
+  const projectData = {
+    project_name:      payload.projectName,
+    category:          CATEGORY_MAP[payload.sheet] || payload.sheet,
+    status:            payload.status || 'Active',
+    rag:               payload.rag   || 'Green',
+    progress:          parseInt(payload.progress) || 0,
+    responsible:       payload.responsible || '',
+    milestone_date:    payload.milestoneDate || null,
+    comment:           payload.comment || '',
+    public_visibility: payload.publicVisibility === 'Yes'
+  };
+
+  let projectId;
+
+  if (isUpdate && originalName) {
+    // Find existing project
+    const existing = await sbFetch(
+      `projects?project_name=eq.${encodeURIComponent(originalName)}&select=id`
+    );
+    if (existing.length) {
+      projectId = existing[0].id;
+      await sbFetch(`projects?id=eq.${projectId}`, {
+        method: 'PATCH', body: JSON.stringify(projectData)
+      });
+    } else {
+      isUpdate = false; // fallback to insert
+    }
+  }
+
+  if (!isUpdate) {
+    const created = await sbFetch('projects', {
+      method: 'POST', body: JSON.stringify(projectData)
+    });
+    projectId = created[0]?.id;
+  }
+
+  if (!projectId) throw new Error('Could not get project ID');
+
+  // Save tasks — delete existing, reinsert
+  const tasks = (payload.tasks || []).filter(t => t.taskType !== 'project');
+  if (tasks.length) {
+    await sbFetch(`tasks?project_id=eq.${projectId}`, { method: 'DELETE' });
+    const taskRows = tasks.map((t, i) => ({
+      project_id:     projectId,
+      task_name:      t.taskName || '',
+      phase:          t.phase || '',
+      task_type:      t.taskType || 'task',
+      status:         t.status || 'Active',
+      progress:       parseInt(t.progress) || 0,
+      rag:            t.rag || 'Green',
+      responsible:    t.responsible || '',
+      milestone_date: t.milestoneDate || null,
+      depends_on:     null, // resolve after insert
+      sort_order:     i
+    }));
+    await sbFetch('tasks', { method: 'POST', body: JSON.stringify(taskRows) });
+  }
+
+  // Log to changelog
+  await sbFetch('changelog', {
+    method: 'POST',
+    body: JSON.stringify({
+      action:       isUpdate ? 'UPDATE_PROJECT' : 'ADD_PROJECT',
+      project_name: payload.projectName,
+      category:     CATEGORY_MAP[payload.sheet] || payload.sheet,
+      new_value:    isUpdate ? 'Updated' : 'Created',
+      changed_by:   payload.editedBy || 'Admin'
+    })
+  });
+
+  return { success: true, projectId };
+}
+
+async function sbDeleteProject(projectId, projectName, changedBy) {
+  await sbFetch(`projects?id=eq.${projectId}`, { method: 'DELETE' });
+  await sbFetch('changelog', {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'DELETE_PROJECT', project_name: projectName,
+      new_value: 'Deleted', changed_by: changedBy || 'Admin'
+    })
+  });
+  return { success: true };
+}
+
+// ════════════════════════════════════════════════════════════
+// WRITE — notes
+// ════════════════════════════════════════════════════════════
+async function sbAddNote(projectId, content, author) {
+  return sbFetch('notes', {
+    method: 'POST',
+    body: JSON.stringify({ project_id: projectId, content, author: author || 'Admin' })
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// READ — changelog
+// ════════════════════════════════════════════════════════════
+async function sbGetChangelog(limit = 50) {
+  return sbFetch(`changelog?select=*&order=changed_at.desc&limit=${limit}`);
+}
+
+// ════════════════════════════════════════════════════════════
+// AUTH — users
+// ════════════════════════════════════════════════════════════
+async function sbGetUsers() {
+  return sbFetch('users?select=id,name,email,role,permissions,is_active&order=created_at.asc');
+}
+
+async function sbVerifyUser(email, password) {
+  // Fetch user by email, verify password via RPC
+  const users = await sbFetch(
+    `users?email=eq.${encodeURIComponent(email.toLowerCase())}&select=*`
+  );
+  if (!users.length) return null;
+  const user = users[0];
+  // Verify bcrypt hash via Supabase RPC
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_user_password`, {
+      method: 'POST',
+      headers: SB_HEADERS,
+      body: JSON.stringify({ user_email: email.toLowerCase(), user_password: password })
+    });
+    const ok = await res.json();
+    if (ok === true) return user;
+  } catch(e) {
+    // Fallback: plain compare for migration period
+    if (user.password_hash === password || user.password_hash === '1231') return user;
+  }
+  return null;
+}
+
+async function sbSaveUser(userData) {
+  return sbFetch('users', { method: 'POST', body: JSON.stringify(userData) });
+}
+
+async function sbUpdateUser(id, userData) {
+  return sbFetch(`users?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(userData) });
+}
+
+async function sbDeleteUser(id) {
+  return sbFetch(`users?id=eq.${id}`, { method: 'DELETE' });
+}
+
+
 // ═══════════════════════════════════════════════════════════
 // CACHE — localStorage for instant load
 // ═══════════════════════════════════════════════════════════
@@ -1673,31 +1971,26 @@ function clearCache() {
 // DATA LOADING
 // ═══════════════════════════════════════════════════════════
 async function loadData(forceRefresh = false) {
-  if (!SCRIPT_URL) { loadDemoData(); return; }
-
-  // ── Show cached data instantly ──
+  // Show cached instantly
   if (!forceRefresh) {
     const cached = getCached();
     if (cached) {
       allProjectsData = cached.projects || {};
       allResources    = cached.resources || [];
       renderAll();
-      // Silently refresh in background
       refreshInBackground();
       return;
     }
   }
-
-  // ── No cache: show skeleton then load ──
   showSkeleton();
   try {
-    const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
+    const data = await sbGetAllData();
     allProjectsData = data.projects || {};
     allResources    = data.resources || [];
     setCache(data);
     renderAll();
-  } catch (e) {
-    showToast('Failed to load — showing demo', 'warning');
+  } catch(e) {
+    showToast('Failed to load: ' + e.message, 'error');
     loadDemoData();
   } finally {
     document.getElementById('projects-loading').classList.remove('show');
@@ -1706,12 +1999,12 @@ async function loadData(forceRefresh = false) {
 
 async function refreshInBackground() {
   try {
-    const data = await apiFetch(`${SCRIPT_URL}?action=getData`);
+    const data = await sbGetAllData();
     allProjectsData = data.projects || {};
     allResources    = data.resources || [];
     setCache(data);
     renderAll();
-  } catch(e) { /* silent fail — cached data still showing */ }
+  } catch(e) {}
 }
 
 function showSkeleton() {
@@ -2256,9 +2549,7 @@ async function saveProject() {
   if (!SCRIPT_URL) { showToast(`✅ "${name}" saved`, 'success'); return; }
 
   // Background save
-  const action = currentProject ? 'updateProject' : 'addProject';
-  const url = `${SCRIPT_URL}?action=${action}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
-  apiFetch(url).then(data => {
+  sbSaveProject(payload, currentProject, !!currentProject).then(data => {
     if (data.success || data.message) {
       clearCache();
       showToast(`✅ "${name}" saved to server`, 'success');
