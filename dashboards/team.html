@@ -652,7 +652,7 @@
     <input class="search-input" type="text" placeholder="🔍 Search projects..." oninput="filterSearch(this.value)">
   </div>
   <div id="projects-wrap" style="position:relative">
-    <div class="loading-overlay show" id="proj-loading"><div class="spinner"></div></div>
+    <div class="loading-overlay" id="proj-loading"><div class="spinner"></div></div>
     <div id="projects-container"></div>
   </div>
 
@@ -914,6 +914,7 @@ function showApp() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainTopbar').style.display   = 'flex';
   document.getElementById('mainApp').style.display      = 'block';
+  document.getElementById('proj-loading').classList.remove('show');
   document.getElementById('u-av').textContent   = initials(currentUser.name);
   document.getElementById('u-name').textContent = currentUser.name + ' · ' + (currentUser.role || 'Team');
   document.getElementById('add-btn').style.display = hasPerm('addProjects') ? 'inline-flex' : 'none';
@@ -946,6 +947,7 @@ async function loadData(forceRefresh = false) {
       allData = cached.projects || {};
       allResources = cached.resources || [];
       renderKPIs(); renderProjects(); renderResources(); renderTeamCharts();
+      document.getElementById('proj-loading').classList.remove('show');
       document.getElementById('last-updated').textContent = 'Cached · ' + new Date().toLocaleTimeString();
       // Refresh silently in background
       apiFetch(`${SCRIPT_URL}?action=getData`).then(data => {
