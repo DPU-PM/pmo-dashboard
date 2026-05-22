@@ -2457,12 +2457,25 @@ async function loadChangelog() {
       if (s.includes('delete')) return `<span class="cl-action-badge cl-delete">${esc(a)}</span>`;
       return `<span class="cl-action-badge cl-other">${esc(a)}</span>`;
     };
+    // Format timestamp to Cairo time (UTC+3)
+    const fmtCairo = (ts) => {
+      if (!ts) return '—';
+      try {
+        const d = new Date(ts);
+        if (isNaN(d)) return esc(String(ts));
+        return d.toLocaleString('en-GB', {
+          timeZone: 'Africa/Cairo',
+          day:   '2-digit', month: '2-digit', year: 'numeric',
+          hour:  '2-digit', minute: '2-digit', hour12: true
+        }).replace(',', '');
+      } catch(e) { return esc(String(ts)); }
+    };
+
     document.getElementById('changelog-list').innerHTML = `
       <table class="cl-table">
         <thead>
           <tr>
-            <th style="width:160px">Date &amp; Time</th>
-            <th style="width:120px">Who</th>
+            <th style="width:170px">Date &amp; Time</th>
             <th style="width:130px">Action</th>
             <th style="width:180px">Project</th>
             <th>What Changed</th>
@@ -2470,8 +2483,7 @@ async function loadChangelog() {
         </thead>
         <tbody>
           ${entries.map(e => `<tr>
-            <td class="cl-ts">${esc(e.timestamp||'—')}</td>
-            <td class="cl-who">${esc(e.user||'admin')}</td>
+            <td class="cl-ts">${fmtCairo(e.timestamp)}</td>
             <td>${actionBadge(e.action)}</td>
             <td class="cl-proj">${esc(e.projectName||'—')} ${e.sheet?`<span style="font-size:10px;color:var(--text-muted);">(${esc(e.sheet)})</span>`:''}</td>
             <td class="cl-change">${e.fieldChanged && e.fieldChanged !== 'N/A'
