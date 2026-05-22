@@ -455,6 +455,68 @@
     .no-print { display:none!important; }
   }
 
+
+  /* ── DASHBOARD NAV ─────────────────────────────────────── */
+  .dash-nav-links { display:flex; align-items:center; gap:4px; }
+  .dash-nav-link {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:5px 10px; border-radius:6px; font-size:12px;
+    font-weight:500; color:#8BAAC4; text-decoration:none;
+    transition:all .15s; white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .dash-nav-link:hover { background:rgba(255,255,255,.1); color:#fff; }
+  .dash-nav-link.active-dash { background:rgba(26,95,204,.3); color:#60A5FA; border-color:rgba(93,163,245,.3); }
+  .dash-nav-sep { color:#2A3F5F; font-size:12px; }
+
+  /* User dropdown */
+  .user-dropdown-wrap { position:relative; }
+  .user-chip { cursor:pointer; }
+  .user-dropdown {
+    position:absolute; top:calc(100% + 8px); right:0;
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--radius-lg); box-shadow:var(--shadow-lg);
+    min-width:200px; z-index:200; overflow:hidden;
+    animation:dropIn .15s ease;
+  }
+  @keyframes dropIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+  .dropdown-header {
+    padding:12px 16px; background:#F8FAFC;
+    border-bottom:1px solid var(--border);
+  }
+  .dropdown-header .dh-name { font-weight:600; font-size:13px; color:var(--navy); }
+  .dropdown-header .dh-role { font-size:11px; color:var(--text-muted); margin-top:1px; }
+  .dropdown-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 16px; font-size:13px; color:var(--text);
+    text-decoration:none; cursor:pointer; transition:background .1s;
+    border:none; background:none; width:100%; font-family:inherit;
+    text-align:left;
+  }
+  .dropdown-item:hover { background:#F8FAFC; }
+  .dropdown-item .di-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; }
+  .dropdown-item.danger { color:var(--red); }
+  .dropdown-item.danger:hover { background:var(--red-bg); }
+  .dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
+
+  /* Switch to admin btn on login */
+  .switch-admin-btn {
+    width:100%; padding:10px; background:transparent;
+    border:1px solid var(--border); border-radius:var(--radius);
+    font-size:13px; font-weight:500; color:var(--text-muted);
+    cursor:pointer; font-family:inherit; margin-top:10px;
+    transition:all .15s; display:flex; align-items:center;
+    justify-content:center; gap:8px;
+  }
+  .switch-admin-btn:hover { border-color:var(--navy); color:var(--navy); background:#F8FAFC; }
+  .login-divider {
+    display:flex; align-items:center; gap:10px;
+    margin:14px 0 4px; color:var(--text-muted); font-size:12px;
+  }
+  .login-divider::before,.login-divider::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+
   @keyframes shimmer {
     0%,100% { background: #F1F5F9; }
     50%      { background: #E2E8F0; }
@@ -597,6 +659,13 @@
         onkeydown="if(event.key==='Enter')doLogin()" /></div>
     <button class="login-btn" onclick="doLogin()">Sign In</button>
     <div class="login-error" id="login-error">❌ Invalid email or password</div>
+    <div class="login-divider">or</div>
+    <button class="switch-admin-btn" onclick="window.location.href='https://dpu-pm.github.io/pmo-dashboard/dashboards/admin.html'">
+      🔐 Switch to Admin Dashboard
+    </button>
+    <a href='https://dpu-pm.github.io/pmo-dashboard/dashboards/public.html' style="display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--text-muted);text-decoration:none">
+      👁 View Public Dashboard
+    </a>
   </div>
 </div>
 
@@ -606,13 +675,41 @@
     <div class="logo">PMO</div>
     <span>Team Dashboard</span>
   </div>
+  <div class="dash-nav-links">
+    <a class="dash-nav-link active-dash" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/team.html'>👥 Team</a>
+    <span class="dash-nav-sep">|</span>
+    <a class="dash-nav-link" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/public.html' target="_blank">🌐 Public</a>
+    <span class="dash-nav-sep">|</span>
+    <a class="dash-nav-link" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/admin.html'>🔐 Admin</a>
+  </div>
   <div class="topbar-right">
     <span class="last-updated" id="last-updated"></span>
-    <div class="user-chip">
-      <div class="user-av" id="u-av">?</div>
-      <span class="uname" id="u-name">—</span>
+    <div class="user-dropdown-wrap">
+      <div class="user-chip" onclick="toggleUserDropdown()" id="user-chip">
+        <div class="user-av" id="u-av">?</div>
+        <span class="uname" id="u-name">—</span>
+        <span style="font-size:10px;color:#8BAAC4;margin-left:2px">▾</span>
+      </div>
+      <div class="user-dropdown" id="user-dropdown" style="display:none">
+        <div class="dropdown-header">
+          <div class="dh-name" id="dd-name">—</div>
+          <div class="dh-role" id="dd-role">—</div>
+        </div>
+        <a class="dropdown-item" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/team.html'>
+          <span class="di-icon">👥</span> Team Dashboard
+        </a>
+        <a class="dropdown-item" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/public.html' target="_blank">
+          <span class="di-icon">🌐</span> Public Dashboard
+        </a>
+        <a class="dropdown-item" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/admin.html'>
+          <span class="di-icon">🔐</span> Admin Dashboard
+        </a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="doLogout()">
+          <span class="di-icon">🚪</span> Sign Out
+        </button>
+      </div>
     </div>
-    <button class="logout-btn" onclick="doLogout()">Sign out</button>
   </div>
 </div>
 
@@ -656,8 +753,7 @@
     <div id="projects-container"></div>
   </div>
 
-  <div class="section-header" style="margin-top:8px"><h2>👥 Team Members</h2></div>
-  <div class="card"><div class="resource-grid" id="resource-grid"></div></div>
+
 
 </div>
 
@@ -871,6 +967,22 @@ function apiFetch(url) {
   });
 }
 
+
+// ── USER DROPDOWN ───────────────────────────────────────────
+function toggleUserDropdown() {
+  const dd = document.getElementById('user-dropdown');
+  const isOpen = dd.style.display !== 'none';
+  dd.style.display = isOpen ? 'none' : 'block';
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('user-chip')?.closest('.user-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const dd = document.getElementById('user-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
 // ── AUTH ───────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const saved = sessionStorage.getItem('pmo_team_user');
@@ -916,7 +1028,9 @@ function showApp() {
   document.getElementById('mainApp').style.display      = 'block';
   document.getElementById('proj-loading').classList.remove('show');
   document.getElementById('u-av').textContent   = initials(currentUser.name);
-  document.getElementById('u-name').textContent = currentUser.name + ' · ' + (currentUser.role || 'Team');
+  document.getElementById('u-name').textContent = currentUser.name;
+  document.getElementById('dd-name').textContent = currentUser.name;
+  document.getElementById('dd-role').textContent = currentUser.role || 'Team Member';
   document.getElementById('add-btn').style.display = hasPerm('addProjects') ? 'inline-flex' : 'none';
   loadData();
 }

@@ -949,6 +949,20 @@
   .cl-change { font-size:12px; color:var(--text-muted); }
   .cl-change strong { color:var(--text); }
 
+
+  /* ── ADMIN NAV LINKS ───────────────────────────────────── */
+  .dash-nav-links { display:flex; align-items:center; gap:4px; }
+  .dash-nav-link {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:5px 10px; border-radius:6px; font-size:12px;
+    font-weight:500; color:#8BAAC4; text-decoration:none;
+    transition:all .15s; white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .dash-nav-link:hover { background:rgba(255,255,255,.1); color:#fff; }
+  .dash-nav-link.active-dash { background:rgba(26,95,204,.3); color:#60A5FA; border-color:rgba(93,163,245,.3); }
+  .dash-nav-sep { color:#2A3F5F; font-size:12px; }
+
   /* ── ADMIN LOGIN OVERLAY ──────────────────────────────── */
   .login-overlay {
     position: fixed; inset: 0;
@@ -1096,6 +1110,13 @@
     <div class="logo">PMO</div>
     <span>PMO Admin</span>
     <small>Department Dashboard</small>
+  </div>
+  <div class="dash-nav-links">
+    <a class="dash-nav-link active-dash" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/admin.html'>🔐 Admin</a>
+    <span class="dash-nav-sep">|</span>
+    <a class="dash-nav-link" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/team.html' target="_blank">👥 Team</a>
+    <span class="dash-nav-sep">|</span>
+    <a class="dash-nav-link" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/public.html' target="_blank">🌐 Public</a>
   </div>
   <div class="topbar-actions">
     <div class="topbar-user">
