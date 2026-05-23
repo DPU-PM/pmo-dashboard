@@ -1083,6 +1083,177 @@
     border-top: 1px solid var(--border);
   }
   .gantt-resize-hint::after { content: '⋯ drag to resize'; }
+
+  /* ═══════════════════════════════════════════════════
+     FEATURE CSS — RAG Trend, Resources, Milestones,
+     Decisions, Steering Committee
+  ═══════════════════════════════════════════════════ */
+
+  /* ── RAG TREND CHART ─────────────────────────────── */
+  .rag-trend-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    border:1px solid var(--border); box-shadow:var(--shadow);
+    margin-bottom:20px; overflow:hidden;
+  }
+  .rag-trend-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--border); background:#F8FAFC;
+  }
+  .rag-trend-header h3 { font-size:14px; font-weight:600; }
+  .rag-timeline {
+    display:flex; align-items:flex-end; gap:2px;
+    padding:20px; min-height:80px; overflow-x:auto;
+  }
+  .rag-tick {
+    display:flex; flex-direction:column; align-items:center;
+    gap:4px; min-width:40px; flex:1;
+  }
+  .rag-tick-dot {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:#fff; flex-shrink:0;
+  }
+  .rag-tick-dot.Green { background:var(--green); }
+  .rag-tick-dot.Amber { background:var(--amber); }
+  .rag-tick-dot.Red   { background:var(--red); }
+  .rag-tick-date { font-size:9px; color:var(--text-muted); text-align:center; }
+  .rag-tick-status { font-size:9px; color:var(--text-muted); text-align:center; }
+  .rag-no-history {
+    padding:24px; text-align:center;
+    color:var(--text-muted); font-size:13px;
+  }
+
+  /* ── RESOURCE WORKLOAD ───────────────────────────── */
+  .resource-row {
+    display:flex; align-items:center; gap:12px;
+    padding:14px 20px; border-bottom:1px solid #F1F5F9;
+  }
+  .resource-row:last-child { border-bottom:none; }
+  .res-avatar {
+    width:36px; height:36px; border-radius:50%; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px; flex-shrink:0;
+  }
+  .res-info { flex:1; min-width:0; }
+  .res-name { font-weight:600; font-size:13px; }
+  .res-projects { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .res-tasks-bar-wrap { width:200px; flex-shrink:0; }
+  .res-tasks-label {
+    display:flex; justify-content:space-between;
+    font-size:11px; color:var(--text-muted); margin-bottom:4px;
+  }
+  .res-tasks-bar { height:8px; background:#F1F5F9; border-radius:4px; overflow:hidden; }
+  .res-tasks-fill {
+    height:100%; border-radius:4px;
+    background:linear-gradient(90deg,var(--blue),var(--blue-light));
+    transition:width .6s ease;
+  }
+  .res-tasks-fill.overloaded { background:linear-gradient(90deg,var(--red),#EF4444); }
+  .res-tasks-fill.busy { background:linear-gradient(90deg,var(--amber),var(--gold)); }
+  .res-task-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+  .res-task-chip {
+    font-size:10px; padding:2px 7px; border-radius:10px;
+    background:#EFF6FF; color:var(--blue); border:1px solid #BFDBFE;
+    white-space:nowrap;
+  }
+  .res-task-chip.amber { background:var(--amber-bg); color:var(--amber); border-color:#FCD34D; }
+  .res-task-chip.red   { background:var(--red-bg); color:var(--red); border-color:#FECACA; }
+
+  /* ── MILESTONE SLIPPAGE ──────────────────────────── */
+  .slip-table { width:100%; border-collapse:collapse; }
+  .slip-table th {
+    text-align:left; padding:10px 16px; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted);
+    background:#F8FAFC; border-bottom:1px solid var(--border);
+  }
+  .slip-table td { padding:12px 16px; border-bottom:1px solid #F1F5F9; font-size:13px; vertical-align:middle; }
+  .slip-table tr:last-child td { border-bottom:none; }
+  .slip-table tr:hover td { background:#FAFBFC; }
+  .slip-days {
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:13px;
+  }
+  .slip-days.on-time { color:var(--green); }
+  .slip-days.minor   { color:var(--amber); }
+  .slip-days.major   { color:var(--red); }
+  .slip-project { font-weight:600; }
+  .slip-task { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+  /* ── DECISION LOG ────────────────────────────────── */
+  .decision-card {
+    background:#FAFBFC; border:1px solid var(--border);
+    border-radius:var(--radius); padding:14px 16px;
+    margin-bottom:10px; transition:box-shadow .15s;
+  }
+  .decision-card:hover { box-shadow:var(--shadow); background:var(--white); }
+  .decision-header { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .decision-type {
+    font-size:10px; font-weight:700; padding:2px 8px;
+    border-radius:10px; white-space:nowrap; flex-shrink:0;
+  }
+  .dtype-decision { background:#DBEAFE; color:#1D4ED8; }
+  .dtype-action   { background:var(--amber-bg); color:var(--amber); }
+  .dtype-risk     { background:var(--red-bg); color:var(--red); }
+  .dtype-info     { background:#F1F5F9; color:#64748B; }
+  .decision-text  { font-size:13px; font-weight:500; flex:1; }
+  .decision-meta  { display:flex; align-items:center; gap:12px; font-size:11px; color:var(--text-muted); margin-top:8px; }
+  .add-decision-form {
+    background:#F8FAFC; border:1px solid var(--border);
+    border-radius:var(--radius); padding:16px; margin-bottom:16px;
+  }
+  .add-decision-form textarea {
+    width:100%; padding:8px 12px; border:1px solid var(--border);
+    border-radius:var(--radius); font-size:13px; font-family:inherit;
+    resize:vertical; min-height:72px; outline:none;
+    transition:border-color .15s;
+  }
+  .add-decision-form textarea:focus { border-color:var(--blue); }
+  .decision-form-row { display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .decision-type-select {
+    padding:7px 12px; border:1px solid var(--border);
+    border-radius:var(--radius); font-size:13px; font-family:inherit;
+    outline:none; background:var(--white);
+  }
+
+  /* ── STEERING COMMITTEE ──────────────────────────── */
+  .steering-hero {
+    background:linear-gradient(135deg,var(--navy) 0%,#1B3A6B 100%);
+    border-radius:var(--radius-lg); padding:24px; margin-bottom:20px;
+    color:#fff;
+  }
+  .steering-hero h2 { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .steering-hero .sub { font-size:13px; color:#8BAAC4; margin-bottom:20px; }
+  .steering-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .sk-item { text-align:center; }
+  .sk-val { font-size:28px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
+  .sk-lbl { font-size:11px; color:#8BAAC4; margin-top:2px; text-transform:uppercase; letter-spacing:.5px; }
+  .escalated-project {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:18px; margin-bottom:12px;
+    box-shadow:var(--shadow); border-left:4px solid var(--red);
+    transition:box-shadow .2s;
+  }
+  .escalated-project:hover { box-shadow:var(--shadow-lg); }
+  .escalated-project.amber { border-left-color:var(--amber); }
+  .ep-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .ep-name { font-size:15px; font-weight:700; }
+  .ep-badges { display:flex; gap:6px; flex-shrink:0; }
+  .ep-progress { margin-bottom:10px; }
+  .ep-comment {
+    background:#FFF7ED; border:1px solid #FED7AA;
+    border-radius:6px; padding:8px 12px; font-size:12px; color:#92400E;
+  }
+  .ep-meta { display:flex; gap:12px; font-size:12px; color:var(--text-muted); margin-top:10px; }
+  .decision-needed-badge {
+    background:var(--red-bg); color:var(--red);
+    font-size:11px; font-weight:600; padding:3px 10px;
+    border-radius:10px; border:1px solid #FECACA;
+  }
+
+  @media(max-width:768px) {
+    .steering-kpis { grid-template-columns:repeat(2,1fr); }
+    .res-tasks-bar-wrap { width:120px; }
+  }
+
 </style>
 </head>
 <body>
@@ -1142,6 +1313,16 @@
       </div>
       <div class="sidebar-item" onclick="switchTab('changelog')">
         <span class="icon">📋</span> Changelog
+      </div>
+      <div class="sidebar-item" onclick="switchTab('steering')">
+        <span class="icon">🎯</span> Steering
+        <span class="sidebar-badge amber" id="sb-steering">0</span>
+      </div>
+      <div class="sidebar-item" onclick="switchTab('workload')">
+        <span class="icon">👥</span> Workload
+      </div>
+      <div class="sidebar-item" onclick="switchTab('milestones')">
+        <span class="icon">📅</span> Milestones
       </div>
     </div>
     <div class="sidebar-section" style="margin-top:16px">
@@ -1295,6 +1476,35 @@
       </div>
       <div class="timeline-body" id="pv-timeline"></div>
     </div>
+
+    <!-- RAG TREND -->
+    <div class="rag-trend-card" id="pv-rag-trend-card">
+      <div class="rag-trend-header">
+        <h3>📈 RAG History</h3>
+        <span style="font-size:11px;color:var(--text-muted)">Auto-tracked on every change</span>
+      </div>
+      <div id="pv-rag-trend"></div>
+    </div>
+
+    <!-- MILESTONE SLIPPAGE IN PROJECT -->
+    <div class="card" id="pv-slippage-card" style="margin-bottom:20px">
+      <div class="gantt-card-header">
+        <h3>📅 Milestone Slippage</h3>
+      </div>
+      <div id="pv-slippage"></div>
+    </div>
+
+    <!-- DECISION LOG IN PROJECT -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="gantt-card-header">
+        <h3>📋 Decisions & Actions</h3>
+        <span style="font-size:11px;color:var(--text-muted)">Record key decisions and action items</span>
+      </div>
+      <div style="padding:16px">
+        <div id="pv-decisions"></div>
+      </div>
+    </div>
+
   </div>
 
     <!-- TEAM MEMBERS TAB -->
@@ -1345,6 +1555,49 @@
             <tr><td colspan="10" style="text-align:center;padding:40px;color:#94A3B8">Loading...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+
+    <!-- STEERING COMMITTEE TAB -->
+    <div class="tab-pane" id="tab-steering">
+      <div class="page-header">
+        <div><h1>Steering Committee</h1><p>Escalated and at-risk projects requiring attention</p></div>
+        <div class="header-actions">
+          <button class="export-btn no-print" onclick="triggerSteeringPDF()">📄 Export PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick="renderAll()">🔄 Refresh</button>
+        </div>
+      </div>
+      <div class="steering-hero">
+        <h2>Portfolio Health Summary</h2>
+        <div class="sub" id="sc-date"></div>
+        <div class="steering-kpis">
+          <div class="sk-item"><div class="sk-val" style="color:#F87171" id="sc-escalated">—</div><div class="sk-lbl">Escalated</div></div>
+          <div class="sk-item"><div class="sk-val" style="color:#FCD34D" id="sc-at-risk">—</div><div class="sk-lbl">At Risk</div></div>
+          <div class="sk-item"><div class="sk-val" style="color:#F87171" id="sc-critical">—</div><div class="sk-lbl">Critical (Red)</div></div>
+          <div class="sk-item"><div class="sk-val" style="color:#FDA4AF" id="sc-overdue">—</div><div class="sk-lbl">Overdue Tasks</div></div>
+        </div>
+      </div>
+      <div id="steering-body"></div>
+    </div>
+
+    <!-- WORKLOAD TAB -->
+    <div class="tab-pane" id="tab-workload">
+      <div class="page-header">
+        <div><h1>Resource Workload</h1><p>Task assignments across all team members</p></div>
+      </div>
+      <div class="card">
+        <div id="resource-workload-body"></div>
+      </div>
+    </div>
+
+    <!-- MILESTONES TAB -->
+    <div class="tab-pane" id="tab-milestones">
+      <div class="page-header">
+        <div><h1>Milestone Tracker</h1><p>Upcoming deadlines and slippage across all projects</p></div>
+      </div>
+      <div class="card">
+        <div id="milestones-body"></div>
       </div>
     </div>
 
@@ -2160,6 +2413,9 @@ function updateSidebar() {
   const all = getAllProjects();
   document.getElementById('sb-projects').textContent = all.length;
   document.getElementById('sb-resources').textContent = loadTeamMembers().length;
+  const atRiskCount = all.filter(p=>p.rag==='Amber'||p.rag==='Red'||p.escalate==='Yes'||p.escalate===true).length;
+  const sbSteering = document.getElementById('sb-steering');
+  if (sbSteering) sbSteering.textContent = atRiskCount;
   const green = all.filter(p=>p.rag==='Green').length;
   const amber = all.filter(p=>p.rag==='Amber').length;
   const red = all.filter(p=>p.rag==='Red').length;
@@ -2178,8 +2434,11 @@ function switchTab(name) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   event.currentTarget.classList.add('active');
-  if (name === 'changelog') loadChangelog();
-  if (name === 'team')      renderTeamMembers();
+  if (name === 'changelog')  loadChangelog();
+  if (name === 'team')       renderTeamMembers();
+  if (name === 'steering')   { renderSteeringCommittee(); document.getElementById('sc-date').textContent = 'As of ' + new Date().toLocaleDateString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'long',year:'numeric'}); }
+  if (name === 'workload')   renderResourceWorkload();
+  if (name === 'milestones') renderMilestoneSlippage('milestones-body', allProjectsData);
 }
 
 function filterType(type, el) {
@@ -2884,6 +3143,12 @@ async function openProjectView(sheetKey, projectName) {
   renderProjectHeader(proj, taskList, sheetKey);
   renderGantt(taskList);
   renderVerticalTimeline(taskList);
+  // Load additional features
+  if (proj.id) {
+    renderRAGTrend(proj.id, proj.projectName);
+    loadDecisions(proj.id, proj.projectName, 'pv-decisions');
+  }
+  renderMilestoneSlippage('pv-slippage', { _: [{ projectName: proj.projectName, tasks: taskList }] });
 }
 
 function closeProjectView() {
@@ -3349,6 +3614,377 @@ function triggerAdminPDF() {
     avgProgress: all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0
   };
   exportPDF('PMO Admin Dashboard', allProjectsData, kpis);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 1 — RAG TREND CHART (inside project detail view)
+// ═══════════════════════════════════════════════════════════
+async function renderRAGTrend(projectId, projectName) {
+  const container = document.getElementById('pv-rag-trend');
+  if (!container) return;
+
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading history...</div>';
+
+  try {
+    // Fetch RAG history from Supabase
+    let history = [];
+    if (typeof sbFetch === 'function') {
+      history = await sbFetch(
+        `rag_history?project_id=eq.${projectId}&select=*&order=changed_at.asc&limit=20`
+      );
+    }
+
+    if (!history.length) {
+      container.innerHTML = `<div class="rag-no-history">
+        No RAG history yet. Changes will be tracked automatically when you update project health.
+      </div>`;
+      return;
+    }
+
+    const ticks = history.map(h => {
+      const d = new Date(h.changed_at);
+      const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      const arrow = h.old_rag && h.new_rag !== h.old_rag
+        ? `${h.old_rag}→${h.new_rag}` : h.new_rag;
+      return `<div class="rag-tick">
+        <div class="rag-tick-dot ${h.new_rag}" title="${h.old_rag||''}→${h.new_rag} on ${dateStr}">
+          ${h.new_rag==='Green'?'🟢':h.new_rag==='Amber'?'🟡':'🔴'}
+        </div>
+        <div class="rag-tick-date">${dateStr}</div>
+        <div class="rag-tick-status">${h.new_status||''}</div>
+      </div>`;
+    }).join('<div style="flex:0;width:1px;background:var(--border);align-self:stretch;margin:14px 0"></div>');
+
+    container.innerHTML = `<div class="rag-timeline">${ticks}</div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="rag-no-history">Could not load history.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 2 — RESOURCE WORKLOAD (admin tab)
+// ═══════════════════════════════════════════════════════════
+function renderResourceWorkload() {
+  const container = document.getElementById('resource-workload-body');
+  if (!container) return;
+
+  const all = getAllProjects();
+  const workload = {}; // name -> { tasks:[], projects:Set }
+
+  all.forEach(p => {
+    if (p.responsible) {
+      if (!workload[p.responsible]) workload[p.responsible] = { tasks:[], projects:new Set() };
+      workload[p.responsible].projects.add(p.projectName);
+    }
+    (p.tasks||[]).forEach(t => {
+      if (t.taskType === 'project' || !t.responsible) return;
+      if (!workload[t.responsible]) workload[t.responsible] = { tasks:[], projects:new Set() };
+      workload[t.responsible].tasks.push({ ...t, projectName: p.projectName });
+      workload[t.responsible].projects.add(p.projectName);
+    });
+  });
+
+  if (!Object.keys(workload).length) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">👥</div>
+      <h3>No assignments yet</h3><p>Assign owners to projects and tasks to see workload</p></div>`;
+    return;
+  }
+
+  const maxTasks = Math.max(...Object.values(workload).map(w => w.tasks.length), 1);
+  const colors = ['#1A5FCC','#16A34A','#D97706','#7C3AED','#DC2626','#0D7377'];
+  let i = 0;
+
+  container.innerHTML = Object.entries(workload)
+    .sort((a,b) => b[1].tasks.length - a[1].tasks.length)
+    .map(([name, data]) => {
+      const taskCount = data.tasks.length;
+      const projCount = data.projects.size;
+      const pct = Math.round((taskCount / Math.max(maxTasks, 10)) * 100);
+      const fillCls = taskCount > 8 ? 'overloaded' : taskCount > 4 ? 'busy' : '';
+      const color = colors[i++ % colors.length];
+
+      // Show up to 5 task chips
+      const chips = data.tasks.slice(0,5).map(t => {
+        const cls = t.rag==='Red'?'red':t.rag==='Amber'?'amber':'';
+        return `<span class="res-task-chip ${cls}" title="${esc(t.projectName)}">${esc(t.taskName.length>20?t.taskName.substring(0,19)+'…':t.taskName)}</span>`;
+      }).join('') + (data.tasks.length>5?`<span class="res-task-chip">+${data.tasks.length-5} more</span>`:'');
+
+      return `<div class="resource-row">
+        <div class="res-avatar" style="background:${color}">${initials(name)}</div>
+        <div class="res-info">
+          <div class="res-name">${esc(name)}</div>
+          <div class="res-projects">${projCount} project${projCount!==1?'s':''}</div>
+          <div class="res-task-chips">${chips}</div>
+        </div>
+        <div class="res-tasks-bar-wrap">
+          <div class="res-tasks-label">
+            <span>Tasks</span><span>${taskCount}</span>
+          </div>
+          <div class="res-tasks-bar">
+            <div class="res-tasks-fill ${fillCls}" style="width:${pct}%"></div>
+          </div>
+          ${taskCount>8?'<div style="font-size:10px;color:var(--red);margin-top:3px;font-weight:600">⚠️ Overloaded</div>':''}
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 3 — MILESTONE SLIPPAGE (admin tab + project view)
+// ═══════════════════════════════════════════════════════════
+function renderMilestoneSlippage(containerId, projects) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const slippage = [];
+
+  const projectList = projects ? getAllFromProjects(projects) : getAllProjects();
+  projectList.forEach(p => {
+    (p.tasks||[]).forEach(t => {
+      if (t.taskType === 'project' || !t.milestoneDate) return;
+      const due = new Date(t.milestoneDate); due.setHours(0,0,0,0);
+      const daysSlip = Math.round((today - due) / (1000*60*60*24));
+      if (daysSlip > -30) { // within 30 days future or already past
+        slippage.push({
+          projectName: p.projectName, taskName: t.taskName||t.task_name||'',
+          dueDate: t.milestoneDate, daysSlip, progress: parseInt(t.progress)||0,
+          rag: t.rag||'Green', responsible: t.responsible||''
+        });
+      }
+    });
+  });
+
+  slippage.sort((a,b) => b.daysSlip - a.daysSlip);
+
+  if (!slippage.length) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">✅</div>
+      <h3>No milestone data</h3><p>Add due dates to tasks to track slippage</p></div>`;
+    return;
+  }
+
+  container.innerHTML = `<div style="overflow-x:auto">
+    <table class="slip-table">
+      <thead><tr>
+        <th>Project / Task</th><th>Due Date</th>
+        <th>Slippage</th><th>Progress</th><th>Owner</th>
+      </tr></thead>
+      <tbody>
+        ${slippage.map(s => {
+          const slipCls = s.daysSlip > 14 ? 'major' : s.daysSlip > 0 ? 'minor' : 'on-time';
+          const slipLabel = s.daysSlip > 0 ? `+${s.daysSlip}d late` : s.daysSlip === 0 ? 'Due today' : `${Math.abs(s.daysSlip)}d left`;
+          const pct = s.progress;
+          return `<tr>
+            <td>
+              <div class="slip-project">${esc(s.projectName)}</div>
+              <div class="slip-task">${esc(s.taskName)}</div>
+            </td>
+            <td style="font-size:12px;color:var(--text-muted)">${esc(s.dueDate)}</td>
+            <td><span class="slip-days ${slipCls}">${slipLabel}</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="prog-bar" style="width:70px;height:6px">
+                  <div class="prog-fill ${pct>=100?'done':pct<30?'warn':''}" style="width:${pct}%"></div>
+                </div>
+                <span style="font-size:11px;font-weight:600">${pct}%</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--text-muted)">${esc(s.responsible||'—')}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+function getAllFromProjects(projects) {
+  const arr = [];
+  for (const [key, list] of Object.entries(projects||{})) {
+    (list||[]).forEach(p => arr.push({...p, sheetKey:key}));
+  }
+  return arr;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 4 — DECISION LOG (project detail + admin tab)
+// ═══════════════════════════════════════════════════════════
+let currentDecisionProjectId = null;
+let currentDecisionProjectName = null;
+
+async function loadDecisions(projectId, projectName, containerId) {
+  currentDecisionProjectId = projectId;
+  currentDecisionProjectName = projectName;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading...</div>';
+
+  try {
+    const notes = typeof sbFetch === 'function'
+      ? await sbFetch(`notes?project_id=eq.${projectId}&select=*&order=created_at.desc&limit=30`)
+      : [];
+
+    const formHtml = `
+      <div class="add-decision-form">
+        <textarea id="decision-input-${containerId}" placeholder="Record a decision, action item, or risk..."></textarea>
+        <div class="decision-form-row">
+          <select class="decision-type-select" id="decision-type-${containerId}">
+            <option value="decision">📋 Decision</option>
+            <option value="action">✅ Action Item</option>
+            <option value="risk">⚠️ Risk</option>
+            <option value="info">ℹ️ Info</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="saveDecision('${containerId}')">Add Entry</button>
+        </div>
+      </div>`;
+
+    if (!notes.length) {
+      container.innerHTML = formHtml + `<div class="empty-state" style="padding:30px">
+        <div class="icon">📋</div><h3>No entries yet</h3>
+        <p>Record decisions, actions, and risks for this project</p></div>`;
+      return;
+    }
+
+    const TYPE_CSS = { decision:'dtype-decision', action:'dtype-action', risk:'dtype-risk', info:'dtype-info' };
+    const TYPE_LABEL = { decision:'Decision', action:'Action', risk:'Risk', info:'Info' };
+
+    const entries = notes.map(n => {
+      const type = n.note_type || 'info';
+      const d = new Date(n.created_at);
+      const dateStr = d.toLocaleDateString('en-GB',{
+        timeZone:'Africa/Cairo', day:'2-digit', month:'short', year:'numeric',
+        hour:'2-digit', minute:'2-digit', hour12:true
+      });
+      return `<div class="decision-card">
+        <div class="decision-header">
+          <span class="decision-text">${esc(n.content)}</span>
+          <span class="decision-type ${TYPE_CSS[type]||'dtype-info'}">${TYPE_LABEL[type]||type}</span>
+        </div>
+        <div class="decision-meta">
+          <span>👤 ${esc(n.author||'Admin')}</span>
+          <span>🕐 ${dateStr}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    container.innerHTML = formHtml + entries;
+  } catch(e) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Could not load entries: ${e.message}</p></div>`;
+  }
+}
+
+async function saveDecision(containerId) {
+  const input = document.getElementById('decision-input-' + containerId);
+  const typeEl = document.getElementById('decision-type-' + containerId);
+  const text = input?.value?.trim();
+  if (!text) { showToast('Please enter some text', 'error'); return; }
+
+  const noteData = {
+    project_id: currentDecisionProjectId,
+    content:    text,
+    author:     typeof currentUser !== 'undefined' ? (currentUser?.name||'Admin') : 'Admin',
+    note_type:  typeEl?.value || 'info'
+  };
+
+  try {
+    if (typeof sbFetch === 'function') {
+      await sbFetch('notes', { method:'POST', body:JSON.stringify(noteData) });
+    }
+    input.value = '';
+    await loadDecisions(currentDecisionProjectId, currentDecisionProjectName, containerId);
+    showToast('Entry added ✅', 'success');
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURE 5 — STEERING COMMITTEE TAB
+// ═══════════════════════════════════════════════════════════
+function renderSteeringCommittee() {
+  const container = document.getElementById('steering-body');
+  if (!container) return;
+
+  const all = getAllProjects();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // KPIs
+  const escalated = all.filter(p => p.escalate==='Yes'||p.escalate===true);
+  const atRisk    = all.filter(p => p.rag==='Amber'||p.rag==='Red');
+  const critical  = all.filter(p => p.rag==='Red');
+  const overdue   = [];
+  all.forEach(p => {
+    (p.tasks||[]).forEach(t => {
+      if (!t.milestoneDate || parseInt(t.progress)===100) return;
+      if (new Date(t.milestoneDate) < today) overdue.push(t);
+    });
+  });
+
+  document.getElementById('sc-escalated').textContent = escalated.length;
+  document.getElementById('sc-at-risk').textContent   = atRisk.length;
+  document.getElementById('sc-critical').textContent  = critical.length;
+  document.getElementById('sc-overdue').textContent   = overdue.length;
+
+  // Show at-risk + escalated projects
+  const featured = [...new Map([...escalated,...atRisk].map(p=>[p.projectName,p])).values()];
+
+  if (!featured.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="icon">✅</div>
+      <h3>All projects on track</h3>
+      <p>No escalated or at-risk projects at this time</p>
+    </div>`;
+    return;
+  }
+
+  const STATUS_BADGE = {'Active':'badge-blue','Completed':'badge-green','On Hold':'badge-gray','Upcoming':'badge-purple','Cancelled':'badge-red'};
+  container.innerHTML = featured.map(p => {
+    const pct = parseInt(p.progress)||0;
+    const rag = (p.rag||'Green').toLowerCase();
+    const isEscalated = p.escalate==='Yes'||p.escalate===true;
+    const tasksDue = (p.tasks||[]).filter(t => {
+      if (!t.milestoneDate || parseInt(t.progress)===100) return false;
+      return new Date(t.milestoneDate) < today;
+    });
+
+    return `<div class="escalated-project ${rag}">
+      <div class="ep-header">
+        <div>
+          <div class="ep-name">${esc(p.projectName)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">👤 ${esc(p.responsible||'—')} · ${esc(p.sheetName||'')}</div>
+        </div>
+        <div class="ep-badges">
+          ${isEscalated?'<span class="decision-needed-badge">🚨 Escalated</span>':''}
+          <span class="badge ${STATUS_BADGE[p.status]||'badge-gray'}">${esc(p.status)}</span>
+          <span class="rag"><span class="rag-dot ${rag}"></span>${esc(p.rag)}</span>
+        </div>
+      </div>
+      <div class="ep-progress">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span>Progress</span><strong>${pct}%</strong>
+        </div>
+        <div class="prog-bar" style="height:8px">
+          <div class="prog-fill ${pct>=100?'done':pct<30?'warn':''}" style="width:${pct}%"></div>
+        </div>
+      </div>
+      ${p.comment?`<div class="ep-comment">💬 ${esc(p.comment)}</div>`:''}
+      ${tasksDue.length?`<div class="ep-meta">⚠️ ${tasksDue.length} overdue task${tasksDue.length!==1?'s':''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+
+
+function triggerSteeringPDF() {
+  const all = getAllProjects().filter(p=>p.rag==='Amber'||p.rag==='Red'||p.escalate==='Yes'||p.escalate===true);
+  const pseudo = { _: all };
+  exportPDF('Steering Committee Report', pseudo, {
+    total: all.length,
+    active: all.filter(p=>p.status==='Active').length,
+    green: 0, amber: all.filter(p=>p.rag==='Amber').length,
+    red: all.filter(p=>p.rag==='Red').length,
+    avgProgress: all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
