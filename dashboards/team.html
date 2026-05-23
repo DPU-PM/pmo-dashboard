@@ -635,13 +635,7 @@
   .gantt-card.gantt-fullscreen .gantt-card-header { flex-shrink: 0; }
   .gantt-card.gantt-fullscreen .gantt-scroll { flex: 1; overflow: auto; }
   .gantt-card.gantt-fullscreen #pv-gantt { height: 100% !important; min-height: unset !important; }
-  .gantt-scroll {
-    resize: vertical;
-    overflow: auto;
-    min-height: 200px;
-    max-height: 80vh;
-    height: 360px;
-  }
+/* gantt-scroll defined below */
   .gantt-fullscreen-btn {
     background: var(--white); border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 10px; font-size: 12px;
@@ -839,16 +833,16 @@
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span id="pv-gantt-range" style="font-size:11px;color:var(--text-muted)"></span>
           <div class="gantt-controls">
-            <button class="gantt-view-btn" data-mode="Day" onclick="changeGanttView('Day')">Day</button>
-            <button class="gantt-view-btn" data-mode="Week" onclick="changeGanttView('Week')">Week</button>
-            <button class="gantt-view-btn active" data-mode="Month" onclick="changeGanttView('Month')">Month</button>
-            <button class="gantt-view-btn" data-mode="Year" onclick="changeGanttView('Year')">Year</button>
+            <button class="gantt-view-btn" data-mode="Day" onclick="changeGanttView('day')">Day</button>
+            <button class="gantt-view-btn" data-mode="Week" onclick="changeGanttView('week')">Week</button>
+            <button class="gantt-view-btn active" data-mode="Month" onclick="changeGanttView('month')">Month</button>
+            <button class="gantt-view-btn" data-mode="Year" onclick="changeGanttView('year')">Year</button>
           </div>
           <button class="gantt-fullscreen-btn" id="gantt-fs-btn" onclick="toggleGanttFullscreen()" title="Expand to full screen">⛶ Expand</button>
         </div>
       </div>
       <div class="gantt-scroll" id="gantt-scroll">
-        <div id="pv-gantt" style="padding:0;min-height:300px;height:360px"></div>
+        <div id="pv-gantt" style="padding:0;height:400px"></div>
       </div>
       <div class="gantt-resize-hint"></div>
     </div>
@@ -2381,153 +2375,20 @@ async function saveDecision(containerId) {
 let allRisks = [];
 let risksFilter = 'all'; // all | open | responded
 
-async function loadProjectRisks() {
-  const container = document.getElementById('risks-body');
-  if (!container) return;
-  container.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner" style="margin:0 auto"></div></div>';
+// loadProjectRisks replaced
 
-  try {
-    // Load all notes of type 'risk' with project info
-    const risks = await sbFetch(
-      'notes?note_type=eq.risk&select=*&order=created_at.desc'
-    );
 
-    // Load all risks' responses (action notes linked by parent — we store in content with prefix)
-    // Also load projects to get project names
-    const projects = await sbFetch('projects?select=id,project_name,category');
-    const projMap = {};
-    projects.forEach(p => { projMap[p.id] = p; });
+// renderRisksTable replaced
 
-    allRisks = risks.map(r => ({
-      ...r,
-      projectName: projMap[r.project_id]?.project_name || 'Unknown',
-      category:    projMap[r.project_id]?.category || '',
-      projectId:   r.project_id
-    }));
 
-    renderRisksTable();
-  } catch(e) {
-    container.innerHTML = `<div class="risks-empty"><div class="icon">⚠️</div><p>Could not load risks: ${e.message}</p></div>`;
-  }
-}
+// toggleRespForm replaced
 
-function renderRisksTable() {
-  const container = document.getElementById('risks-body');
-  if (!container) return;
 
-  let risks = allRisks;
-  if (risksFilter === 'open') risks = risks.filter(r => !r.content.startsWith('[RESPONDED]'));
-  if (risksFilter === 'responded') risks = risks.filter(r => r.content.startsWith('[RESPONDED]'));
+// submitRiskResponse replaced
 
-  // Update badge count
-  const openCount = allRisks.filter(r => !r.content.startsWith('[RESPONDED]')).length;
-  const badge = document.getElementById('risks-badge');
-  if (badge) badge.textContent = openCount;
-  const sbBadge = document.getElementById('sb-risks');
-  if (sbBadge) sbBadge.textContent = openCount || '';
 
-  if (!risks.length) {
-    container.innerHTML = `<div class="risks-empty">
-      <div class="icon">🛡️</div>
-      <h3>${risksFilter === 'all' ? 'No risks logged yet' : 'No ' + risksFilter + ' risks'}</h3>
-      <p>Risks added in project Decision & Actions logs appear here</p>
-    </div>`;
-    return;
-  }
+// filterRisks replaced
 
-  container.innerHTML = risks.map(r => {
-    const isResponded = r.content.startsWith('[RESPONDED]');
-    const displayContent = isResponded ? r.content.replace('[RESPONDED] ', '') : r.content;
-    const d = new Date(r.created_at);
-    const dateStr = d.toLocaleString('en-GB', {
-      timeZone:'Africa/Cairo', day:'2-digit', month:'short',
-      year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true
-    });
-
-    // Find SHEETKEY from category
-    const catKey = {'Content Projects':'content','Software Projects':'software',
-      'Marketing & Growth':'marketing','Initiatives':'initiatives','Sales Projects':'sales'}[r.category] || 'software';
-
-    return `<div class="risk-card ${isResponded?'responded':''}" id="risk-${r.id}">
-      <div class="risk-header">
-        <div class="risk-content">${esc(displayContent)}</div>
-        <span class="risk-project-badge" onclick="event.stopPropagation();openProjectView('${catKey}','${esc(r.projectName)}')"
-          title="Open project">📂 ${esc(r.projectName)}</span>
-      </div>
-      <div class="risk-meta">
-        <span>⚠️ Risk</span>
-        <span>👤 ${esc(r.author||'Admin')}</span>
-        <span>🕐 ${dateStr}</span>
-        ${isResponded ? '<span style="color:var(--green);font-weight:600">✅ Responded</span>' : '<span style="color:var(--red);font-weight:600">🔴 Open</span>'}
-      </div>
-      ${!isResponded ? `
-        <div class="risk-add-response" id="resp-form-${r.id}" style="display:none">
-          <textarea placeholder="Add your response to this risk..." id="resp-text-${r.id}"></textarea>
-          <button class="btn btn-primary btn-sm" onclick="submitRiskResponse('${r.id}','${r.project_id}')">Respond</button>
-        </div>
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button class="btn btn-secondary btn-sm" onclick="toggleRespForm('${r.id}')">💬 Add Response</button>
-          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE"
-            onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 Open Project</button>
-        </div>
-      ` : `
-        <div style="margin-top:8px">
-          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE"
-            onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 View Full Project</button>
-        </div>
-      `}
-    </div>`;
-  }).join('');
-}
-
-function toggleRespForm(riskId) {
-  const form = document.getElementById('resp-form-' + riskId);
-  if (!form) return;
-  const isVisible = form.style.display !== 'none';
-  form.style.display = isVisible ? 'none' : 'flex';
-  if (!isVisible) document.getElementById('resp-text-' + riskId)?.focus();
-}
-
-async function submitRiskResponse(riskId, projectId) {
-  const textarea = document.getElementById('resp-text-' + riskId);
-  const text = textarea?.value?.trim();
-  if (!text) { showToast('Please enter a response', 'error'); return; }
-
-  const risk = allRisks.find(r => r.id === riskId);
-  if (!risk) return;
-
-  try {
-    // 1. Add response as an 'action' note
-    const author = typeof currentUser !== 'undefined' ? (currentUser?.name || 'Admin') : 'Admin';
-    await sbFetch('notes', {
-      method: 'POST',
-      body: JSON.stringify({
-        project_id: projectId,
-        content: 'Risk Response: ' + text,
-        author,
-        note_type: 'action'
-      })
-    });
-
-    // 2. Mark original risk as responded
-    await sbFetch(`notes?id=eq.${riskId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ content: '[RESPONDED] ' + risk.content })
-    });
-
-    showToast('✅ Response recorded', 'success');
-    loadProjectRisks(); // refresh
-  } catch(e) {
-    showToast('Failed: ' + e.message, 'error');
-  }
-}
-
-function filterRisks(filter, el) {
-  risksFilter = filter;
-  document.querySelectorAll('.risk-filter-bar .pill').forEach(p => p.classList.remove('active'));
-  if (el) el.classList.add('active');
-  renderRisksTable();
-}
 
 function toggleTeamRisks(show) {
   const section = document.getElementById('team-risks-section');
@@ -2657,343 +2518,359 @@ class DashboardTimeline extends HTMLElement {
         super();
         this.rawData = []; this._presetData = [];
         this.config = {
-            width: 1300, rowHeight: 110, paddingTop: 270,
+            rowHeight: 72, paddingTop: 130,
             barColor: '#1A5FCC', barHoverColor: '#1348A0', progressColor: '#0D2E6B',
-            barHeight: 28, theme: 'light', zoomLevel: 'month',
+            barHeight: 24, theme: 'light', zoomLevel: 'month',
             showTodayLine: true, enableDragAndDrop: false, enableResizing: false,
-            showWeekends: true, snapToGrid: true, showBaselines: false,
-            showCriticalPath: false, template: null
+            showWeekends: true, snapToGrid: true,
         };
-        this.currentCanvasWidth = this.config.width;
-        this.dragState = { isDragging: false, isResizing: false, targetIndex: null, startX: 0, initialStartStr: '', initialEndStr: '', scrollOffsetStart: 0 };
         this.timelineBounds = { start: null, end: null, totalDuration: null };
         this._boundMouseMove = this._handleMouseMove.bind(this);
-        this._boundMouseUp = this._handleMouseUp.bind(this);
+        this._boundMouseUp   = this._handleMouseUp.bind(this);
+        this.dragState = { isDragging:false, targetIndex:null, startX:0, scrollOffsetStart:0, initialStartStr:'', initialEndStr:'', wasDragging:false };
     }
 
-    static get observedAttributes() { return ['theme', 'zoom', 'color', 'baselines', 'criticalpath']; }
+    static get observedAttributes() { return ['theme','zoom','color']; }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return;
-        if (name === 'theme') this.config.theme = newValue;
-        if (name === 'zoom') this.config.zoomLevel = newValue;
-        if (name === 'baselines') this.config.showBaselines = newValue === 'true';
-        if (name === 'criticalpath') this.config.showCriticalPath = newValue === 'true';
-        if (name === 'color') { this.config.barColor = newValue; this.config.barHoverColor = this._adjustColorBrightness(newValue, -20); this.config.progressColor = this._adjustColorBrightness(newValue, -40); }
-        this.render();
+    attributeChangedCallback(name, oldVal, newVal) {
+        if (oldVal === newVal) return;
+        if (name === 'theme') this.config.theme = newVal;
+        if (name === 'zoom')  this.config.zoomLevel = (newVal||'month').toLowerCase();
+        if (name === 'color') {
+            this.config.barColor    = newVal;
+            this.config.barHoverColor = this._dimColor(newVal, -20);
+            this.config.progressColor = this._dimColor(newVal, -40);
+        }
+        if (this._connected) this.render();
     }
 
     connectedCallback() {
-        this._injectStyles(); this._setupTooltip();
-        if (this._presetData && this._presetData.length) { this.rawData = this._presetData; }
+        this._connected = true;
+        this._injectStyles();
+        this._setupTooltip();
+        if (this._presetData && this._presetData.length) this.rawData = this._presetData;
         this.render();
     }
 
-    set data(value) { const parsed = Array.isArray(value) ? value : []; this.rawData = parsed; this._presetData = parsed; this.render(); }
+    disconnectedCallback() { this._connected = false; }
+
+    set data(v) {
+        this.rawData = Array.isArray(v) ? v : [];
+        this._presetData = this.rawData;
+        if (this._connected) this.render();
+    }
     get data() { return this.rawData; }
 
-    _injectStyles() {
-        if (document.getElementById('dt-pmo-styles')) return;
-        const style = document.createElement('style'); style.id = 'dt-pmo-styles';
-        style.textContent = `
-            dashboard-timeline { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; font-family: 'IBM Plex Sans', -apple-system, sans-serif; }
-            .dt-scroll-wrapper { flex: 1; width: 100%; overflow-x: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; position: relative; }
-            .dt-svg-canvas { display: block; height: auto; }
-            .dt-tooltip { position: fixed; background: rgba(15,23,42,0.92); color: white; padding: 8px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; pointer-events: none; opacity: 0; z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translate(-50%, -100%); transition: opacity 0.1s; white-space: nowrap; }
-            .dt-tooltip::after { content:''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border-width: 5px 5px 0; border-style: solid; border-color: rgba(15,23,42,0.92) transparent transparent transparent; }
-            .dt-draggable { cursor: grab; user-select: none; }
-            .dt-draggable:active { cursor: grabbing; }
-        `;
-        document.head.appendChild(style);
+    changeViewMode(mode) {
+        this.config.zoomLevel = (mode||'month').toLowerCase();
+        this.render();
+        requestAnimationFrame(() => this.scrollToToday());
     }
 
-    _setupTooltip() {
-        let tt = document.getElementById('dt-global-tooltip');
-        if (!tt) { tt = document.createElement('div'); tt.id = 'dt-global-tooltip'; tt.className = 'dt-tooltip'; document.body.appendChild(tt); }
-        this.tooltipNode = tt;
+    scrollToToday() {
+        const w = this.querySelector('.dt-scroll');
+        if (!w || !this.getX) return;
+        const tx = this.getX(new Date());
+        w.scrollTo({ left: tx - w.clientWidth / 2, behavior: 'smooth' });
     }
 
-    _calculateTimelineBoundaries(data) {
-        if (!data || data.length === 0) return;
-        const allDates = [];
-        data.forEach(item => {
-            allDates.push(new Date(item.start + 'T00:00:00'), new Date(item.end + 'T00:00:00'));
+    _calcBounds(data) {
+        const all = [];
+        data.forEach(t => {
+            all.push(new Date(t.start + 'T00:00:00'), new Date(t.end + 'T00:00:00'));
         });
-        if (this.config.showTodayLine) allDates.push(new Date());
-        let minDate = new Date(Math.min(...allDates)); let maxDate = new Date(Math.max(...allDates));
-        let timelineStart = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-        let timelineEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 1);
-        if (this.config.zoomLevel === 'day' || this.config.zoomLevel === 'week') {
-            timelineStart = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate() - 4);
-            timelineEnd = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate() + 10);
+        if (this.config.showTodayLine) all.push(new Date());
+        const minD = new Date(Math.min(...all));
+        const maxD = new Date(Math.max(...all));
+        const z = this.config.zoomLevel;
+        let tS, tE;
+        if (z === 'day' || z === 'week') {
+            tS = new Date(minD); tS.setDate(tS.getDate() - 5);
+            tE = new Date(maxD); tE.setDate(tE.getDate() + 14);
+        } else if (z === 'year') {
+            tS = new Date(minD.getFullYear() - 1, 0, 1);
+            tE = new Date(maxD.getFullYear() + 1, 0, 1);
+        } else { // month, quarter
+            tS = new Date(minD.getFullYear(), minD.getMonth() - 1, 1);
+            tE = new Date(maxD.getFullYear(), maxD.getMonth() + 2, 1);
         }
-        this.timelineBounds.start = timelineStart; this.timelineBounds.end = timelineEnd;
-        this.timelineBounds.totalDuration = timelineEnd - timelineStart;
+        this.timelineBounds = { start: tS, end: tE, totalDuration: tE - tS };
     }
 
     render() {
-        if (!this.rawData || this.rawData.length === 0) {
-            this.innerHTML = `<div style="text-align:center;padding:40px;color:#64748B;font-size:13px">📅 No milestone dates set — add due dates to tasks to see the timeline.</div>`;
+        if (!this.rawData || !this.rawData.length) {
+            this.innerHTML = `<div style="text-align:center;padding:40px;color:#94A3B8;font-size:13px">📅 No tasks with dates to display</div>`;
             return;
         }
-        if (!this.dragState.isDragging && !this.dragState.isResizing) this._calculateTimelineBoundaries(this.rawData);
 
-        const totalDays = this.timelineBounds.totalDuration / (1000 * 60 * 60 * 24);
-        this.currentCanvasWidth = this.config.width;
-        if (this.config.zoomLevel === 'day') this.currentCanvasWidth = Math.max(this.config.width, (totalDays * 80) + 130);
-        else if (this.config.zoomLevel === 'week') this.currentCanvasWidth = Math.max(this.config.width, (totalDays * 25) + 130);
+        this._calcBounds(this.rawData);
+        const { start: tS, end: tE, totalDuration: tD } = this.timelineBounds;
 
-        const isDark = this.config.theme === 'dark';
-        const bgColor = isDark ? '#1E1E2E' : '#FFFFFF';
-        const gridColor = isDark ? '#2D2D3F' : '#EAEAEA';
-        const laneColor = isDark ? '#1B1B2A' : '#FAFAFA';
-        const textColor = isDark ? '#9090A0' : '#64748B';
+        // Calculate canvas width dynamically from container
+        const containerW = this.offsetWidth || 900;
+        const totalDays  = tD / 86400000;
+        const z = this.config.zoomLevel;
+        let canvasW;
+        if (z === 'day')   canvasW = Math.max(containerW, totalDays * 60 + 140);
+        else if (z==='week') canvasW = Math.max(containerW, totalDays * 20 + 140);
+        else if (z==='year') canvasW = Math.max(containerW, totalDays * 4  + 140);
+        else               canvasW = Math.max(containerW, totalDays * 12 + 140);
 
-        this.swimlanes = {};
-        this.rawData.forEach((task, idx) => {
-            const lane = task.swimlane || 'Tasks';
-            if (!this.swimlanes[lane]) this.swimlanes[lane] = [];
-            this.swimlanes[lane].push({ task, originalIndex: idx });
+        const isDark    = this.config.theme === 'dark';
+        const bgColor   = isDark ? '#1A1A2E' : '#FFFFFF';
+        const gridColor = isDark ? '#2D2D45' : '#EAEAEA';
+        const laneColor = isDark ? '#1E1E30' : '#FAFBFC';
+        const textColor = isDark ? '#9494AA' : '#64748B';
+        const bH        = this.config.barHeight;
+        const rH        = this.config.rowHeight;
+        const pT        = this.config.paddingTop;
+        const LABEL_W   = 120;
+
+        const getX = (date) => LABEL_W + ((date - tS) / tD) * (canvasW - LABEL_W - 20);
+        this.getX = getX;
+        this.getDateFromX = (x) => new Date(tS.getTime() + ((x - LABEL_W) / (canvasW - LABEL_W - 20)) * tD);
+        const fmt = (d) => d.toISOString().split('T')[0];
+
+        // Build tiers
+        const tiers = z === 'day'  ? ['year','month','week','day'] :
+                      z === 'week' ? ['year','month','week'] :
+                      z === 'year' ? ['year'] : ['year','month'];
+        const tierH  = 26;
+        const hdrTop = 8;
+        const hdrBot = hdrTop + tiers.length * tierH;
+
+        // Group by swimlane
+        const lanes = {};
+        this.rawData.forEach((t, i) => {
+            const lane = t.swimlane || 'Tasks';
+            if (!lanes[lane]) lanes[lane] = [];
+            lanes[lane].push({ task: t, idx: i });
         });
 
-        let indexedRows = [];
-        Object.keys(this.swimlanes).forEach(lane => { this.swimlanes[lane].forEach(item => { indexedRows.push({ ...item, laneName: lane }); }); });
+        const rows = [];
+        Object.keys(lanes).forEach(lane => {
+            lanes[lane].forEach(item => rows.push({ ...item, lane }));
+        });
 
-        const tiers = this.config.zoomLevel === 'day' ? ['year','month','week','day'] : this.config.zoomLevel === 'week' ? ['year','month','week'] : ['year','month'];
-        const headerRowH = 28; const headerTopY = 16; const headerBottomY = headerTopY + (tiers.length * headerRowH);
-        const svgHeight = this.config.paddingTop + (indexedRows.length * this.config.rowHeight) + 40;
+        const svgH = Math.max(hdrBot + rows.length * rH + 30, 200);
 
-        const timelineStart = this.timelineBounds.start; const timelineEnd = this.timelineBounds.end; const totalDuration = this.timelineBounds.totalDuration;
-        const getX = (date) => 80 + ((date - timelineStart) / totalDuration) * (this.currentCanvasWidth - 130);
-        this.getXCoordinate = getX;
-        this.getTimeFromX = (x) => new Date(timelineStart.getTime() + ((x - 80) / (this.currentCanvasWidth - 130)) * totalDuration);
+        let svg = `<div class="dt-scroll"><svg class="dt-svg" viewBox="0 0 ${canvasW} ${svgH}" style="background:${bgColor};width:${canvasW}px;display:block;font-family:inherit" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="dt-sh" x="-5%" y="-20%" width="110%" height="160%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="${isDark?'0.35':'0.1'}"/></filter>
+          <marker id="dt-ar" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 1 L 10 5 L 0 9 z" fill="${this.config.barColor}" opacity="0.7"/></marker>
+        </defs>`;
 
-        let svg = `<div class="dt-scroll-wrapper"><svg class="dt-svg-canvas" viewBox="0 0 ${this.currentCanvasWidth} ${svgHeight}" style="background:${bgColor};width:${this.currentCanvasWidth}px;" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <filter id="dt-shadow"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="${isDark?'0.35':'0.08'}"/></filter>
-                <marker id="dt-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="${this.config.barColor}" opacity="0.8"/></marker>
-            </defs>`;
-
-        // Header lines
+        // Header grid lines
         for (let i = 0; i <= tiers.length; i++) {
-            svg += `<line x1="80" y1="${headerTopY + i*headerRowH}" x2="${this.currentCanvasWidth-50}" y2="${headerTopY + i*headerRowH}" stroke="${gridColor}" stroke-width="1"/>`;
+            svg += `<line x1="${LABEL_W}" y1="${hdrTop + i*tierH}" x2="${canvasW-10}" y2="${hdrTop + i*tierH}" stroke="${gridColor}" stroke-width="1"/>`;
         }
 
         // Year tier
         if (tiers.includes('year')) {
-            let y = new Date(timelineStart.getFullYear(), 0, 1);
-            while (y < timelineEnd) {
+            const ty = hdrTop + tiers.indexOf('year') * tierH;
+            let y = new Date(tS.getFullYear(), 0, 1);
+            while (y < tE) {
                 const ny = new Date(y.getFullYear()+1, 0, 1);
-                const sx = Math.max(getX(y),80); const ex = Math.min(getX(ny), this.currentCanvasWidth-50);
-                if (getX(ny) <= this.currentCanvasWidth-50) svg += `<line x1="${getX(ny)}" y1="${headerTopY}" x2="${getX(ny)}" y2="${headerTopY+headerRowH}" stroke="${gridColor}" stroke-width="1.5"/>`;
-                if (ex-sx > 40) svg += `<text x="${sx+(ex-sx)/2}" y="${headerTopY+18}" fill="${this.config.barColor}" font-size="13" font-weight="700" text-anchor="middle" font-family="inherit">${y.getFullYear()}</text>`;
+                const sx = Math.max(getX(y), LABEL_W), ex = Math.min(getX(ny), canvasW-10);
+                if (getX(ny) < canvasW-10) svg += `<line x1="${getX(ny)}" y1="${ty}" x2="${getX(ny)}" y2="${ty+tierH}" stroke="${gridColor}" stroke-width="1.5"/>`;
+                if (ex-sx > 30) svg += `<text x="${sx+(ex-sx)/2}" y="${ty+17}" fill="${this.config.barColor}" font-size="12" font-weight="700" text-anchor="middle" font-family="inherit">${y.getFullYear()}</text>`;
                 y = ny;
             }
         }
 
         // Month tier
         if (tiers.includes('month')) {
-            let m = new Date(timelineStart.getFullYear(), timelineStart.getMonth(), 1);
-            while (m < timelineEnd) {
+            const ty = hdrTop + tiers.indexOf('month') * tierH;
+            const isBottom = tiers[tiers.length-1] === 'month';
+            let m = new Date(tS.getFullYear(), tS.getMonth(), 1);
+            while (m < tE) {
                 const nm = new Date(m.getFullYear(), m.getMonth()+1, 1);
-                const sx = Math.max(getX(m),80); const ex = Math.min(getX(nm), this.currentCanvasWidth-50);
-                const tierY = headerTopY + (tiers.indexOf('month') * headerRowH);
-                if (getX(nm) <= this.currentCanvasWidth-50) { const btm = tiers.length === 2 ? svgHeight-20 : tierY+headerRowH; svg += `<line x1="${getX(nm)}" y1="${tierY}" x2="${getX(nm)}" y2="${btm}" stroke="${gridColor}" stroke-width="1"/>`; }
-                if (ex-sx > 28) { const txt = (ex-sx > 60) ? m.toLocaleString('default',{month:'long'}) : m.toLocaleString('default',{month:'short'}); svg += `<text x="${sx+(ex-sx)/2}" y="${tierY+18}" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" font-family="inherit">${txt}</text>`; }
+                const sx = Math.max(getX(m), LABEL_W), ex = Math.min(getX(nm), canvasW-10);
+                if (getX(nm) < canvasW-10) svg += `<line x1="${getX(nm)}" y1="${ty}" x2="${getX(nm)}" y2="${isBottom ? svgH-10 : ty+tierH}" stroke="${gridColor}" stroke-width="1"/>`;
+                if (ex-sx > 20) { const label = ex-sx>55 ? m.toLocaleString('default',{month:'long'}) : m.toLocaleString('default',{month:'short'}); svg += `<text x="${sx+(ex-sx)/2}" y="${ty+17}" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" font-family="inherit">${label}</text>`; }
                 m = nm;
             }
         }
 
         // Week tier
         if (tiers.includes('week')) {
-            let w = new Date(timelineStart); w.setDate(w.getDate()-w.getDay()); w.setHours(0,0,0,0);
-            while (w < timelineEnd) {
+            const ty = hdrTop + tiers.indexOf('week') * tierH;
+            const isBottom = tiers[tiers.length-1] === 'week';
+            let w = new Date(tS); w.setDate(w.getDate()-w.getDay()); w.setHours(0,0,0,0);
+            while (w < tE) {
                 const nw = new Date(w); nw.setDate(w.getDate()+7);
-                const tierY = headerTopY + (tiers.indexOf('week') * headerRowH);
-                const sx = Math.max(getX(w),80); const ex = Math.min(getX(nw),this.currentCanvasWidth-50);
-                if (getX(nw)>=80 && getX(nw)<=this.currentCanvasWidth-50) svg += `<line x1="${getX(nw)}" y1="${tierY}" x2="${getX(nw)}" y2="${svgHeight-20}" stroke="${gridColor}" stroke-width="1"/>`;
-                if (ex-sx>40) { const d=new Date(Date.UTC(w.getFullYear(),w.getMonth(),w.getDate())); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7)); const wn=Math.ceil((((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/86400000)+1)/7); svg += `<text x="${sx+(ex-sx)/2}" y="${tierY+18}" fill="${textColor}" font-size="11" font-weight="500" text-anchor="middle" font-family="inherit">W${wn}</text>`; }
+                const sx = Math.max(getX(w), LABEL_W), ex = Math.min(getX(nw), canvasW-10);
+                if (getX(nw)>=LABEL_W && getX(nw)<=canvasW-10) svg += `<line x1="${getX(nw)}" y1="${ty}" x2="${getX(nw)}" y2="${isBottom?svgH-10:ty+tierH}" stroke="${gridColor}" stroke-width="1"/>`;
+                if (ex-sx>35) { const d=new Date(Date.UTC(w.getFullYear(),w.getMonth(),w.getDate())); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7)); const wn=Math.ceil((((d-new Date(Date.UTC(d.getUTCFullYear(),0,1)))/86400000)+1)/7); svg += `<text x="${sx+(ex-sx)/2}" y="${ty+17}" fill="${textColor}" font-size="11" font-weight="500" text-anchor="middle" font-family="inherit">W${wn}</text>`; }
                 w = nw;
             }
         }
 
         // Day tier
         if (tiers.includes('day')) {
-            let d = new Date(timelineStart); d.setHours(0,0,0,0);
-            while (d < timelineEnd) {
+            const ty = hdrTop + tiers.indexOf('day') * tierH;
+            let d = new Date(tS); d.setHours(0,0,0,0);
+            while (d < tE) {
                 const nd = new Date(d); nd.setDate(d.getDate()+1);
-                const tierY = headerTopY + (tiers.indexOf('day') * headerRowH);
                 const dx = getX(d);
-                if (dx>=80 && dx<=this.currentCanvasWidth-50) {
-                    svg += `<line x1="${dx}" y1="${tierY}" x2="${dx}" y2="${svgHeight-20}" stroke="${gridColor}" stroke-width="1" stroke-dasharray="2 2"/>`;
-                    if (getX(nd)-dx>20) svg += `<text x="${dx+(getX(nd)-dx)/2}" y="${tierY+18}" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" font-family="inherit">${d.getDate()}</text>`;
+                if (dx>=LABEL_W && dx<=canvasW-10) {
+                    svg += `<line x1="${dx}" y1="${ty}" x2="${dx}" y2="${svgH-10}" stroke="${gridColor}" stroke-width="1" stroke-dasharray="2 2"/>`;
+                    if (getX(nd)-dx>18) svg += `<text x="${dx+(getX(nd)-dx)/2}" y="${ty+17}" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" font-family="inherit">${d.getDate()}</text>`;
                 }
                 d = nd;
             }
         }
 
-        // Swimlane backgrounds
+        // Swimlane backgrounds + labels
         let rowCounter = 0;
-        Object.keys(this.swimlanes).forEach((lane, li) => {
-            const count = this.swimlanes[lane].length;
-            const topY = this.config.paddingTop + (rowCounter * this.config.rowHeight);
-            const blockH = count * this.config.rowHeight;
-            if (li % 2 === 0) svg += `<rect x="0" y="${topY}" width="${this.currentCanvasWidth}" height="${blockH}" fill="${laneColor}" opacity="0.6"/>`;
-            svg += `<line x1="0" y1="${topY}" x2="${this.currentCanvasWidth}" y2="${topY}" stroke="${gridColor}" stroke-width="1.5"/>`;
-            svg += `<text x="90" y="${topY+18}" fill="${this.config.barColor}" font-size="10" font-weight="700" letter-spacing="0.5" font-family="inherit" opacity="0.85">${lane.toUpperCase()}</text>`;
-            rowCounter += count;
+        Object.keys(lanes).forEach((lane, li) => {
+            const laneRows = lanes[lane].length;
+            const topY = hdrBot + rowCounter * rH;
+            if (li % 2 === 0) svg += `<rect x="0" y="${topY}" width="${canvasW}" height="${laneRows*rH}" fill="${laneColor}" opacity="0.6"/>`;
+            svg += `<line x1="0" y1="${topY}" x2="${canvasW}" y2="${topY}" stroke="${gridColor}" stroke-width="1.5"/>`;
+            // Sticky lane label
+            svg += `<text x="6" y="${topY + laneRows*rH/2 + 4}" fill="${this.config.barColor}" font-size="10" font-weight="700" font-family="inherit" opacity="0.9" style="writing-mode:horizontal-tb">${lane}</text>`;
+            rowCounter += laneRows;
         });
 
         // Today line
         if (this.config.showTodayLine) {
             const tx = getX(new Date());
-            if (tx>=80 && tx<=this.currentCanvasWidth-50) {
-                svg += `<line x1="${tx}" y1="${headerBottomY}" x2="${tx}" y2="${svgHeight-20}" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4 2"/>`;
-                svg += `<rect x="${tx-22}" y="${headerBottomY+3}" width="44" height="17" rx="4" fill="#EF4444"/>`;
-                svg += `<text x="${tx}" y="${headerBottomY+14}" fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="inherit">TODAY</text>`;
+            if (tx >= LABEL_W && tx <= canvasW-10) {
+                svg += `<line x1="${tx}" y1="${hdrBot}" x2="${tx}" y2="${svgH-10}" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.8"/>`;
+                svg += `<rect x="${tx-20}" y="${hdrBot+3}" width="40" height="15" rx="3" fill="#EF4444"/>`;
+                svg += `<text x="${tx}" y="${hdrBot+13}" fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="inherit">TODAY</text>`;
             }
         }
 
-        // Task bars + popups
-        const taskPositions = {};
+        // Task bars
+        const taskPos = {};
         const RAG_COLORS = { Red:'#DC2626', Amber:'#D97706', Green:'#16A34A' };
-        const PRIORITY_COLORS = { Critical:'#EF4444', High:'#F97316', Medium:'#1A5FCC', Low:'#16A34A' };
+        const PRI_COLORS = { Critical:'#EF4444', High:'#F97316', Medium:'#3B82F6', Low:'#16A34A', Default:'#1A5FCC' };
 
-        indexedRows.forEach((rowObj, vIdx) => {
-            const task = rowObj.task; const oIdx = rowObj.originalIndex;
-            const startReal = new Date(task.start+'T00:00:00'); const endReal = new Date(task.end+'T00:00:00');
-            const sx = getX(startReal); const ex = getX(endReal);
-            const barW = Math.max(ex-sx, 40);
-            const barY = this.config.paddingTop + (vIdx * this.config.rowHeight) + 40;
-            const isMilestone = task.start === task.end;
-            const barColor = task.ragColor || PRIORITY_COLORS[task.priority] || this.config.barColor;
+        rows.forEach((rowObj, vIdx) => {
+            const task = rowObj.task; const oIdx = rowObj.idx;
+            const sDate = new Date(task.start+'T00:00:00');
+            const eDate = new Date(task.end+'T00:00:00');
+            const sx = getX(sDate); const ex = getX(eDate);
+            const barW = Math.max(ex-sx, 30);
+            const barY = hdrBot + vIdx * rH + Math.round((rH - bH) / 2);
+            const barColor = task.ragColor || RAG_COLORS[task.rag] || PRI_COLORS[task.priority] || this.config.barColor;
             const progW = barW * ((task.progress||0)/100);
-            const dayDur = Math.round((endReal-startReal)/(1000*60*60*24));
+            const progColor = this._dimColor(barColor, -30);
+            const dayDur = Math.round((eDate-sDate)/86400000);
+            const isMilestone = task.start === task.end;
 
-            taskPositions[task.id] = { cx:sx, cy:barY+(this.config.barHeight/2), x2:sx+barW, y2:barY+(this.config.barHeight/2) };
+            taskPos[task.id] = { sx, sy:barY+bH/2, ex:sx+barW, ey:barY+bH/2 };
 
-            // Connector line from popup to bar
-            svg += `<line x1="${sx}" y1="${barY-50}" x2="${sx}" y2="${barY}" stroke="${barColor}" stroke-width="1" opacity="0.3"/>`;
+            // Row label
+            const labelText = (task.title||'').length > 14 ? (task.title||'').substring(0,13)+'…' : (task.title||'');
+            svg += `<text x="${LABEL_W-6}" y="${barY+bH/2+4}" fill="${textColor}" font-size="11" font-weight="500" text-anchor="end" font-family="inherit">${labelText}</text>`;
 
             if (isMilestone) {
-                svg += `<g class="dt-bar-group" data-index="${oIdx}" data-tooltip="${task.title} (Milestone) · ${task.end}">
-                    <path d="M ${sx} ${barY-10} L ${sx+10} ${barY} L ${sx} ${barY+10} L ${sx-10} ${barY} Z" fill="#10B981" filter="url(#dt-shadow)" style="cursor:pointer;"/>
+                svg += `<g class="dt-bar" data-index="${oIdx}" data-tip="${task.title||''} · Milestone · ${task.end}">
+                    <path d="M${sx} ${barY-4} L${sx+10} ${barY+bH/2} L${sx} ${barY+bH+4} L${sx-10} ${barY+bH/2} Z" fill="#10B981" filter="url(#dt-sh)" style="cursor:pointer"/>
                 </g>`;
             } else {
-                svg += `<g class="dt-bar-group ${this.config.enableDragAndDrop?'dt-draggable':''}" data-index="${oIdx}" data-tooltip="${task.title} · ${dayDur}d · ${task.progress||0}% done" filter="url(#dt-shadow)">
-                    <rect x="${sx}" y="${barY}" width="${barW}" height="${this.config.barHeight}" fill="${barColor}" rx="5"/>
-                    <rect x="${sx}" y="${barY}" width="${progW}" height="${this.config.barHeight}" fill="${this._adjustColorBrightness(barColor,-30)}" rx="5" opacity="0.9"/>
-                    <text x="${sx+9}" y="${barY+18}" fill="#fff" font-size="11" font-weight="700" font-family="inherit" style="user-select:none">${task.label||''}</text>
-                    ${this.config.enableResizing ? `<rect x="${sx+barW-6}" y="${barY}" width="8" height="${this.config.barHeight}" fill="transparent" style="cursor:ew-resize" data-index="${oIdx}"/>` : ''}
+                const tip = `${task.title||''} · ${dayDur}d · ${task.progress||0}%${task.responsible?' · 👤'+task.responsible:''}`;
+                svg += `<g class="dt-bar${this.config.enableDragAndDrop?' dt-drag':''}" data-index="${oIdx}" data-tip="${tip}" filter="url(#dt-sh)">
+                    <rect x="${sx}" y="${barY}" width="${barW}" height="${bH}" fill="${barColor}" rx="4"/>
+                    <rect x="${sx}" y="${barY}" width="${progW}" height="${bH}" fill="${progColor}" rx="4" opacity="0.9"/>
+                    <text x="${sx+7}" y="${barY+bH/2+4}" fill="#fff" font-size="10" font-weight="700" font-family="inherit" style="pointer-events:none;user-select:none">${task.label||''}</text>
+                    ${this.config.enableResizing ? `<rect x="${sx+barW-5}" y="${barY}" width="7" height="${bH}" fill="transparent" data-resize="${oIdx}" style="cursor:ew-resize"/>` : ''}
                 </g>`;
             }
-
-            // Popup card
-            const cardW = Math.max(barW*0.95, 180); const cardH = 80;
-            const cardX = sx; const cardY = vIdx%2===0 ? barY-135 : barY-110;
-            const pillC = PRIORITY_COLORS[task.priority]||barColor;
-            const popupBg = isDark ? '#1E1E2E' : '#FFFFFF'; const popupText = isDark ? '#F1F5F9' : '#0F172A'; const popupSub = isDark ? '#94A3B8' : '#64748B';
-            svg += `<foreignObject x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}">
-                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;padding:2px">
-                    <div style="background:${popupBg};border:1px solid ${isDark?'#2D2D3F':'#E2E8F0'};border-top:3px solid ${pillC};border-radius:8px;padding:10px 12px;box-shadow:0 4px 12px rgba(0,0,0,${isDark?'0.3':'0.08'});height:calc(100% - 4px);box-sizing:border-box">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-                            <span style="font-weight:700;font-size:12px;color:${popupText};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:115px;font-family:inherit">${task.title}</span>
-                            ${task.priority ? `<span style="font-size:9px;padding:1px 5px;background:${pillC};color:#fff;border-radius:3px;font-weight:700;font-family:inherit">${task.priority}</span>` : ''}
-                        </div>
-                        <div style="font-size:11px;color:${popupSub};line-height:1.3;font-family:inherit">${task.description||''}</div>
-                    </div>
-                </div>
-            </foreignObject>`;
         });
 
         // Dependency arrows
         this.rawData.forEach(task => {
-            if (task.dependencies && taskPositions[task.dependencies] && taskPositions[task.id]) {
-                const s = taskPositions[task.dependencies]; const e = taskPositions[task.id];
-                if (e.cx >= s.x2) {
-                    const mx = s.x2 + (e.cx-s.x2)/2;
-                    svg += `<path d="M ${s.x2} ${s.cy} C ${mx} ${s.cy}, ${mx} ${e.cy}, ${e.cx} ${e.cy}" stroke="${this.config.barColor}" stroke-width="1.5" fill="none" opacity="0.5" stroke-dasharray="3 2" marker-end="url(#dt-arrow)"/>`;
+            if (task.dependencies && taskPos[task.dependencies] && taskPos[task.id]) {
+                const s = taskPos[task.dependencies]; const e = taskPos[task.id];
+                if (e.sx >= s.ex) {
+                    const mx = s.ex + (e.sx - s.ex) * 0.5;
+                    svg += `<path d="M${s.ex} ${s.sy} C${mx} ${s.sy} ${mx} ${e.sy} ${e.sx} ${e.sy}" stroke="${this.config.barColor}" stroke-width="1.5" fill="none" opacity="0.5" stroke-dasharray="3 2" marker-end="url(#dt-ar)"/>`;
                 }
             }
         });
 
         svg += `</svg></div>`;
         this.innerHTML = svg;
-        this._registerListeners();
+        this._attachEvents();
     }
 
-    _registerListeners() {
-        this.querySelectorAll('.dt-bar-group').forEach(g => {
+    _attachEvents() {
+        const tt = this.tooltipNode;
+        this.querySelectorAll('.dt-bar').forEach(g => {
             const idx = parseInt(g.getAttribute('data-index'));
             g.addEventListener('mousemove', e => {
-                if (this.dragState.isDragging || this.dragState.isResizing) return;
-                this.tooltipNode.innerHTML = g.getAttribute('data-tooltip');
-                this.tooltipNode.style.opacity='1';
-                this.tooltipNode.style.top=`${e.pageY-15}px`;
-                this.tooltipNode.style.left=`${e.pageX}px`;
+                if (this.dragState.isDragging) return;
+                tt.textContent = g.getAttribute('data-tip');
+                tt.style.opacity='1'; tt.style.top=`${e.pageY-14}px`; tt.style.left=`${e.pageX}px`;
             });
-            g.addEventListener('mouseleave', () => { this.tooltipNode.style.opacity='0'; });
-            g.addEventListener('click', () => { this._dispatch('task-click', this.rawData[idx]); });
-
+            g.addEventListener('mouseleave', () => { tt.style.opacity='0'; });
+            g.addEventListener('click', () => { if(!this.dragState.wasDragging) this._fire('task-click', this.rawData[idx]); });
             if (this.config.enableDragAndDrop) {
                 g.addEventListener('mousedown', e => {
-                    const scrollEl = this.querySelector('.dt-scroll-wrapper');
-                    this.tooltipNode.style.opacity='0';
-                    this.dragState = { isDragging:true, wasDragging:false, targetIndex:idx, startX:e.clientX, scrollOffsetStart:scrollEl.scrollLeft, initialStartStr:this.rawData[idx].start, initialEndStr:this.rawData[idx].end, isResizing:false };
-                    this._bindTracking(); e.stopPropagation(); e.preventDefault();
+                    const sw = this.querySelector('.dt-scroll');
+                    tt.style.opacity='0';
+                    Object.assign(this.dragState, { isDragging:true, wasDragging:false, targetIndex:idx, startX:e.clientX, scrollOffsetStart:sw?.scrollLeft||0, initialStartStr:this.rawData[idx].start, initialEndStr:this.rawData[idx].end });
+                    window.addEventListener('mousemove', this._boundMouseMove);
+                    window.addEventListener('mouseup',   this._boundMouseUp);
+                    e.stopPropagation(); e.preventDefault();
                 });
             }
         });
     }
 
-    _bindTracking() { window.addEventListener('mousemove', this._boundMouseMove); window.addEventListener('mouseup', this._boundMouseUp); }
-
     _handleMouseMove(e) {
-        const idx=this.dragState.targetIndex; const task=this.rawData[idx];
-        const sw=this.querySelector('.dt-scroll-wrapper'); const svg=this.querySelector('.dt-svg-canvas');
-        const dScroll=sw.scrollLeft-this.dragState.scrollOffsetStart;
-        const scale=this.currentCanvasWidth/svg.getBoundingClientRect().width;
-        const dx=(e.clientX-this.dragState.startX+dScroll)*scale;
-        const snap=(d)=>{ if(this.config.snapToGrid){d.setHours(0,0,0,0);} return d; };
-        const fmt=(d)=>d.toISOString().split('T')[0];
-        this.dragState.wasDragging=true;
-        const csx=this.getXCoordinate(new Date(this.dragState.initialStartStr+'T00:00:00'));
-        const cex=this.getXCoordinate(new Date(this.dragState.initialEndStr+'T00:00:00'));
-        task.start=fmt(snap(this.getTimeFromX(csx+dx)));
-        task.end=fmt(snap(this.getTimeFromX(cex+dx)));
+        const { targetIndex:idx, startX, scrollOffsetStart, initialStartStr, initialEndStr } = this.dragState;
+        const sw = this.querySelector('.dt-scroll');
+        const svg = this.querySelector('.dt-svg');
+        if (!sw || !svg) return;
+        const dScroll = (sw.scrollLeft||0) - scrollOffsetStart;
+        const scale = (this.offsetWidth||900) / svg.getBoundingClientRect().width;
+        const dx = (e.clientX - startX + dScroll) * scale;
+        const snap = d => { d.setHours(0,0,0,0); return d; };
+        const fmt  = d => d.toISOString().split('T')[0];
+        const task = this.rawData[idx];
+        this.dragState.wasDragging = true;
+        task.start = fmt(snap(this.getDateFromX(this.getX(new Date(initialStartStr+'T00:00:00')) + dx)));
+        task.end   = fmt(snap(this.getDateFromX(this.getX(new Date(initialEndStr  +'T00:00:00')) + dx)));
         this.render();
     }
 
     _handleMouseUp() {
         window.removeEventListener('mousemove', this._boundMouseMove);
-        window.removeEventListener('mouseup', this._boundMouseUp);
-        if (this.dragState.isDragging) { this._dispatch('task-date-change', this.rawData[this.dragState.targetIndex]); }
-        this.dragState.isDragging=false; this.dragState.isResizing=false;
-        setTimeout(()=>{ this.dragState.wasDragging=false; },60);
+        window.removeEventListener('mouseup',   this._boundMouseUp);
+        if (this.dragState.isDragging) this._fire('task-date-change', this.rawData[this.dragState.targetIndex]);
+        this.dragState.isDragging = false;
+        setTimeout(() => { this.dragState.wasDragging = false; }, 60);
     }
 
-    _dispatch(name, detail) { this.dispatchEvent(new CustomEvent(name, { detail, bubbles:true, composed:true })); }
+    _fire(name, detail) { this.dispatchEvent(new CustomEvent(name, { detail, bubbles:true, composed:true })); }
 
-    _adjustColorBrightness(hex, pct) {
-        if (!hex || !hex.startsWith('#')) return hex||'#1A5FCC';
-        let R=parseInt(hex.slice(1,3),16); let G=parseInt(hex.slice(3,5),16); let B=parseInt(hex.slice(5,7),16);
-        R=Math.min(255,Math.max(0,Math.round(R*(100+pct)/100)));
-        G=Math.min(255,Math.max(0,Math.round(G*(100+pct)/100)));
-        B=Math.min(255,Math.max(0,Math.round(B*(100+pct)/100)));
-        return '#'+(R.toString(16).padStart(2,'0'))+(G.toString(16).padStart(2,'0'))+(B.toString(16).padStart(2,'0'));
+    _dimColor(hex, pct) {
+        if (!hex||!hex.startsWith('#')||hex.length<7) return hex||'#1A5FCC';
+        const R=Math.min(255,Math.max(0,Math.round(parseInt(hex.slice(1,3),16)*(100+pct)/100)));
+        const G=Math.min(255,Math.max(0,Math.round(parseInt(hex.slice(3,5),16)*(100+pct)/100)));
+        const B=Math.min(255,Math.max(0,Math.round(parseInt(hex.slice(5,7),16)*(100+pct)/100)));
+        return '#'+R.toString(16).padStart(2,'0')+G.toString(16).padStart(2,'0')+B.toString(16).padStart(2,'0');
     }
 
-    scrollToToday() {
-        const w=this.querySelector('.dt-scroll-wrapper');
-        if(!w) return;
-        w.scrollTo({ left: this.getXCoordinate(new Date())-(w.clientWidth/2), behavior:'smooth' });
+    _injectStyles() {
+        if (document.getElementById('dt-styles')) return;
+        const s = document.createElement('style'); s.id='dt-styles';
+        s.textContent=`dashboard-timeline{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden}.dt-scroll{flex:1;overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;width:100%}.dt-svg{display:block}.dt-drag{cursor:grab;user-select:none}.dt-drag:active{cursor:grabbing}#dt-tip{position:fixed;background:rgba(15,23,42,.92);color:#fff;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:500;pointer-events:none;opacity:0;z-index:9999;box-shadow:0 3px 8px rgba(0,0,0,.2);transform:translate(-50%,-100%);transition:opacity .1s;white-space:nowrap}#dt-tip::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(15,23,42,.92)}`;
+        document.head.appendChild(s);
     }
 
-    changeViewMode(mode) {
-        this.config.zoomLevel = mode;
-        this.render();
-        setTimeout(() => this.scrollToToday(), 100);
+    _setupTooltip() {
+        let tt = document.getElementById('dt-tip');
+        if (!tt) { tt=document.createElement('div'); tt.id='dt-tip'; document.body.appendChild(tt); }
+        this.tooltipNode = tt;
     }
+
+    _adjustColorBrightness(hex, pct) { return this._dimColor(hex, pct); }
 }
 
 if (!customElements.get('dashboard-timeline')) {
@@ -3068,7 +2945,7 @@ function renderGantt(taskList) {
     el = document.createElement('dashboard-timeline');
     el.id = 'pv-gantt-el';
     el.setAttribute('theme', 'light');
-    el.setAttribute('zoom', currentViewMode);
+    el.setAttribute('zoom', (currentViewMode||'month').toLowerCase());
     el.setAttribute('color', '#1A5FCC');
     el.style.width  = '100%';
     el.style.height = '100%';
@@ -3090,12 +2967,13 @@ function renderGantt(taskList) {
 }
 
 function changeGanttView(mode) {
-  currentViewMode = mode;
+  const modeLC = (mode||'month').toLowerCase();
+  currentViewMode = modeLC;
   document.querySelectorAll('.gantt-view-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.mode === mode)
+    b.classList.toggle('active', (b.dataset.mode||'').toLowerCase() === (modeLC||currentViewMode))
   );
   if (ganttInstance && ganttInstance.changeViewMode) {
-    ganttInstance.changeViewMode(mode);
+    ganttInstance.changeViewMode(modeLC || currentViewMode);
   }
 }
 
@@ -3111,6 +2989,181 @@ function toggleGanttFullscreen() {
   }
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT RISKS — with Open / Closed tabs
+// ═══════════════════════════════════════════════════════════
+let allRisks = [];
+let risksFilter = 'open';
+
+async function loadProjectRisks() {
+  const container = document.getElementById('risks-body');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner" style="margin:0 auto"></div></div>';
+  try {
+    const [risks, projects] = await Promise.all([
+      sbFetch('notes?note_type=eq.risk&select=*&order=created_at.desc'),
+      sbFetch('projects?select=id,project_name,category')
+    ]);
+    const projMap = {};
+    projects.forEach(p => { projMap[p.id] = p; });
+    allRisks = risks.map(r => ({
+      ...r,
+      projectName: projMap[r.project_id]?.project_name || 'Unknown',
+      category:    projMap[r.project_id]?.category || '',
+      projectId:   r.project_id
+    }));
+    renderRisksTable();
+  } catch(e) {
+    if(container) container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⚠️ ${e.message}</div>`;
+  }
+}
+
+function renderRisksTable() {
+  const container = document.getElementById('risks-body');
+  if (!container) return;
+
+  const openRisks   = allRisks.filter(r => !r.response_text);
+  const closedRisks = allRisks.filter(r =>  r.response_text);
+
+  // Update badge
+  const badge  = document.getElementById('risks-badge');
+  const sbBadge = document.getElementById('sb-risks');
+  if (badge)   badge.textContent  = openRisks.length || '';
+  if (sbBadge) sbBadge.textContent = openRisks.length || '';
+
+  const risks = risksFilter === 'open'   ? openRisks :
+                risksFilter === 'closed' ? closedRisks : allRisks;
+
+  // Render filter pills
+  const filterHtml = `
+    <div class="filter-bar risk-filter-bar" style="margin-bottom:14px">
+      <span class="pill ${risksFilter==='open'?'active':''}" onclick="filterRisks('open',this)" style="cursor:pointer">
+        🔴 Open <span style="background:#DC2626;color:#fff;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:3px">${openRisks.length}</span>
+      </span>
+      <span class="pill ${risksFilter==='closed'?'active':''}" onclick="filterRisks('closed',this)" style="cursor:pointer">
+        ✅ Closed <span style="background:#16A34A;color:#fff;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:3px">${closedRisks.length}</span>
+      </span>
+      <span class="pill ${risksFilter==='all'?'active':''}" onclick="filterRisks('all',this)" style="cursor:pointer">All</span>
+    </div>`;
+
+  if (!risks.length) {
+    container.innerHTML = filterHtml + `<div class="risks-empty">
+      <div class="icon">${risksFilter==='closed'?'✅':'🛡️'}</div>
+      <h3>${risksFilter==='open'?'No open risks':'No closed risks yet'}</h3>
+      <p>Risks added in project Decisions & Actions appear here</p>
+    </div>`;
+    return;
+  }
+
+  const CAT_KEY = {'Content Projects':'content','Software Projects':'software',
+    'Marketing & Growth':'marketing','Initiatives':'initiatives','Sales Projects':'sales'};
+
+  const cards = risks.map(r => {
+    const isClosed = !!r.response_text;
+    const catKey   = CAT_KEY[r.category] || 'software';
+    const d        = new Date(r.created_at);
+    const dateStr  = d.toLocaleString('en-GB',{
+      timeZone:'Africa/Cairo',day:'2-digit',month:'short',year:'numeric',
+      hour:'2-digit',minute:'2-digit',hour12:true
+    });
+    const author   = typeof currentUser !== 'undefined' ? (currentUser?.name||'Admin') : 'Admin';
+
+    return `<div class="risk-card ${isClosed?'responded':''}" id="risk-${r.id}">
+      <div class="risk-header">
+        <div class="risk-content">${esc(r.content)}</div>
+        <span class="risk-project-badge" onclick="event.stopPropagation();openProjectView('${catKey}','${esc(r.projectName)}')" title="Open project" style="cursor:pointer">
+          📂 ${esc(r.projectName)}
+        </span>
+      </div>
+      <div class="risk-meta">
+        <span>⚠️ Risk</span>
+        <span>👤 ${esc(r.author||'Admin')}</span>
+        <span>🕐 ${dateStr}</span>
+        ${isClosed
+          ? '<span style="color:var(--green);font-weight:600">✅ Closed</span>'
+          : '<span style="color:var(--red);font-weight:600">🔴 Open</span>'}
+      </div>
+      ${isClosed ? `
+        <div class="risk-response-preview" style="margin-top:10px;padding:8px 12px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;font-size:12px;color:#15803D">
+          <strong>Response:</strong> ${esc(r.response_text)}
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE" onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 View Project</button>
+        </div>
+      ` : `
+        <div id="resp-form-${r.id}" style="display:none;margin-top:10px">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <textarea id="resp-text-${r.id}" placeholder="Type your response to this risk..." style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;min-height:64px;outline:none"></textarea>
+            <button class="btn btn-primary btn-sm" onclick="submitRiskResponse('${r.id}','${r.project_id}')">Submit</button>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="toggleRespForm('${r.id}')">💬 Respond</button>
+          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE" onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 Open Project</button>
+        </div>
+      `}
+    </div>`;
+  }).join('');
+
+  container.innerHTML = filterHtml + cards;
+}
+
+function filterRisks(filter) {
+  risksFilter = filter;
+  renderRisksTable();
+}
+
+function toggleRespForm(riskId) {
+  const form = document.getElementById('resp-form-' + riskId);
+  if (!form) return;
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) document.getElementById('resp-text-' + riskId)?.focus();
+}
+
+async function submitRiskResponse(riskId, projectId) {
+  const textarea = document.getElementById('resp-text-' + riskId);
+  const text = textarea?.value?.trim();
+  if (!text) { showToast('Please enter a response', 'error'); return; }
+
+  const risk   = allRisks.find(r => r.id === riskId);
+  if (!risk)   { showToast('Risk not found', 'error'); return; }
+  const author = typeof currentUser !== 'undefined' ? (currentUser?.name||'Admin') : 'Admin';
+
+  // Optimistic UI update
+  risk.response_text = text;
+  risk.responded_by  = author;
+  renderRisksTable();
+  // Switch to closed tab to show result
+  risksFilter = 'closed';
+  renderRisksTable();
+  showToast('✅ Risk closed', 'success');
+
+  try {
+    // 1. Store response on the risk note itself
+    await sbFetch(`notes?id=eq.${riskId}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ response_text: text, responded_by: author })
+    });
+    // 2. Log response as action note in project
+    await sbFetch('notes', {
+      method: 'POST',
+      body: JSON.stringify({
+        project_id: projectId,
+        content: 'Risk Response: ' + text,
+        author,
+        note_type: 'action'
+      })
+    });
+  } catch(e) {
+    showToast('Sync failed: ' + e.message, 'error');
+    // Revert optimistic update
+    delete risk.response_text;
+    renderRisksTable();
+  }
+}
 </script>
 </body>
 </html>
