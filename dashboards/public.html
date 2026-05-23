@@ -874,11 +874,18 @@ function filterPublic(projects) {
 window.addEventListener('DOMContentLoaded', () => {
   const cached = getCached();
   if (cached) {
-    applyData(cached);                           // instant from cache
-    refreshBackground();                         // silent background refresh
+    applyData(cached);
+    refreshBackground();
   } else {
-    loadFresh();                                 // first ever load
+    loadFresh();
   }
+  // Safety: clear skeleton after 15s if nothing loaded
+  setTimeout(() => {
+    const grid = document.getElementById('category-grid');
+    if (grid && grid.innerHTML.includes('skel')) {
+      grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center">Run the Supabase SQL setup to populate data</div>';
+    }
+  }, 15000);
 });
 
 async function loadFresh() {
@@ -887,12 +894,16 @@ async function loadFresh() {
     setCache(data);
     applyData(data);
   } catch(e) {
-    document.getElementById('live-badge').textContent = '🔴 Offline';
-    document.getElementById('live-badge').style.background = 'rgba(220,38,38,.2)';
-    document.getElementById('projects-body').innerHTML =
-      `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">
-        Failed to load. <button onclick="loadFresh()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px">Retry</button>
-      </td></tr>`;
+    console.error('Public load error:', e);
+    const badge = document.getElementById('live-badge');
+    if (badge) { badge.textContent = '🔴 Error'; badge.style.background = 'rgba(220,38,38,.2)'; }
+    const tbody = document.getElementById('projects-body');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">
+      <div style="font-size:16px;margin-bottom:8px">⚠️</div>
+      <strong>Could not load data</strong><br>
+      <span style="font-size:12px;color:#94A3B8">${e.message}</span><br><br>
+      <button onclick="loadFresh()" style="color:var(--blue);background:#EFF6FF;border:1px solid #BFDBFE;padding:6px 16px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px">🔄 Retry</button>
+    </td></tr>`;
   }
 }
 
