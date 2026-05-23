@@ -1056,13 +1056,27 @@
   /* ── Gantt fullscreen + resize ── */
   .gantt-card { transition: all .3s ease; }
   .gantt-card.gantt-fullscreen {
-    position: fixed; inset: 0; z-index: 500;
-    border-radius: 0; margin: 0;
-    display: flex; flex-direction: column;
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+    right: 0 !important; bottom: 0 !important;
+    z-index: 9000 !important;
+    border-radius: 0 !important; margin: 0 !important;
+    display: flex !important; flex-direction: column !important;
+    background: var(--white) !important;
+    box-shadow: none !important;
   }
-  .gantt-card.gantt-fullscreen .gantt-card-header { flex-shrink: 0; }
-  .gantt-card.gantt-fullscreen .gantt-scroll { flex: 1; overflow: auto; }
-  .gantt-card.gantt-fullscreen #pv-gantt { height: 100% !important; min-height: unset !important; }
+  .gantt-card.gantt-fullscreen .gantt-card-header {
+    flex-shrink: 0; position: sticky; top: 0; z-index: 2;
+    background: #F8FAFC; border-bottom: 1px solid var(--border);
+  }
+  .gantt-card.gantt-fullscreen .gantt-scroll {
+    flex: 1 !important; height: auto !important;
+    max-height: none !important; overflow: auto !important;
+    resize: none !important;
+  }
+  .gantt-card.gantt-fullscreen #pv-gantt {
+    min-height: calc(100vh - 60px) !important;
+  }
   .gantt-scroll {
     resize: vertical;
     overflow: auto;
@@ -1789,6 +1803,46 @@
 </div>
 
 <!-- TOAST CONTAINER -->
+
+<!-- EDIT MEMBER MODAL -->
+<div class="modal-overlay" id="editMemberModal">
+  <div class="adv-modal" style="max-width:480px">
+    <div class="adv-modal-header">
+      <h3>✏️ Edit Team Member</h3>
+      <button class="close-btn" onclick="document.getElementById('editMemberModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid form-grid-2">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Full Name *</label>
+          <input type="text" id="em-name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="em-email" placeholder="email@company.com" />
+        </div>
+        <div class="form-group">
+          <label>New Password <span style="font-weight:400;color:var(--text-muted)">(leave blank to keep)</span></label>
+          <input type="text" id="em-pass" placeholder="Leave blank to keep current" />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Role Preset</label>
+          <select id="em-role" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none">
+            <option value="viewer">👁 Viewer — View only</option>
+            <option value="editor">✏️ Editor — View + Add + Edit</option>
+            <option value="manager">⭐ Manager — Full except delete</option>
+            <option value="custom">⚙️ Custom</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('editMemberModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditMember()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script>
@@ -2840,23 +2894,24 @@ async function confirmDelete() {
   const { sheetKey, name } = deleteTarget;
   closeConfirm();
 
-  if (!SCRIPT_URL) {
-    const sheetName = keyToSheetName(sheetKey);
-    allProjectsData[sheetKey] = (allProjectsData[sheetKey] || allProjectsData[sheetName] || []).filter(p => p.projectName !== name);
-    renderAll();
-    showToast(`"${name}" deleted`, 'info');
-    return;
-  }
+  // ── OPTIMISTIC DELETE: remove from UI immediately ──
+  const sheetName = keyToSheetName(sheetKey);
+  allProjectsData[sheetKey] = (allProjectsData[sheetKey] || []).filter(p => p.projectName !== name);
+  renderAll();
+  showToast(`"${name}" deleted`, 'info');
 
-  try {
-    const url = `${SCRIPT_URL}?action=deleteProject&sheet=${sheetKey}&projectName=${encodeURIComponent(name)}`;
-    const data = await apiFetch(url);
-    if (data.success || data.message) {
+  // Background delete from Supabase
+  const allProjs = Object.values(allProjectsData).flat();
+  // Find ID from local cache before we deleted it — re-fetch if needed
+  sbFetch(`projects?project_name=eq.${encodeURIComponent(name)}&select=id`)
+    .then(rows => {
+      if (rows.length) return sbDeleteProject(rows[0].id, name, 'Admin');
+    })
+    .then(() => {
       clearCache();
-    await loadData(true);
-    showToast(`"${name}" deleted`, 'info');
-    } else throw new Error(data.error || 'Delete failed');
-  } catch(e) { showToast('Delete failed: ' + e.message, 'error'); }
+      loadData(true);
+    })
+    .catch(e => showToast('Delete sync failed: ' + e.message, 'error'));
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2916,10 +2971,46 @@ function renderTeamMembers() {
       </td>
       ${permCells}
       <td>
-        <button class="btn btn-danger btn-sm" onclick="removeMember(${idx})">🗑 Remove</button>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="openEditMemberModal(${idx})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="removeMember(${idx})">🗑️</button>
+        </div>
       </td>
     </tr>`;
   }).join('');
+}
+
+
+// ── EDIT MEMBER MODAL ──────────────────────────────────────
+let editMemberIdx = -1;
+function openEditMemberModal(idx) {
+  editMemberIdx = idx;
+  const members = loadTeamMembers();
+  const m = members[idx];
+  if (!m) return;
+  document.getElementById('em-name').value  = m.name  || '';
+  document.getElementById('em-email').value = m.email || '';
+  document.getElementById('em-pass').value  = '';
+  document.getElementById('em-role').value  = m.role  || 'editor';
+  document.getElementById('editMemberModal').classList.add('open');
+}
+function saveEditMember() {
+  const members = loadTeamMembers();
+  if (editMemberIdx < 0 || !members[editMemberIdx]) return;
+  const name  = document.getElementById('em-name').value.trim();
+  const email = document.getElementById('em-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('em-pass').value.trim();
+  const role  = document.getElementById('em-role').value;
+  if (!name || !email) { showToast('Name and email are required', 'error'); return; }
+  members[editMemberIdx].name  = name;
+  members[editMemberIdx].email = email;
+  members[editMemberIdx].role  = role;
+  if (pass) members[editMemberIdx].password = pass;
+  if (role !== 'custom') members[editMemberIdx].permissions = {...(ROLE_PRESETS[role] || ROLE_PRESETS.editor)};
+  saveTeamMembers(members);
+  document.getElementById('editMemberModal').classList.remove('open');
+  renderTeamMembers();
+  showToast(`✅ "${name}" updated`, 'success');
 }
 
 function openAddMemberModal() {
@@ -2989,13 +3080,18 @@ function removeMember(idx) {
 // CHANGELOG
 // ═══════════════════════════════════════════════════════════
 async function loadChangelog() {
-  if (!SCRIPT_URL) {
-    document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>Demo Mode</h3><p>Connect to Apps Script to see changelog</p></div>`;
-    return;
-  }
   try {
-    const data = await apiFetch(`${SCRIPT_URL}?action=getChangelog`);
-    const entries = data.changelog || [];
+    const raw = await sbGetChangelog(100);
+    const entries = raw.map(e => ({
+      timestamp:    e.changed_at,
+      user:         e.changed_by,
+      action:       e.action,
+      projectName:  e.project_name,
+      sheet:        e.category,
+      fieldChanged: e.field_changed,
+      oldValue:     e.old_value,
+      newValue:     e.new_value
+    }));
     if (!entries.length) {
       document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>No entries yet</h3></div>`;
       return;
@@ -4123,17 +4219,17 @@ function renderGantt(taskList) {
 function toggleGanttFullscreen() {
   const card = document.getElementById('gantt-card');
   const btn  = document.getElementById('gantt-fs-btn');
+  if (!card) return;
   const isFs = card.classList.toggle('gantt-fullscreen');
-  btn.textContent = isFs ? '✕ Exit' : '⛶ Expand';
-  btn.title = isFs ? 'Exit full screen' : 'Expand to full screen';
-  // Scroll body lock
+  btn.textContent = isFs ? '✕ Exit Full Screen' : '⛶ Expand';
+  btn.title = isFs ? 'Exit full screen (Esc)' : 'Expand to full screen';
   document.body.style.overflow = isFs ? 'hidden' : '';
-  // Re-render gantt to fill new dimensions
-  if (ganttInstance) {
-    setTimeout(() => {
+  // Re-render gantt after CSS transition completes
+  setTimeout(() => {
+    if (ganttInstance) {
       try { ganttInstance.change_view_mode(currentViewMode); } catch(e) {}
-    }, 350);
-  }
+    }
+  }, 100);
 }
 // ESC key exits fullscreen
 document.addEventListener('keydown', e => {

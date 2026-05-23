@@ -1037,6 +1037,7 @@ function showApp() {
   document.getElementById('dd-role').textContent = currentUser.role || 'Team Member';
   document.getElementById('add-btn').style.display = hasPerm('addProjects') ? 'inline-flex' : 'none';
   loadData();
+  setTimeout(renderTeamCharts, 1500); // render after data loads + DOM visible
 }
 
 
@@ -1362,7 +1363,7 @@ async function loadData(forceRefresh = false) {
     if (cached) {
       allData = cached.projects || {};
       allResources = cached.resources || [];
-      renderKPIs(); renderProjects(); renderResources(); renderTeamCharts();
+      renderKPIs(); renderProjects(); renderResources();
       document.getElementById('proj-loading').classList.remove('show');
       document.getElementById('last-updated').textContent = 'Cached · ' + new Date().toLocaleTimeString();
       // Refresh silently in background
@@ -1370,7 +1371,7 @@ async function loadData(forceRefresh = false) {
         allData = data.projects || {};
         allResources = data.resources || [];
         setCache(data);
-        renderKPIs(); renderProjects(); renderResources(); renderTeamCharts();
+        renderKPIs(); renderProjects(); renderResources(); if(document.getElementById('donut-chart')) renderTeamCharts();
         document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
       }).catch(() => {});
       return;
@@ -1387,7 +1388,7 @@ async function loadData(forceRefresh = false) {
     allData = data.projects || {};
     allResources = data.resources || [];
     setCache(data);
-    renderKPIs(); renderProjects(); renderResources(); renderTeamCharts();
+    renderKPIs(); renderProjects(); renderResources();
     document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
   } catch(e) {
     showToast('Failed to load data', 'error');
