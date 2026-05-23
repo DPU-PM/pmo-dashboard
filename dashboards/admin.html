@@ -1843,6 +1843,32 @@
   </div>
 </div>
 
+
+<!-- RESOURCE MODAL -->
+<div class="modal-overlay" id="resourceModal">
+  <div class="adv-modal" style="max-width:400px">
+    <div class="adv-modal-header">
+      <h3 id="resModalTitle">Add Resource</h3>
+      <button class="close-btn" onclick="document.getElementById('resourceModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="res_name" placeholder="e.g. Sarah Khalil" />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <input type="text" id="res_role" placeholder="e.g. Frontend Developer" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('resourceModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveResource()">Save Resource</button>
+    </div>
+  </div>
+</div>
 <div id="toast-container"></div>
 
 <script>
@@ -2370,6 +2396,9 @@ function renderAll() {
   updateSidebar();
   renderAdminCharts();
   renderAlertBanner('alert-banner', allProjectsData);
+  // Refresh open tabs if visible
+  if (document.getElementById('tab-workload')?.classList.contains('active')) renderResourceWorkload();
+  if (document.getElementById('tab-steering')?.classList.contains('active')) renderSteeringCommittee();
 }
 
 function renderKPIs() {
@@ -2379,12 +2408,12 @@ function renderKPIs() {
   const completed = all.filter(p => p.status === 'Completed').length;
   const atRisk = all.filter(p => p.rag === 'Amber' || p.rag === 'Red').length;
   const avg = total ? Math.round(all.reduce((s,p) => s + (parseInt(p.progress)||0), 0) / total) : 0;
-  document.getElementById('kpi-total').textContent = total;
-  document.getElementById('kpi-active').textContent = active;
+  document.getElementById('kpi-total').textContent     = total;
+  document.getElementById('kpi-active').textContent    = active;
   document.getElementById('kpi-completed').textContent = completed;
-  document.getElementById('kpi-at-risk').textContent = atRisk;
-  document.getElementById('kpi-avg').textContent = avg + '%';
-  document.getElementById('kpi-res').textContent = allResources.length;
+  document.getElementById('kpi-at-risk').textContent   = atRisk;
+  document.getElementById('kpi-avg').textContent       = avg + '%';
+  document.getElementById('kpi-res').textContent       = allResources.length || loadTeamMembers().length;
 }
 
 function getAllProjects() {
@@ -2461,6 +2490,41 @@ function renderResources() {
       </div>
     </div>
   `).join('');
+}
+
+function promptDeleteResource(name) {
+  if (!confirm(`Remove "${name}" from resources?`)) return;
+  allResources = allResources.filter(r => r.name !== name);
+  renderResources();
+  updateSidebar();
+  showToast(`"${name}" removed`, 'info');
+  sbGetUsers().then(users => {
+    const u = users.find(x => x.name === name);
+    if (u) sbDeleteUser(u.id);
+  }).catch(() => {});
+}
+
+function openAddResourceModal() {
+  editingResourceName = null;
+  document.getElementById('resModalTitle').textContent = 'Add Resource';
+  document.getElementById('res_name').value = '';
+  document.getElementById('res_role').value = '';
+  document.getElementById('resourceModal').classList.add('open');
+}
+
+async function saveResource() {
+  const name = document.getElementById('res_name').value.trim();
+  const role = document.getElementById('res_role').value.trim();
+  if (!name) { showToast('Name is required', 'error'); return; }
+  if (!allResources.find(r => r.name === name)) allResources.push({ name, role });
+  renderResources();
+  updateSidebar();
+  document.getElementById('resourceModal').classList.remove('open');
+  showToast(`✅ "${name}" added`, 'success');
+  const email = name.toLowerCase().replace(/\s+/g,'_') + '@team.local';
+  sbSaveUser({ name, email, password_hash: 'changeme', role: 'editor',
+    permissions: {viewProjects:true,addProjects:true,editProjects:true,editTasks:true,manageResources:false,viewChangelog:false}
+  }).catch(() => {});
 }
 
 function updateSidebar() {
@@ -2549,29 +2613,21 @@ async function openEditProjectModal(sheetKey, name) {
     currentTasks = proj.tasks || [];
   }
 
-  // If we have a backend, load full details
-  if (SCRIPT_URL) {
-    try {
-      const data = await apiFetch(`${SCRIPT_URL}?action=getProjectDetails&sheet=${sheetKey}&projectName=${encodeURIComponent(name)}`);
-      if (data.project) {
-        const p = data.project;
-        currentTasks = p.tasks || [];
-        document.getElementById('adv_projectName').value = p.projectName || name;
-        document.getElementById('adv_status').value = p.status || 'Active';
-        document.getElementById('adv_rag').value = p.rag || 'Green';
-        document.getElementById('adv_responsible').value = p.responsible || '';
-        document.getElementById('adv_publicVisibility').value = p.publicVisibility || 'No';
-        document.getElementById('adv_escalate').value = p.escalate || 'No';
-        document.getElementById('adv_comment').value = p.comment || '';
-      }
-    } catch(e) { /* use local data */ }
-  }
-
+  // Open modal immediately with local data
   document.getElementById('modal-save-info').textContent = '';
   switchModalTab('info');
   renderTaskEditor();
   updateProgressDisplay();
   document.getElementById('advancedProjectModal').classList.add('open');
+
+  // Load full tasks from Supabase in background (updates task editor silently)
+  sbGetProjectByName(name).then(res => {
+    if (res && res.project && res.project.tasks) {
+      currentTasks = res.project.tasks;
+      renderTaskEditor();
+      updateProgressDisplay();
+    }
+  }).catch(() => {}); // silent — local data already shown
 }
 
 function closeAdvModal() {
@@ -2859,9 +2915,7 @@ async function saveProject() {
   closeAdvModal();
   showToast(`💾 Saving "${name}"...`, 'info');
 
-  if (!SCRIPT_URL) { showToast(`✅ "${name}" saved`, 'success'); return; }
-
-  // Background save
+  // Background save to Supabase
   sbSaveProject(payload, currentProject, !!currentProject).then(data => {
     if (data.success || data.message) {
       clearCache();
@@ -3218,12 +3272,10 @@ async function openProjectView(sheetKey, projectName) {
   let tasks = [];
   let proj = null;
   try {
-    const data = await apiFetch(`${SCRIPT_URL}?action=getProjectDetails&sheet=${sheetKey}&projectName=${encodeURIComponent(projectName)}`);
-    tasks = (data.project?.tasks || []);
-    // Get project-level row
-    proj = tasks.find(t => t.taskType === 'project');
+    const data = await sbGetProjectByName(projectName);
+    tasks = (data?.project?.tasks || []);
+    proj  = tasks.find(t => t.taskType === 'project');
   } catch(e) {
-    // Fall back to summary data if available
     const all = getAllProjects();
     proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName);
     tasks = proj?.tasks || [];
