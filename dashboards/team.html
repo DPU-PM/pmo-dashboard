@@ -521,6 +521,51 @@
     content:''; flex:1; height:1px; background:var(--border);
   }
 
+
+  /* ── PROJECT RISKS TAB ──────────────────────────────────── */
+  .risk-card {
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:18px 20px;
+    margin-bottom:12px; box-shadow:var(--shadow);
+    border-left:4px solid var(--red);
+    cursor:pointer; transition:all .15s;
+  }
+  .risk-card:hover { box-shadow:var(--shadow-lg); transform:translateX(2px); }
+  .risk-card.responded { border-left-color:var(--amber); opacity:.85; }
+  .risk-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .risk-content { font-size:14px; font-weight:500; color:var(--text); flex:1; line-height:1.4; }
+  .risk-project-badge {
+    background:#EFF6FF; color:var(--blue); border:1px solid #BFDBFE;
+    font-size:11px; font-weight:600; padding:3px 10px; border-radius:10px;
+    white-space:nowrap; flex-shrink:0;
+  }
+  .risk-meta { display:flex; align-items:center; gap:14px; font-size:11px; color:var(--text-muted); }
+  .risk-response-preview {
+    margin-top:10px; padding:8px 12px;
+    background:#F0FDF4; border:1px solid #BBF7D0;
+    border-radius:6px; font-size:12px; color:#15803D;
+  }
+  .risk-response-preview::before { content:'💬 Response: '; font-weight:600; }
+  .risk-add-response {
+    margin-top:10px; display:flex; gap:8px; align-items:flex-start;
+  }
+  .risk-add-response textarea {
+    flex:1; padding:7px 10px; border:1px solid var(--border);
+    border-radius:var(--radius); font-size:12px; font-family:inherit;
+    resize:vertical; min-height:56px; outline:none;
+    transition:border-color .15s;
+  }
+  .risk-add-response textarea:focus { border-color:var(--blue); }
+  .risk-filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .risk-count-badge {
+    background:var(--red-bg); color:var(--red);
+    font-size:11px; font-weight:700; padding:2px 8px;
+    border-radius:10px; border:1px solid #FECACA;
+    margin-left:6px;
+  }
+  .risks-empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .risks-empty .icon { font-size:48px; margin-bottom:12px; opacity:.4; }
+
   @keyframes shimmer {
     0%,100% { background: #F1F5F9; }
     50%      { background: #E2E8F0; }
@@ -733,11 +778,32 @@
   <div class="alert-banner" id="alert-banner"></div>
   <div class="section-header">
     <h2>📊 Projects</h2>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="toggleTeamRisks(true)" id="risks-nav-btn"
+        style="background:#FEF3C7;border-color:#FCD34D;color:#92400E">
+        ⚠️ Risks <span id="risks-badge" style="background:#DC2626;color:#fff;font-size:10px;padding:1px 5px;border-radius:8px;margin-left:4px"></span>
+      </button>
       <button class="export-btn no-print" onclick="triggerTeamPDF()">📄 Export PDF</button>
       <button class="btn btn-primary btn-sm" id="add-btn" style="display:none" onclick="openAddModal()">＋ Add Project</button>
     </div>
   </div>
+  <!-- PROJECT RISKS SECTION -->
+  <div id="team-risks-section" style="display:none">
+    <div class="section-header" style="margin-top:8px">
+      <h2>⚠️ Project Risks <span class="risk-count-badge" id="risks-badge">0</span></h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="loadProjectRisks()">🔄 Refresh</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleTeamRisks(false)">✕ Close</button>
+      </div>
+    </div>
+    <div class="filter-bar risk-filter-bar">
+      <span class="pill active" onclick="filterRisks('all',this)">All</span>
+      <span class="pill" onclick="filterRisks('open',this)">🔴 Open</span>
+      <span class="pill" onclick="filterRisks('responded',this)">✅ Responded</span>
+    </div>
+    <div id="risks-body"></div>
+  </div>
+
   <!-- Charts Row -->
   <div class="charts-row" id="charts-row">
     <div class="chart-card"><h3>📊 Health Overview</h3><div id="donut-chart"></div></div>
@@ -1751,6 +1817,7 @@ async function saveProject() {
     publicVisibility: projectRow.publicVisibility,
     comment:          projectRow.comment,
     milestoneDate:    futureTasks[0]?.milestoneDate || '',
+    editedBy:         typeof currentUser !== 'undefined' ? (currentUser?.name||'Team') : 'Team',
     editedBy:         currentUser.name,  // for changelog
     tasks:            allTasks
   };
@@ -1784,7 +1851,7 @@ async function saveProject() {
 // ═══════════════════════════════════════════════════════════
 let currentProjView = null; // { sheetKey, projectName }
 
-async function openProjectView(sheetKey, projectName) {
+async async function openProjectView(sheetKey, projectName) {
   currentProjView = { sheetKey, projectName };
 
   // Show view, hide projects list
@@ -1803,31 +1870,44 @@ async function openProjectView(sheetKey, projectName) {
   document.getElementById('pv-gantt').innerHTML =
     '<div style="text-align:center;padding:30px;color:var(--text-muted)">Loading timeline...</div>';
 
-  // Fetch full project details (with tasks)
-  let tasks = [];
-  let proj = null;
-  try {
-    const data = await apiFetch(`${SCRIPT_URL}?action=getProjectDetails&sheet=${sheetKey}&projectName=${encodeURIComponent(projectName)}`);
-    tasks = (data.project?.tasks || []);
-    // Get project-level row
-    proj = tasks.find(t => t.taskType === 'project');
-  } catch(e) {
-    // Fall back to summary data if available
-    const all = getAllProjects();
-    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName);
-    tasks = proj?.tasks || [];
-  }
+  // ── STEP 1: Show header from local cache instantly ──────────
+  const cachedAll = getAllProjects();
+  let proj = cachedAll.find(p => p.sheetKey === sheetKey && p.projectName === projectName)
+    || { projectName, rag:'Green', status:'Active', responsible:'', progress:'0', comment:'' };
+  renderProjectHeader(proj, [], sheetKey);
 
-  if (!proj) {
-    // Build proj from allProjectsData summary
-    const all = getAllProjects();
-    proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName) || { projectName, rag:'Green', status:'Active', responsible:'', progress:'0', comment:'' };
-  }
+  // Show skeleton for tasks/gantt
+  document.getElementById('pv-timeline').innerHTML = `
+    <div style="padding:16px">
+      ${Array(3).fill('<div class="skel" style="height:56px;margin-bottom:10px"></div>').join('')}
+    </div>`;
+  document.getElementById('pv-gantt').innerHTML =
+    '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">⏳ Loading timeline...</div>';
 
-  const taskList = tasks.filter(t => t.taskType === 'task');
-  renderProjectHeader(proj, taskList, sheetKey);
-  renderGantt(taskList);
-  renderVerticalTimeline(taskList);
+  // ── STEP 2: Load full tasks from Supabase in background ──
+  sbGetProjectByName(projectName)
+    .then(res => {
+      const tasks = res?.project?.tasks || [];
+      const fullProj = tasks.find(t => t.taskType === 'project') || proj;
+      const taskList = tasks.filter(t => t.taskType === 'task');
+      renderProjectHeader(fullProj, taskList, sheetKey);
+      renderGantt(taskList);
+      renderVerticalTimeline(taskList);
+      // Load decisions if element exists
+      if (fullProj.id) {
+        if (document.getElementById('pv-decisions')) {
+          loadDecisions(fullProj.id, fullProj.projectName||projectName, 'pv-decisions');
+        }
+      }
+    })
+    .catch(e => {
+      const all = getAllProjects();
+      proj = all.find(p => p.sheetKey === sheetKey && p.projectName === projectName) || proj;
+      const taskList = (proj.tasks||[]).filter(t => t.taskType === 'task');
+      renderProjectHeader(proj, taskList, sheetKey);
+      renderGantt(taskList);
+      renderVerticalTimeline(taskList);
+    });
 }
 
 function closeProjectView() {
@@ -1875,8 +1955,9 @@ function renderProjectHeader(proj, taskList, sheetKey) {
 
   // Actions — Edit button opens existing modal
   const canEditPerm = (typeof hasPerm === 'function') ? hasPerm('editProjects') : true;
-  document.getElementById('pv-actions').innerHTML = canEditPerm ? `
-    <button class="btn btn-primary btn-sm" onclick="openEditProjectModal('${esc(sheetKey)}','${esc(proj.projectName)}')">✏️ Edit Project</button>
+  const canEdit2 = typeof hasPerm === 'function' ? hasPerm('editProjects') : true;
+  document.getElementById('pv-actions').innerHTML = canEdit2 ? `
+    <button class="btn btn-primary btn-sm" onclick="openEditModalFromView('${esc(sheetKey)}','${esc(proj.projectName||projectName)}')">✏️ Edit Project</button>
   ` : '';
 
   // Progress
@@ -2290,6 +2371,285 @@ function triggerTeamPDF() {
     avgProgress: all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0
   };
   exportPDF('PMO Team Dashboard', allData, kpis);
+}
+
+
+function openEditModalFromView(sheetKey, projectName) {
+  // Find project in allData
+  const list = allData[sheetKey] || [];
+  const proj = list.find(p => p.projectName === projectName || p.name === projectName);
+  if (!proj) { showToast('Project not found in local data', 'error'); return; }
+
+  editingProject = { sheetKey, projectName };
+  currentTasks   = proj.tasks ? JSON.parse(JSON.stringify(proj.tasks)) : [];
+
+  document.getElementById('modal-title').textContent = '✏️ Edit: ' + projectName;
+  document.getElementById('p_name').value       = proj.projectName || '';
+  document.getElementById('p_type').value       = sheetKey;
+  document.getElementById('p_status').value     = proj.status || 'Active';
+  document.getElementById('p_rag').value        = proj.rag    || 'Green';
+  document.getElementById('p_owner').value      = proj.responsible || '';
+  document.getElementById('p_visibility').value = proj.publicVisibility || 'No';
+  document.getElementById('p_comment').value    = proj.comment || '';
+
+  switchTab_modal('info');
+  renderTaskEditor();
+  updateProgressDisplay();
+  document.getElementById('projectModal').classList.add('open');
+
+  // Load full tasks from Supabase in background
+  sbGetProjectByName(projectName).then(res => {
+    if (res?.project?.tasks) {
+      currentTasks = JSON.parse(JSON.stringify(res.project.tasks));
+      renderTaskEditor();
+      updateProgressDisplay();
+    }
+  }).catch(() => {});
+}
+
+function switchTab_modal(tab) {
+  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-pane').forEach(p=>p.classList.remove('active'));
+  const btn = document.getElementById('tab-btn-'+tab);
+  const pane = document.getElementById('modal-pane-'+tab);
+  if (btn) btn.classList.add('active');
+  if (pane) pane.classList.add('active');
+}
+
+
+async function loadDecisions(projectId, projectName, containerId) {
+  currentDecisionProjectId = projectId;
+  currentDecisionProjectName = projectName;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-muted)">Loading...</div>';
+  try {
+    const notes = await sbFetch(
+      `notes?project_id=eq.${projectId}&select=*&order=created_at.desc&limit=30`
+    );
+    const TYPE_CSS   = { decision:'dtype-decision', action:'dtype-action', risk:'dtype-risk', info:'dtype-info' };
+    const TYPE_LABEL = { decision:'Decision', action:'Action', risk:'Risk', info:'Info' };
+    const formHtml = `
+      <div class="add-decision-form" style="margin-bottom:12px">
+        <textarea id="decision-input-${containerId}" placeholder="Record a decision, action item, or risk..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;min-height:64px;outline:none"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <select id="decision-type-${containerId}" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;outline:none">
+            <option value="decision">📋 Decision</option>
+            <option value="action">✅ Action Item</option>
+            <option value="risk">⚠️ Risk</option>
+            <option value="info">ℹ️ Info</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="saveDecision('${containerId}')">Add Entry</button>
+        </div>
+      </div>`;
+    if (!notes.length) {
+      container.innerHTML = formHtml + '<div style="text-align:center;padding:24px;color:var(--text-muted)"><div style="font-size:28px;margin-bottom:6px">📋</div><p>No entries yet</p></div>';
+      return;
+    }
+    const entries = notes.map(n => {
+      const type = n.note_type || 'info';
+      const d = new Date(n.created_at);
+      const dateStr = d.toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+      return `<div style="background:#FAFBFC;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <span style="font-size:13px;font-weight:500;flex:1">${esc(n.content)}</span>
+          <span class="decision-type ${TYPE_CSS[type]||'dtype-info'}" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap">${TYPE_LABEL[type]||type}</span>
+        </div>
+        <div style="display:flex;gap:12px;font-size:11px;color:var(--text-muted);margin-top:6px">
+          <span>👤 ${esc(n.author||'Admin')}</span><span>🕐 ${dateStr}</span>
+        </div>
+      </div>`;
+    }).join('');
+    container.innerHTML = formHtml + entries;
+  } catch(e) {
+    container.innerHTML = `<div style="padding:16px;color:var(--text-muted)">Could not load: ${e.message}</div>`;
+  }
+}
+
+let currentDecisionProjectId = null;
+let currentDecisionProjectName = null;
+
+async function saveDecision(containerId) {
+  const input  = document.getElementById('decision-input-' + containerId);
+  const typeEl = document.getElementById('decision-type-' + containerId);
+  const text   = input?.value?.trim();
+  if (!text) { showToast('Please enter some text', 'error'); return; }
+  const author = typeof currentUser !== 'undefined' ? (currentUser?.name || 'Team') : 'Team';
+  try {
+    await sbFetch('notes', { method:'POST', body: JSON.stringify({
+      project_id: currentDecisionProjectId,
+      content: text, author, note_type: typeEl?.value || 'info'
+    })});
+    input.value = '';
+    await loadDecisions(currentDecisionProjectId, currentDecisionProjectName, containerId);
+    showToast('Entry added ✅', 'success');
+  } catch(e) { showToast('Failed: ' + e.message, 'error'); }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PROJECT RISKS
+// ═══════════════════════════════════════════════════════════
+let allRisks = [];
+let risksFilter = 'all'; // all | open | responded
+
+async function loadProjectRisks() {
+  const container = document.getElementById('risks-body');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner" style="margin:0 auto"></div></div>';
+
+  try {
+    // Load all notes of type 'risk' with project info
+    const risks = await sbFetch(
+      'notes?note_type=eq.risk&select=*&order=created_at.desc'
+    );
+
+    // Load all risks' responses (action notes linked by parent — we store in content with prefix)
+    // Also load projects to get project names
+    const projects = await sbFetch('projects?select=id,project_name,category');
+    const projMap = {};
+    projects.forEach(p => { projMap[p.id] = p; });
+
+    allRisks = risks.map(r => ({
+      ...r,
+      projectName: projMap[r.project_id]?.project_name || 'Unknown',
+      category:    projMap[r.project_id]?.category || '',
+      projectId:   r.project_id
+    }));
+
+    renderRisksTable();
+  } catch(e) {
+    container.innerHTML = `<div class="risks-empty"><div class="icon">⚠️</div><p>Could not load risks: ${e.message}</p></div>`;
+  }
+}
+
+function renderRisksTable() {
+  const container = document.getElementById('risks-body');
+  if (!container) return;
+
+  let risks = allRisks;
+  if (risksFilter === 'open') risks = risks.filter(r => !r.content.startsWith('[RESPONDED]'));
+  if (risksFilter === 'responded') risks = risks.filter(r => r.content.startsWith('[RESPONDED]'));
+
+  // Update badge count
+  const openCount = allRisks.filter(r => !r.content.startsWith('[RESPONDED]')).length;
+  const badge = document.getElementById('risks-badge');
+  if (badge) badge.textContent = openCount;
+  const sbBadge = document.getElementById('sb-risks');
+  if (sbBadge) sbBadge.textContent = openCount || '';
+
+  if (!risks.length) {
+    container.innerHTML = `<div class="risks-empty">
+      <div class="icon">🛡️</div>
+      <h3>${risksFilter === 'all' ? 'No risks logged yet' : 'No ' + risksFilter + ' risks'}</h3>
+      <p>Risks added in project Decision & Actions logs appear here</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = risks.map(r => {
+    const isResponded = r.content.startsWith('[RESPONDED]');
+    const displayContent = isResponded ? r.content.replace('[RESPONDED] ', '') : r.content;
+    const d = new Date(r.created_at);
+    const dateStr = d.toLocaleString('en-GB', {
+      timeZone:'Africa/Cairo', day:'2-digit', month:'short',
+      year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true
+    });
+
+    // Find SHEETKEY from category
+    const catKey = {'Content Projects':'content','Software Projects':'software',
+      'Marketing & Growth':'marketing','Initiatives':'initiatives','Sales Projects':'sales'}[r.category] || 'software';
+
+    return `<div class="risk-card ${isResponded?'responded':''}" id="risk-${r.id}">
+      <div class="risk-header">
+        <div class="risk-content">${esc(displayContent)}</div>
+        <span class="risk-project-badge" onclick="event.stopPropagation();openProjectView('${catKey}','${esc(r.projectName)}')"
+          title="Open project">📂 ${esc(r.projectName)}</span>
+      </div>
+      <div class="risk-meta">
+        <span>⚠️ Risk</span>
+        <span>👤 ${esc(r.author||'Admin')}</span>
+        <span>🕐 ${dateStr}</span>
+        ${isResponded ? '<span style="color:var(--green);font-weight:600">✅ Responded</span>' : '<span style="color:var(--red);font-weight:600">🔴 Open</span>'}
+      </div>
+      ${!isResponded ? `
+        <div class="risk-add-response" id="resp-form-${r.id}" style="display:none">
+          <textarea placeholder="Add your response to this risk..." id="resp-text-${r.id}"></textarea>
+          <button class="btn btn-primary btn-sm" onclick="submitRiskResponse('${r.id}','${r.project_id}')">Respond</button>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="toggleRespForm('${r.id}')">💬 Add Response</button>
+          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE"
+            onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 Open Project</button>
+        </div>
+      ` : `
+        <div style="margin-top:8px">
+          <button class="btn btn-sm" style="background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE"
+            onclick="openProjectView('${catKey}','${esc(r.projectName)}')">📂 View Full Project</button>
+        </div>
+      `}
+    </div>`;
+  }).join('');
+}
+
+function toggleRespForm(riskId) {
+  const form = document.getElementById('resp-form-' + riskId);
+  if (!form) return;
+  const isVisible = form.style.display !== 'none';
+  form.style.display = isVisible ? 'none' : 'flex';
+  if (!isVisible) document.getElementById('resp-text-' + riskId)?.focus();
+}
+
+async function submitRiskResponse(riskId, projectId) {
+  const textarea = document.getElementById('resp-text-' + riskId);
+  const text = textarea?.value?.trim();
+  if (!text) { showToast('Please enter a response', 'error'); return; }
+
+  const risk = allRisks.find(r => r.id === riskId);
+  if (!risk) return;
+
+  try {
+    // 1. Add response as an 'action' note
+    const author = typeof currentUser !== 'undefined' ? (currentUser?.name || 'Admin') : 'Admin';
+    await sbFetch('notes', {
+      method: 'POST',
+      body: JSON.stringify({
+        project_id: projectId,
+        content: 'Risk Response: ' + text,
+        author,
+        note_type: 'action'
+      })
+    });
+
+    // 2. Mark original risk as responded
+    await sbFetch(`notes?id=eq.${riskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ content: '[RESPONDED] ' + risk.content })
+    });
+
+    showToast('✅ Response recorded', 'success');
+    loadProjectRisks(); // refresh
+  } catch(e) {
+    showToast('Failed: ' + e.message, 'error');
+  }
+}
+
+function filterRisks(filter, el) {
+  risksFilter = filter;
+  document.querySelectorAll('.risk-filter-bar .pill').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderRisksTable();
+}
+
+function toggleTeamRisks(show) {
+  const section = document.getElementById('team-risks-section');
+  const btn = document.getElementById('risks-nav-btn');
+  if (!section) return;
+  section.style.display = show ? 'block' : 'none';
+  if (show) {
+    loadProjectRisks();
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
