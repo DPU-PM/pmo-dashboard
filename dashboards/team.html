@@ -650,6 +650,157 @@
     border-top: 1px solid var(--border);
   }
   .gantt-resize-hint::after { content: '⋯ drag to resize'; }
+
+/* ═══════════════════════════════════════════════════════════
+   UX ANIMATIONS & INTERACTIONS
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── RIPPLE EFFECT ──────────────────────────────────────── */
+.ripple-host { position: relative; overflow: hidden; }
+.ripple-wave {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  transform: scale(0); animation: ripple-expand 0.55s ease-out forwards;
+  pointer-events: none; z-index: 10;
+}
+@keyframes ripple-expand {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ── BUTTON PRESS FEEDBACK ──────────────────────────────── */
+button, .btn, .back-btn, .export-btn, .gantt-view-btn,
+.gantt-fullscreen-btn, .login-btn, .logout-btn,
+.switch-admin-btn, .pill, .cat-card, .risk-card,
+.project-card, .sidebar-item {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active, .btn:active, .back-btn:active,
+.export-btn:active, .gantt-view-btn:active,
+.login-btn:active, .logout-btn:active,
+.switch-admin-btn:active, .pill:active {
+  transform: scale(0.93);
+  filter: brightness(0.9);
+  transition: transform 0.08s ease, filter 0.08s ease !important;
+}
+
+/* Primary button bold press */
+.btn-primary:active, .login-btn:active {
+  transform: scale(0.91);
+  box-shadow: 0 0 0 3px rgba(26,95,204,0.25) !important;
+}
+
+/* Danger button press */
+.btn-danger:active {
+  transform: scale(0.91);
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.25) !important;
+}
+
+/* Smooth release transition on all buttons */
+button, .btn, .back-btn, .export-btn,
+.gantt-view-btn, .login-btn, .logout-btn, .pill {
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background 0.15s ease, filter 0.15s ease !important;
+}
+
+/* ── TAB / PAGE TRANSITIONS ─────────────────────────────── */
+.tab-pane, .proj-view, .projects-wrap,
+#main-content, #proj-view {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+.tab-pane.active, .proj-view.active {
+  animation-name: fadeSlideIn;
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Project cards stagger */
+.projects-grid .project-card:nth-child(1)  { animation-delay: 0.03s; }
+.projects-grid .project-card:nth-child(2)  { animation-delay: 0.06s; }
+.projects-grid .project-card:nth-child(3)  { animation-delay: 0.09s; }
+.projects-grid .project-card:nth-child(4)  { animation-delay: 0.12s; }
+.projects-grid .project-card:nth-child(5)  { animation-delay: 0.15s; }
+.projects-grid .project-card:nth-child(6)  { animation-delay: 0.18s; }
+.projects-grid .project-card:nth-child(7)  { animation-delay: 0.21s; }
+.projects-grid .project-card:nth-child(8)  { animation-delay: 0.24s; }
+.projects-grid .project-card {
+  animation: fadeSlideIn 0.25s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+/* Table rows stagger */
+#projectsBody tr, #projects-body tr {
+  animation: fadeSlideIn 0.2s ease both;
+}
+#projectsBody tr:nth-child(1), #projects-body tr:nth-child(1) { animation-delay: 0.02s; }
+#projectsBody tr:nth-child(2), #projects-body tr:nth-child(2) { animation-delay: 0.04s; }
+#projectsBody tr:nth-child(3), #projects-body tr:nth-child(3) { animation-delay: 0.06s; }
+#projectsBody tr:nth-child(4), #projects-body tr:nth-child(4) { animation-delay: 0.08s; }
+#projectsBody tr:nth-child(5), #projects-body tr:nth-child(5) { animation-delay: 0.10s; }
+
+/* Modal open animation */
+.modal-overlay.open .adv-modal,
+.modal-overlay.open .login-box {
+  animation: modalPop 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Toast animation */
+.toast-item {
+  animation: toastSlide 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes toastSlide {
+  from { opacity: 0; transform: translateX(60px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* Progress bar fill animation */
+.prog-fill, .overall-prog-fill, .bar-chart-fill,
+.res-tasks-fill, .tti-mini-fill {
+  transition: width 0.7s cubic-bezier(0.4,0,0.2,1) !important;
+}
+
+/* Sidebar item hover */
+.sidebar-item {
+  transition: background 0.15s ease, padding-left 0.15s ease !important;
+}
+.sidebar-item:hover { padding-left: 22px !important; }
+.sidebar-item.active { padding-left: 20px !important; }
+
+/* Card hover lift */
+.project-card:hover, .risk-card:hover,
+.cat-card:hover, .stat-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.13) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Input focus glow */
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px rgba(26,95,204,0.18) !important;
+  border-color: var(--blue) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* ── LOADING SKELETON PULSE ─────────────────────────────── */
+@keyframes skeletonPulse {
+  0%, 100% { background: #F1F5F9; }
+  50%       { background: #E2E8F0; }
+}
+.skel { animation: skeletonPulse 1.4s ease infinite !important; }
+
+/* ── TOOLTIP FADE ───────────────────────────────────────── */
+[title]:hover::after {
+  animation: fadeSlideIn 0.15s ease both;
+}
+
 </style>
 </head>
 <body>
@@ -1465,6 +1616,7 @@ function renderKPIs() {
   const avg = all.length ? Math.round(all.reduce((s,p)=>s+(parseInt(p.progress)||0),0)/all.length) : 0;
   document.getElementById('k-avg').textContent  = avg + '%';
   document.getElementById('k-team').textContent = allResources.length;
+  setTimeout(triggerKPICountUp, 50);
 }
 
 function filterType(type, el) {
@@ -3202,6 +3354,105 @@ async function submitRiskResponse(riskId, projectId) {
     renderRisksTable();
   }
 }
+
+
+
+// ═══════════════════════════════════════════════════════════
+// RIPPLE EFFECT — bold press feedback on all buttons
+// ═══════════════════════════════════════════════════════════
+(function initRipple() {
+  function createRipple(e) {
+    const btn = e.currentTarget;
+    // Add ripple host class
+    btn.classList.add('ripple-host');
+
+    // Remove old ripples
+    btn.querySelectorAll('.ripple-wave').forEach(r => r.remove());
+
+    const rect   = btn.getBoundingClientRect();
+    const size   = Math.max(rect.width, rect.height) * 1.8;
+    const x      = (e.clientX - rect.left) - size / 2;
+    const y      = (e.clientY - rect.top)  - size / 2;
+
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-wave';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+    btn.appendChild(ripple);
+
+    // Clean up after animation
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+  }
+
+  // Attach to all buttons + interactive elements
+  function attachRipple(root) {
+    const sel = 'button, .btn, .login-btn, .logout-btn, .export-btn, ' +
+                '.gantt-view-btn, .gantt-fullscreen-btn, .back-btn, ' +
+                '.switch-admin-btn, .pill, .sidebar-item';
+    (root || document).querySelectorAll(sel).forEach(el => {
+      if (!el._rippleAttached) {
+        el.addEventListener('click', createRipple);
+        el._rippleAttached = true;
+      }
+    });
+  }
+
+  // Initial attach
+  document.addEventListener('DOMContentLoaded', () => attachRipple());
+
+  // Re-attach after dynamic renders (MutationObserver)
+  const obs = new MutationObserver(muts => {
+    muts.forEach(m => m.addedNodes.forEach(n => {
+      if (n.nodeType === 1) attachRipple(n);
+    }));
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    obs.observe(document.body, { childList: true, subtree: true });
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════
+// COUNT-UP ANIMATION for KPI numbers
+// ═══════════════════════════════════════════════════════════
+function animateCountUp(el, target, duration) {
+  if (!el) return;
+  const isPercent = String(target).includes('%');
+  const num = parseInt(String(target).replace('%','')) || 0;
+  if (num === 0) { el.textContent = target; return; }
+  const start = performance.now();
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    // Ease out cubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.round(eased * num);
+    el.textContent = isPercent ? current + '%' : current;
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
+function triggerKPICountUp() {
+  // Admin KPIs
+  const adminKPIs = ['kpi-total','kpi-active','kpi-completed','kpi-avg','kpi-res',
+                     'kpi-at-risk','sc-escalated','sc-at-risk','sc-critical','sc-overdue'];
+  // Team KPIs
+  const teamKPIs  = ['k-total','k-active','k-completed','k-risk','k-avg','k-team'];
+  // Public KPIs
+  const pubKPIs   = ['h-total','h-active','h-green','h-amber','h-avg'];
+  const allKPIs   = [...adminKPIs, ...teamKPIs, ...pubKPIs];
+
+  allKPIs.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.textContent.trim();
+    if (val && val !== '—' && val !== '') {
+      animateCountUp(el, val, 900);
+    }
+  });
+}
+
+// Patch renderKPIs / renderHero to trigger count-up after render
+const _origSetText = Element.prototype;
 
 </script>
 </body>
