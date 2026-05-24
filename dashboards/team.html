@@ -1017,7 +1017,6 @@ input:focus, textarea:focus, select:focus {
 .rag-sparkline-label { font-size:10px; color:var(--text-muted); }
 
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -3807,51 +3806,44 @@ const _origSetText = Element.prototype;
 // EXCEL EXPORT — exports filtered projects to .xlsx
 // ═══════════════════════════════════════════════════════════
 function exportToExcel(filtered) {
-  // Build rows
-  const projects = filtered || getAllProjects();
+  const projects = filtered || (typeof getAllProjects === 'function' ? getAllProjects() : []);
   if (!projects.length) { showToast('No projects to export', 'error'); return; }
 
-  const rows = [
-    ['Project Name','Category','Status','Health','Progress %','Owner','Next Milestone','Comment','Escalated']
-  ];
-  projects.forEach(p => {
-    rows.push([
-      p.projectName || p.name || '',
-      p.sheetName   || p.category || '',
-      p.status      || '',
-      p.rag         || '',
-      parseInt(p.progress) || 0,
-      p.responsible || '',
-      p.milestoneDate || '',
-      p.comment     || '',
-      p.escalate    ? 'Yes' : 'No'
-    ]);
-  });
+  const date = new Date().toISOString().slice(0,10);
 
-  // Build CSV as fallback if XLSX not available
-  if (typeof XLSX !== 'undefined') {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    // Column widths
-    ws['!cols'] = [
-      {wch:35},{wch:22},{wch:12},{wch:10},{wch:12},
-      {wch:20},{wch:16},{wch:40},{wch:10}
-    ];
-    // Header row bold (limited XLSX support)
-    XLSX.utils.book_append_sheet(wb, ws, 'PMO Projects');
-    XLSX.writeFile(wb, 'PMO_Projects_' + new Date().toISOString().slice(0,10) + '.xlsx');
-    showToast('✅ Excel exported', 'success');
-  } else {
-    // CSV fallback
-    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
-    const blob = new Blob([csv], { type:'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'PMO_Projects_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast('✅ CSV exported', 'success');
-  }
+  // Always export clean CSV — universally compatible, opens in Excel natively
+  const headers = ['Project Name','Category','Status','Health','Progress %',
+                   'Owner','Next Milestone','Comment','Escalated'];
+  const dataRows = projects.map(p => [
+    p.projectName || p.name || '',
+    p.sheetName   || p.category || '',
+    p.status      || '',
+    p.rag         || '',
+    (parseInt(p.progress) || 0) + '%',
+    p.responsible || '',
+    p.milestoneDate || '',
+    (p.comment || '').replace(/\n/g,' '),
+    p.escalate ? 'Yes' : 'No'
+  ]);
+
+  const all = [headers, ...dataRows];
+
+  // BOM + CSV so Excel opens with correct encoding
+  const bom = '\uFEFF';
+  const csv = bom + all.map(row =>
+    row.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')
+  ).join('\r\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'PMO_Projects_' + date + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✅ Exported ' + projects.length + ' projects', 'success');
 }
 
 
