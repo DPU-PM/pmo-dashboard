@@ -414,7 +414,11 @@
   <!-- CATEGORIES -->
   <div class="section-header"><div class="section-divider"></div><h2>Projects by Category</h2></div>
   <div class="category-grid" id="category-grid">
-    ${Array(5).fill('<div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>').join('')}
+    <div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>
+    <div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>
+    <div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>
+    <div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>
+    <div class="cat-card"><div class="skel" style="height:14px;width:60%;margin-bottom:8px"></div><div class="skel" style="height:28px;width:40%;margin-bottom:8px"></div><div class="skel" style="height:6px"></div></div>
   </div>
 
   <!-- TABLE -->
@@ -544,16 +548,26 @@ async function sbFetch(path, options = {}) {
     ...(isWrite ? { 'Prefer': 'return=representation' } : {}),
     ...(options.headers || {})
   };
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || err.hint || `HTTP ${res.status}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000); // 12s timeout
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || err.hint || `HTTP ${res.status}`);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Request timed out — check Supabase project status');
+    throw e;
   }
-  const text = await res.text();
-  return text ? JSON.parse(text) : [];
 }
 
 // ════════════════════════════════════════════════════════════

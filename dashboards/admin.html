@@ -2028,16 +2028,26 @@ async function sbFetch(path, options = {}) {
     ...(isWrite ? { 'Prefer': 'return=representation' } : {}),
     ...(options.headers || {})
   };
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || err.hint || `HTTP ${res.status}`);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000); // 12s timeout
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || err.hint || `HTTP ${res.status}`);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Request timed out — check Supabase project status');
+    throw e;
   }
-  const text = await res.text();
-  return text ? JSON.parse(text) : [];
 }
 
 // ════════════════════════════════════════════════════════════
