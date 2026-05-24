@@ -2357,7 +2357,8 @@ async function loadData(forceRefresh = false) {
     setCache(data);
     renderAll();
   } catch(e) {
-    showToast('Failed to load: ' + e.message, 'error');
+    console.error('Supabase load error:', e.message);
+    showToast('Using demo data — ' + e.message, 'warning');
     loadDemoData();
   } finally {
     document.getElementById('projects-loading').classList.remove('show');
@@ -2385,40 +2386,36 @@ function showSkeleton() {
 }
 
 function loadDemoData() {
-  const p = (name, status, phase, pct, milestone, date, rag, owner, taskCount) => ({
-    projectName: name, status, phase, progress: pct,
-    nextMilestone: milestone, milestoneDate: date,
-    rag, responsible: owner, comment: '',
-    publicVisibility: 'No', escalate: 'No',
-    taskCount: taskCount || 0, tasks: []
+  const p = (name, cat, status, pct, date, rag, owner) => ({
+    projectName: name, name, category: cat,
+    status, progress: String(pct), milestoneDate: date || '',
+    rag, responsible: owner || '', comment: '',
+    publicVisibility: 'No', escalate: false,
+    taskCount: 0, tasks: [], sheetKey: cat,
+    sheetName: {content:'Content Projects',software:'Software Projects',
+      marketing:'Marketing & Growth',initiatives:'Initiatives',sales:'Sales Projects'}[cat]
   });
   allProjectsData = {
-    'Content Projects': [
-      p('Q3 Content Strategy','Active','Planning',40,'Content Calendar','2025-06-15','Green','Layla M.',3),
-      p('Brand Voice Guide','Active','Draft',70,'Review','2025-06-20','Green','Nour A.',5),
+    content: [
+      p('Q3 Content Strategy','content','Active',40,'2025-06-15','Green','Layla M.'),
+      p('Brand Voice Guide','content','Active',70,'2025-06-20','Green','Nour A.'),
     ],
-    'Software Projects': [
-      p('CRM Integration v2','Active','Development',65,'QA Handoff','2025-06-10','Amber','Rami S.',8),
-      p('Mobile App Revamp','Active','Design',30,'UX Review','2025-07-01','Green','Ali H.',4),
+    software: [
+      p('CRM Integration v2','software','Active',65,'2025-06-10','Amber','Rami S.'),
+      p('Mobile App Redesign','software','Active',30,'2025-07-01','Green','Sara K.'),
     ],
-    'Marketing & Growth': [
-      p('Q3 Campaign','Active','Launch Prep',55,'Go Live','2025-06-25','Green','Sara T.',6),
+    marketing: [
+      p('Q3 Campaign Launch','marketing','Active',55,'2025-06-25','Green','Omar F.'),
     ],
-    'Initiatives': [
-      p('Digital Transformation','Active','Phase 2',55,'Steering Review','2025-06-16','Amber','Mark T.',2),
+    initiatives: [
+      p('Digital Transformation','initiatives','Active',20,'2025-08-01','Red','Ahmed M.'),
     ],
-    'Sales Projects': [
-      p('Sales Playbook','Active','Draft',50,'Review','2025-06-20','Green','Nour A.',3),
+    sales: [
+      p('Sales Enablement Tools','sales','Active',80,'2025-06-05','Green','Maya T.'),
     ]
   };
-  allResources = [
-    { name: 'Layla M.', role: 'Content Lead' },
-    { name: 'Nour A.', role: 'Content Writer' },
-    { name: 'Rami S.', role: 'Senior Developer' },
-    { name: 'Ali H.', role: 'UI/UX Designer' },
-    { name: 'Sara T.', role: 'Marketing Manager' },
-  ];
   renderAll();
+  showToast('⚠️ Showing demo data — Supabase unavailable', 'warning');
 }
 
 // ═══════════════════════════════════════════════════════════
