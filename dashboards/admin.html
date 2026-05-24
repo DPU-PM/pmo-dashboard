@@ -1423,6 +1423,127 @@ input:focus, textarea:focus, select:focus {
   animation: fadeSlideIn 0.15s ease both;
 }
 
+
+/* ── LIVE ACTIVITY WIDGET ─────────────────────────────────── */
+#activity-widget {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 8000;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+#activity-toggle {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(26,95,204,.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .2s;
+}
+#activity-toggle:hover { background: var(--blue-dark, #1348A0); transform: translateY(-1px); }
+#activity-badge-count {
+  background: #EF4444;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+#activity-panel {
+  position: absolute;
+  bottom: 52px; right: 0;
+  width: 360px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  display: none;
+  flex-direction: column;
+  max-height: 520px;
+  overflow: hidden;
+  animation: modalPop .2s cubic-bezier(.34,1.56,.64,1) both;
+}
+#activity-panel.open { display: flex; }
+.activity-panel-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.activity-panel-header h4 {
+  margin: 0; font-size: 14px; font-weight: 700; color: var(--text);
+}
+.activity-live-dot {
+  width: 8px; height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  animation: livePulse 1.5s ease infinite;
+  display: inline-block; margin-right: 6px;
+}
+@keyframes livePulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.5; transform:scale(1.3); }
+}
+.activity-tabs {
+  display: flex; gap: 4px;
+  padding: 10px 14px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.activity-tab {
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+  border: none; background: none; cursor: pointer;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+.activity-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+#activity-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 10px 14px;
+}
+.activity-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid #F1F5F9;
+  animation: fadeSlideIn .2s ease both;
+}
+.activity-row:last-child { border-bottom: none; }
+.activity-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--blue); color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.activity-avatar.public { background: #7C3AED; }
+.activity-meta { flex: 1; min-width: 0; }
+.activity-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.activity-detail {
+  font-size: 11px; color: var(--text-muted); margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.activity-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+.activity-empty {
+  text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px;
+}
+.activity-panel-footer {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.activity-footer-count { font-size: 12px; color: var(--text-muted); }
+.activity-refresh-btn {
+  font-size: 11px; padding: 4px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; color: var(--text-muted);
+}
+
 </style>
 </head>
 <body>
@@ -5244,6 +5365,152 @@ function triggerKPICountUp() {
 
 // Patch renderKPIs / renderHero to trigger count-up after render
 const _origSetText = Element.prototype;
+
+
+
+// ═══════════════════════════════════════════════════════════
+// LIVE ACTIVITY WIDGET — Admin only
+// ═══════════════════════════════════════════════════════════
+(function() {
+  let _sessions     = [];
+  let _filter       = 'all'; // all | team | public
+  let _interval     = null;
+  let _panelOpen    = false;
+  let _lastCount    = 0;
+
+  function initWidget() {
+    // Inject HTML
+    const widget = document.createElement('div');
+    widget.id = 'activity-widget';
+    widget.innerHTML = `
+      <div id="activity-panel">
+        <div class="activity-panel-header">
+          <h4><span class="activity-live-dot"></span>Live Activity</h4>
+          <button class="activity-refresh-btn" onclick="refreshActivity()">🔄 Refresh</button>
+        </div>
+        <div class="activity-tabs">
+          <button class="activity-tab active" onclick="setActivityFilter('all',this)">All</button>
+          <button class="activity-tab" onclick="setActivityFilter('team',this)">👥 Team</button>
+          <button class="activity-tab" onclick="setActivityFilter('public',this)">🌐 Public</button>
+        </div>
+        <div id="activity-list"><div class="activity-empty">Loading...</div></div>
+        <div class="activity-panel-footer">
+          <span class="activity-footer-count" id="activity-footer-text">—</span>
+          <span style="font-size:10px;color:var(--text-muted)">Updates every 8s</span>
+        </div>
+      </div>
+      <button id="activity-toggle" onclick="toggleActivityPanel()">
+        👁 Live Users <span id="activity-badge-count">0</span>
+      </button>`;
+    document.body.appendChild(widget);
+    fetchSessions();
+  }
+
+  async function fetchSessions() {
+    try {
+      // Only sessions active in last 30 seconds = "online now"
+      const cutoff = new Date(Date.now() - 30000).toISOString();
+      const data = await sbFetch(
+        'user_sessions?last_seen=gte.' + encodeURIComponent(cutoff) +
+        '&order=last_seen.desc&limit=50'
+      );
+      _sessions = data || [];
+      renderWidget();
+    } catch(e) {
+      console.warn('Activity fetch failed:', e.message);
+    }
+  }
+
+  function renderWidget() {
+    const filtered = _filter === 'all' ? _sessions :
+                     _sessions.filter(s => s.dashboard === _filter);
+
+    // Update badge
+    const badge = document.getElementById('activity-badge-count');
+    const count = _sessions.length;
+    if (badge) {
+      badge.textContent = count;
+      badge.style.background = count > 0 ? '#EF4444' : '#94A3B8';
+    }
+
+    // Notification if new users joined
+    if (count > _lastCount && _lastCount > 0) {
+      showToast('👁 ' + (count - _lastCount) + ' new user(s) online', 'info');
+    }
+    _lastCount = count;
+
+    // Footer
+    const footer = document.getElementById('activity-footer-text');
+    if (footer) footer.textContent = count + ' user' + (count!==1?'s':'') + ' online now';
+
+    // List
+    const list = document.getElementById('activity-list');
+    if (!list) return;
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="activity-empty">🔇 No active users right now</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(s => {
+      const initials = (s.user_name||'?').split(' ')
+        .map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const isPublic = s.dashboard === 'public';
+      const ago      = timeAgo(s.last_seen);
+      const detail   = [s.current_page, s.current_section].filter(Boolean).join(' › ');
+      const action   = s.last_action || 'Browsing';
+      return `<div class="activity-row">
+        <div class="activity-avatar ${isPublic?'public':''}">${initials}</div>
+        <div class="activity-meta">
+          <div class="activity-name">${esc(s.user_name||'Anonymous')}
+            <span style="font-size:10px;font-weight:400;color:var(--text-muted);margin-left:4px">
+              ${isPublic?'🌐 Public':'👥 Team'}
+            </span>
+          </div>
+          <div class="activity-detail" title="${esc(detail)} · ${esc(action)}">
+            📍 ${esc(detail||'Dashboard')} · ${esc(action)}
+          </div>
+        </div>
+        <div class="activity-time">${ago}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo(iso) {
+    const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (diff < 10)  return 'now';
+    if (diff < 60)  return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    return Math.floor(diff/3600) + 'h ago';
+  }
+
+  window.toggleActivityPanel = function() {
+    _panelOpen = !_panelOpen;
+    const panel = document.getElementById('activity-panel');
+    const btn   = document.getElementById('activity-toggle');
+    if (panel) panel.classList.toggle('open', _panelOpen);
+    if (btn)   btn.style.background = _panelOpen ? 'var(--blue-dark,#1348A0)' : '';
+    if (_panelOpen) fetchSessions();
+  };
+
+  window.setActivityFilter = function(filter, el) {
+    _filter = filter;
+    document.querySelectorAll('.activity-tab').forEach(t=>t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderWidget();
+  };
+
+  window.refreshActivity = function() {
+    fetchSessions();
+    showToast('Refreshed', 'info');
+  };
+
+  // Start polling every 8 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    initWidget();
+    _interval = setInterval(fetchSessions, 8000);
+  });
+})();
 
 </script>
 </body>

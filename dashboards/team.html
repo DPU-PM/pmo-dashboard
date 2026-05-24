@@ -1221,7 +1221,8 @@ function showApp() {
   document.getElementById('dd-role').textContent = currentUser.role || 'Team Member';
   document.getElementById('add-btn').style.display = hasPerm('addProjects') ? 'inline-flex' : 'none';
   loadData();
-  setTimeout(renderTeamCharts, 1500); // render after data loads + DOM visible
+  setTimeout(renderTeamCharts, 1500);
+  if(window.trackPage) trackPage('Team Dashboard','Projects'); // render after data loads + DOM visible
 }
 
 
@@ -1972,7 +1973,8 @@ async function saveProject() {
   sbSaveProject(payload, editingProject?.projectName, !!editingProject).then(data => {
     if (data.success || data.message) {
       localStorage.removeItem('pmo_data_cache');
-      showToast(`✅ "${name}" saved`, 'success');
+      showToast(`\`✅ "${name}" saved\``, 'success');
+  if(window.trackAction) trackAction('Saved project: '+name, 'Edit Project');
       // Optimistic UI already correct — no reload needed
     } else {
       showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
@@ -2459,6 +2461,7 @@ function openEditModalFromView(sheetKey, projectName) {
   }).catch(() => {});
 }
 
+function trackTabSwitch(name) { if(window.trackPage) trackPage('Team Dashboard', name); }
 function switchTab_modal(tab) {
   document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.modal-tab-pane').forEach(p=>p.classList.remove('active'));
@@ -3328,6 +3331,7 @@ async function submitRiskResponse(riskId, projectId) {
   risksFilter = 'closed';
   renderRisksTable();
   showToast('✅ Risk closed', 'success');
+  if(window.trackAction) trackAction('Responded to risk', 'Project Risks');
 
   try {
     // Persist response on the risk note
@@ -3453,6 +3457,90 @@ function triggerKPICountUp() {
 
 // Patch renderKPIs / renderHero to trigger count-up after render
 const _origSetText = Element.prototype;
+
+
+
+// ═══════════════════════════════════════════════════════════
+// USER SESSION TRACKER
+// Sends heartbeat to Supabase every 8 seconds
+// ═══════════════════════════════════════════════════════════
+(function() {
+  const SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + '_' + Date.now();
+  const DASHBOARD  = document.title.includes('Team') ? 'team' : 'public';
+  let   _page    = 'Dashboard';
+  let   _section = '';
+  let   _action  = 'Opened dashboard';
+  let   _heartbeat = null;
+
+  function getUserName() {
+    // Team: from currentUser; Public: 'Public Visitor'
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+      return currentUser.name;
+    }
+    return DASHBOARD === 'team' ? 'Team Member' : 'Public Visitor';
+  }
+
+  async function sendHeartbeat() {
+    const payload = {
+      session_id:      SESSION_ID,
+      user_name:       getUserName(),
+      dashboard:       DASHBOARD,
+      current_page:    _page,
+      current_section: _section,
+      last_action:     _action,
+      last_seen:       new Date().toISOString()
+    };
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/user_sessions', {
+        method:  'POST',
+        headers: {
+          ...SB_HEADERS,
+          'Prefer': 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch(e) { /* silent — tracking should never break the app */ }
+  }
+
+  async function endSession() {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/user_sessions?session_id=eq.' + SESSION_ID, {
+        method: 'DELETE', headers: SB_HEADERS
+      });
+    } catch(e) {}
+  }
+
+  // Public API — call these from the dashboard code
+  window.trackPage = function(page, section) {
+    _page    = page    || _page;
+    _section = section || '';
+    sendHeartbeat();
+  };
+  window.trackAction = function(action, section) {
+    _action  = action  || _action;
+    _section = section || _section;
+    sendHeartbeat();
+  };
+
+  // Start heartbeat on DOMContentLoaded
+  window.addEventListener('DOMContentLoaded', function() {
+    sendHeartbeat();
+    _heartbeat = setInterval(sendHeartbeat, 8000);
+  });
+
+  // Clean up on tab close
+  window.addEventListener('beforeunload', function() {
+    clearInterval(_heartbeat);
+    // Use sendBeacon for reliable cleanup on tab close
+    const data = JSON.stringify({ session_id: SESSION_ID });
+    navigator.sendBeacon && navigator.sendBeacon(
+      SUPABASE_URL + '/rest/v1/user_sessions?session_id=eq.' + SESSION_ID,
+      new Blob([data], { type: 'application/json' })
+    );
+  });
+
+  window.SESSION_ID = SESSION_ID;
+})();
 
 </script>
 </body>
