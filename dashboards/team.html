@@ -1124,7 +1124,7 @@ async function sbGetAllData() {
   // Single request gets all projects + tasks in one shot
   const [projects, tasks] = await Promise.all([
     sbFetch('projects?select=*&order=created_at.asc'),
-    sbFetch('tasks?select=*&order=sort_order.asc,created_at.asc')
+    sbFetch('tasks?select=id,project_id,task_name,phase,task_type,status,progress,rag,responsible,milestone_date,depends_on,sort_order&order=sort_order.asc')
   ]);
 
   // Group tasks by project_id
@@ -1440,7 +1440,8 @@ async function loadData(forceRefresh = false) {
     renderKPIs(); renderProjects(); renderResources();
     document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
   } catch(e) {
-    showToast('Failed to load data', 'error');
+    showToast('Load error: ' + e.message, 'error');
+    console.error('loadData error:', e);
   } finally {
     document.getElementById('proj-loading').classList.remove('show');
   }
@@ -1820,9 +1821,7 @@ async function saveProject() {
     if (data.success || data.message) {
       localStorage.removeItem('pmo_data_cache');
       showToast(`✅ "${name}" saved`, 'success');
-      // Don't force-reload — optimistic UI already shows correct state
-      // Silent background refresh after 2s
-      setTimeout(() => loadData(false), 2000);
+      // Optimistic UI already correct — no reload needed
     } else {
       showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
     }

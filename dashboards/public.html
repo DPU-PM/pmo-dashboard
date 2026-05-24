@@ -577,7 +577,7 @@ async function sbGetAllData() {
   // Single request gets all projects + tasks in one shot
   const [projects, tasks] = await Promise.all([
     sbFetch('projects?select=*&order=created_at.asc'),
-    sbFetch('tasks?select=*&order=sort_order.asc,created_at.asc')
+    sbFetch('tasks?select=id,project_id,task_name,phase,task_type,status,progress,rag,responsible,milestone_date,depends_on,sort_order&order=sort_order.asc')
   ]);
 
   // Group tasks by project_id
