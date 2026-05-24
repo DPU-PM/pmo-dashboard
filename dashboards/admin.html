@@ -2214,10 +2214,20 @@ async function sbSaveProject(payload, originalName, isUpdate) {
 
   if (!projectId) throw new Error('Could not get project ID');
 
-  // Save tasks — delete existing, reinsert
+  // Save tasks — fetch old tasks first for diff, then delete+reinsert
   const tasks = (payload.tasks || []).filter(t => t.taskType !== 'project');
-  if (tasks.length) {
+  let oldTasks = [];
+  if (isUpdate && projectId) {
+    try {
+      oldTasks = await sbFetch(
+        `tasks?project_id=eq.${projectId}&select=task_name,progress,rag,responsible,status`
+      );
+    } catch(e) {}
+  }
+  if (tasks.length || oldTasks.length) {
     await sbFetch(`tasks?project_id=eq.${projectId}`, { method: 'DELETE' });
+  }
+  if (tasks.length) {
     const taskRows = tasks.map((t, i) => ({
       project_id:     projectId,
       task_name:      t.taskName || '',
@@ -2228,23 +2238,101 @@ async function sbSaveProject(payload, originalName, isUpdate) {
       rag:            t.rag || 'Green',
       responsible:    t.responsible || '',
       milestone_date: t.milestoneDate || null,
-      depends_on:     null, // resolve after insert
+      depends_on:     null,
       sort_order:     i
     }));
     await sbFetch('tasks', { method: 'POST', body: JSON.stringify(taskRows) });
+
+    // Log task-level changes if updating
+    if (isUpdate) {
+      const cat2 = CATEGORY_MAP[payload.sheet] || payload.sheet;
+      const who2 = payload.editedBy || 'Admin';
+      const oldMap = {};
+      oldTasks.forEach(t => { oldMap[t.task_name] = t; });
+      const taskLogs = [];
+      tasks.forEach(t => {
+        const old = oldMap[t.taskName];
+        if (!old) {
+          taskLogs.push({ field:'Task Added', old:'', new:t.taskName });
+        } else {
+          if (String(old.progress) !== String(parseInt(t.progress)||0))
+            taskLogs.push({ field:`${t.taskName} Progress`, old:old.progress+'%', new:(parseInt(t.progress)||0)+'%' });
+          if (old.rag !== (t.rag||'Green'))
+            taskLogs.push({ field:`${t.taskName} Health`, old:old.rag, new:t.rag||'Green' });
+          if ((old.responsible||'') !== (t.responsible||''))
+            taskLogs.push({ field:`${t.taskName} Owner`, old:old.responsible||'', new:t.responsible||'' });
+        }
+      });
+      oldTasks.forEach(t => {
+        if (!tasks.find(nt => nt.taskName === t.task_name))
+          taskLogs.push({ field:'Task Removed', old:t.task_name, new:'' });
+      });
+      if (taskLogs.length) {
+        await Promise.all(taskLogs.slice(0,10).map(tl => sbFetch('changelog', {
+          method:'POST',
+          body: JSON.stringify({
+            action:'UPDATE_TASKS', project_name:payload.projectName,
+            category:cat2, field_changed:tl.field,
+            old_value:tl.old, new_value:tl.new, changed_by:who2
+          })
+        }).catch(()=>{})));
+      }
+    }
   }
 
-  // Log to changelog
-  await sbFetch('changelog', {
+  // ── LOG CHANGELOG WITH FIELD DIFFS ─────────────────────────
+  const cat      = CATEGORY_MAP[payload.sheet] || payload.sheet;
+  const who      = payload.editedBy || 'Admin';
+  const logEntry = (field, oldVal, newVal) => sbFetch('changelog', {
     method: 'POST',
     body: JSON.stringify({
-      action:       isUpdate ? 'UPDATE_PROJECT' : 'ADD_PROJECT',
-      project_name: payload.projectName,
-      category:     CATEGORY_MAP[payload.sheet] || payload.sheet,
-      new_value:    isUpdate ? 'Updated' : 'Created',
-      changed_by:   payload.editedBy || 'Admin'
+      action:        isUpdate ? 'UPDATE_PROJECT' : 'ADD_PROJECT',
+      project_name:  payload.projectName,
+      category:      cat,
+      field_changed: field,
+      old_value:     String(oldVal ?? ''),
+      new_value:     String(newVal ?? ''),
+      changed_by:    who
     })
-  });
+  }).catch(() => {});
+
+  if (!isUpdate) {
+    // New project — log creation
+    await logEntry('Project Created', '', payload.projectName);
+  } else {
+    // Compare old vs new — fetch old project data
+    try {
+      const oldProj = (await sbFetch(
+        `projects?id=eq.${projectId}&select=project_name,status,rag,progress,responsible,comment,public_visibility`
+      ))[0] || {};
+      const FIELDS = [
+        ['project_name',      'Name',       payload.projectName,               oldProj.project_name],
+        ['status',            'Status',     payload.status,                    oldProj.status],
+        ['rag',               'Health',     payload.rag,                       oldProj.rag],
+        ['progress',          'Progress',   String(parseInt(payload.progress)||0), String(oldProj.progress||0)],
+        ['responsible',       'Owner',      payload.responsible||'',           oldProj.responsible||''],
+        ['comment',           'Comment',    payload.comment||'',               oldProj.comment||''],
+        ['public_visibility', 'Visibility', payload.publicVisibility === 'Yes' ? 'Public' : 'Private',
+                                            oldProj.public_visibility ? 'Public' : 'Private'],
+      ];
+      const changed = FIELDS.filter(([,, nv, ov]) => String(nv) !== String(ov));
+      if (changed.length) {
+        await Promise.all(changed.map(([, label, nv, ov]) => logEntry(label, ov, nv)));
+      } else {
+        // Only tasks changed — log that
+        await logEntry('Tasks Updated', '', `${tasks.length} task(s)`);
+      }
+    } catch(e) {
+      await logEntry('Project Updated', '', payload.projectName);
+    }
+  }
+
+  // ── LOG TASK-LEVEL CHANGES ───────────────────────────────────
+  if (tasks.length && isUpdate) {
+    // Log each task as a summary line
+    const taskSummary = tasks.map(t => t.taskName).join(', ');
+    // Already logged above in "Tasks Updated" if no project field changed
+  }
 
   return { success: true, projectId };
 }
