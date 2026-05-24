@@ -1544,7 +1544,223 @@ input:focus, textarea:focus, select:focus {
   border-radius: 6px; cursor: pointer; color: var(--text-muted);
 }
 
+
+/* ── GLOBAL SEARCH ─────────────────────────────────────── */
+.global-search-wrap {
+  position: relative; flex: 1; max-width: 320px;
+}
+.global-search-input {
+  width: 100%; padding: 8px 36px 8px 14px;
+  border: 1px solid var(--border); border-radius: 20px;
+  font-size: 13px; font-family: inherit;
+  background: var(--bg,#F8FAFC); color: var(--text);
+  outline: none; transition: all .2s;
+  box-sizing: border-box;
+}
+.global-search-input:focus {
+  border-color: var(--blue); background: #fff;
+  box-shadow: 0 0 0 3px rgba(26,95,204,.12);
+}
+.global-search-icon {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%); color: var(--text-muted);
+  pointer-events: none; font-size: 14px;
+}
+.search-clear-btn {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 16px; padding: 0;
+  display: none; line-height: 1;
+}
+.global-search-wrap:focus-within .search-clear-btn { display: block; }
+.global-search-wrap:focus-within .global-search-icon { display: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — complete layout for ≤768px
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Layout ─────────────────────────────────────────── */
+  body { padding: 0 !important; }
+  
+  .layout, .admin-layout {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar → bottom nav ────────────────────────────── */
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 6px 8px !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    position: sticky; top: 0; z-index: 100;
+    background: var(--navy,#0F1E35) !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sidebar-logo { display: none !important; }
+  .sidebar-item {
+    flex-direction: column !important;
+    align-items: center !important;
+    font-size: 9px !important;
+    padding: 6px 10px !important;
+    min-width: 56px !important;
+    white-space: nowrap !important;
+    border-radius: 8px !important;
+  }
+  .sidebar-item .icon { font-size: 18px !important; margin-bottom: 2px; }
+  .sidebar-badge { top: 4px !important; right: 4px !important; }
+
+  /* ── Main content ────────────────────────────────────── */
+  .main-content, .content, [class*="main-"] {
+    width: 100% !important;
+    padding: 12px !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ── Topbar ──────────────────────────────────────────── */
+  .topbar {
+    padding: 8px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .topbar-title { font-size: 14px !important; }
+  .topbar-actions { gap: 6px !important; flex-wrap: wrap; }
+
+  /* ── KPI grid ────────────────────────────────────────── */
+  .kpi-grid, .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .kpi-card, .stat-card {
+    padding: 12px !important;
+  }
+  .kpi-value { font-size: 22px !important; }
+
+  /* ── Tables → card view ──────────────────────────────── */
+  .proj-table, .tbl, .cl-table {
+    display: block !important;
+    width: 100% !important;
+  }
+  .proj-table thead, .tbl thead, .cl-table thead { display: none !important; }
+  .proj-table tbody, .tbl tbody, .cl-table tbody { display: block !important; }
+  .proj-table tr, .tbl tr, .cl-table tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--white) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    margin-bottom: 10px !important;
+    padding: 12px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06) !important;
+  }
+  .proj-table td, .tbl td, .cl-table td {
+    display: flex !important;
+    align-items: center !important;
+    padding: 4px 0 !important;
+    border: none !important;
+    font-size: 13px !important;
+    gap: 8px !important;
+  }
+  .proj-table td::before, .tbl td::before {
+    content: attr(data-label);
+    font-weight: 700; font-size: 10px;
+    color: var(--text-muted); min-width: 80px;
+    text-transform: uppercase; letter-spacing: .4px;
+  }
+
+  /* ── Charts row ──────────────────────────────────────── */
+  .charts-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* ── Projects grid ───────────────────────────────────── */
+  .projects-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Category grid ───────────────────────────────────── */
+  .category-grid {
+    grid-template-columns: repeat(2,1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* ── Modals full screen on mobile ────────────────────── */
+  .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+  .adv-modal {
+    width: 100% !important; max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* ── Login box ───────────────────────────────────────── */
+  .login-box {
+    width: 92% !important;
+    padding: 24px !important;
+  }
+
+  /* ── Gantt ───────────────────────────────────────────── */
+  .gantt-card { min-height: 220px !important; }
+  .gantt-view-btn { font-size: 10px !important; padding: 4px 6px !important; }
+
+  /* ── Project view ────────────────────────────────────── */
+  .pv-header { flex-direction: column !important; gap: 8px !important; }
+  .pv-meta { flex-wrap: wrap !important; gap: 6px !important; }
+  .pv-tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+
+  /* ── Activity widget ─────────────────────────────────── */
+  #activity-widget { bottom: 12px !important; right: 12px !important; }
+  #activity-panel  { width: 300px !important; }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .header-actions, .section-header {
+    flex-wrap: wrap !important; gap: 6px !important;
+  }
+  .btn { font-size: 12px !important; padding: 7px 12px !important; }
+
+  /* ── Search ──────────────────────────────────────────── */
+  .global-search-wrap { max-width: 100% !important; width: 100% !important; }
+
+  /* ── Filter bar ──────────────────────────────────────── */
+  .filter-bar { overflow-x: auto !important; flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  .filter-bar .pill { white-space: nowrap !important; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid, .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .category-grid { grid-template-columns: 1fr !important; }
+  .topbar-title { font-size: 13px !important; }
+}
+
+/* ── RAG HISTORY SPARKLINE ──────────────────────────────── */
+.rag-sparkline { display:inline-flex; align-items:center; gap:3px; vertical-align:middle; }
+.rag-dot {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0;
+  transition:transform .15s; cursor:default;
+}
+.rag-dot:hover { transform:scale(1.4); }
+.rag-dot.Green  { background:#16A34A; }
+.rag-dot.Amber  { background:#D97706; }
+.rag-dot.Red    { background:#DC2626; }
+.rag-sparkline-wrap {
+  display:flex; align-items:center; gap:6px; margin-top:4px;
+}
+.rag-sparkline-label { font-size:10px; color:var(--text-muted); }
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1651,6 +1867,7 @@ input:focus, textarea:focus, select:focus {
         </div>
         <div class="header-actions">
           <button class="export-btn no-print" onclick="triggerAdminPDF()" title="Export PDF">📄 Export PDF</button>
+          <button class="btn btn-secondary btn-sm no-print" onclick="exportToExcel()" title="Export Excel (E)">📊 Excel</button>
           <button class="btn btn-secondary btn-sm no-print" onclick="loadData(true)">🔄 Refresh</button>
           <button class="btn btn-primary no-print" onclick="openAddProjectModal()">＋ Add Project</button>
         </div>
@@ -2799,11 +3016,11 @@ function renderAll() {
   renderAlertBanner('alert-banner', allProjectsData);
   // Refresh open tabs if visible
   if (document.getElementById('tab-workload')?.classList.contains('active')) renderResourceWorkload();
-  if (document.getElementById('tab-steering')?.classList.contains('active')) renderSteeringCommittee();
+  if (document.getElementById('tab-steering')?.classList.contains('active')) renderSteeringCommittee(); renderOverdueAlerts("overdue-container");
 }
 
 function renderKPIs() {
-  const all = getAllProjects();
+  const all = getAllProjects().filter(p => matchesSearch(p));
   const total = all.length;
   const active = all.filter(p => p.status === 'Active').length;
   const completed = all.filter(p => p.status === 'Completed').length;
@@ -2957,7 +3174,7 @@ function switchTab(name) {
   if (name === 'risks')      loadProjectRisks();
   if (name === 'changelog')  loadChangelog();
   if (name === 'team')       renderTeamMembers();
-  if (name === 'steering')   { renderSteeringCommittee(); document.getElementById('sc-date').textContent = 'As of ' + new Date().toLocaleDateString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'long',year:'numeric'}); }
+  if (name === 'steering')   { renderSteeringCommittee(); renderOverdueAlerts("overdue-container"); document.getElementById('sc-date').textContent = 'As of ' + new Date().toLocaleDateString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'long',year:'numeric'}); }
   if (name === 'workload')   renderResourceWorkload();
   if (name === 'milestones') renderMilestoneSlippage('milestones-body', allProjectsData);
 }
@@ -2969,7 +3186,7 @@ function filterType(type, el) {
   renderProjects();
 }
 
-function searchProjects(val) { renderProjects(val); }
+function _oldSearch(val) { renderProjects(val); }
 
 // ═══════════════════════════════════════════════════════════
 // ADVANCED MODAL — OPEN / CLOSE
@@ -5511,6 +5728,306 @@ const _origSetText = Element.prototype;
     _interval = setInterval(fetchSessions, 8000);
   });
 })();
+
+
+
+// ═══════════════════════════════════════════════════════════
+// REAL-TIME SYNC — polls Supabase every 15s for changes
+// Shows toast when new data arrives
+// ═══════════════════════════════════════════════════════════
+(function initRealtime() {
+  let _lastHash = '';
+  let _paused   = false;
+
+  async function checkForUpdates() {
+    if (_paused || typeof sbFetch === 'undefined') return;
+    try {
+      // Lightweight check: just get updated_at of latest changed project
+      const rows = await sbFetch('projects?select=updated_at&order=updated_at.desc&limit=1');
+      const hash = rows.length ? rows[0].updated_at : '';
+      if (_lastHash && hash && hash !== _lastHash) {
+        showToast('🔄 Data updated by another user — refreshing…', 'info');
+        clearCache();
+        if (typeof loadData === 'function') loadData(false);
+      }
+      _lastHash = hash;
+    } catch(e) { /* silent */ }
+  }
+
+  // Pause polling when tab is hidden (saves bandwidth)
+  document.addEventListener('visibilitychange', () => {
+    _paused = document.hidden;
+    if (!_paused) checkForUpdates();
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // Initial hash
+    setTimeout(() => checkForUpdates(), 3000);
+    // Poll every 15 seconds
+    setInterval(checkForUpdates, 15000);
+  });
+})();
+
+
+// ═══════════════════════════════════════════════════════════
+// EXCEL EXPORT — exports filtered projects to .xlsx
+// ═══════════════════════════════════════════════════════════
+function exportToExcel(filtered) {
+  // Build rows
+  const projects = filtered || getAllProjects();
+  if (!projects.length) { showToast('No projects to export', 'error'); return; }
+
+  const rows = [
+    ['Project Name','Category','Status','Health','Progress %','Owner','Next Milestone','Comment','Escalated']
+  ];
+  projects.forEach(p => {
+    rows.push([
+      p.projectName || p.name || '',
+      p.sheetName   || p.category || '',
+      p.status      || '',
+      p.rag         || '',
+      parseInt(p.progress) || 0,
+      p.responsible || '',
+      p.milestoneDate || '',
+      p.comment     || '',
+      p.escalate    ? 'Yes' : 'No'
+    ]);
+  });
+
+  // Build CSV as fallback if XLSX not available
+  if (typeof XLSX !== 'undefined') {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    // Column widths
+    ws['!cols'] = [
+      {wch:35},{wch:22},{wch:12},{wch:10},{wch:12},
+      {wch:20},{wch:16},{wch:40},{wch:10}
+    ];
+    // Header row bold (limited XLSX support)
+    XLSX.utils.book_append_sheet(wb, ws, 'PMO Projects');
+    XLSX.writeFile(wb, 'PMO_Projects_' + new Date().toISOString().slice(0,10) + '.xlsx');
+    showToast('✅ Excel exported', 'success');
+  } else {
+    // CSV fallback
+    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'PMO_Projects_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('✅ CSV exported', 'success');
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════════════════════
+let _searchTerm = '';
+
+function initGlobalSearch(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.addEventListener('input', function() {
+    _searchTerm = this.value.trim().toLowerCase();
+    if (typeof renderProjects === 'function') renderProjects();
+    else if (typeof renderTable === 'function') renderTable();
+    // Update clear button
+    const clear = this.parentElement.querySelector('.search-clear-btn');
+    if (clear) clear.style.display = this.value ? 'block' : 'none';
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { input.value = ''; _searchTerm = ''; input.blur();
+      if (typeof renderProjects === 'function') renderProjects();
+      else if (typeof renderTable === 'function') renderTable();
+    }
+  });
+}
+
+function clearSearch() {
+  _searchTerm = '';
+  const inputs = document.querySelectorAll('.global-search-input');
+  inputs.forEach(i => { i.value = ''; });
+  if (typeof renderProjects === 'function') renderProjects();
+  else if (typeof renderTable === 'function') renderTable();
+}
+
+function matchesSearch(p) {
+  if (!_searchTerm) return true;
+  const s = _searchTerm;
+  return (p.projectName||p.name||'').toLowerCase().includes(s) ||
+         (p.responsible||'').toLowerCase().includes(s) ||
+         (p.status||'').toLowerCase().includes(s) ||
+         (p.rag||'').toLowerCase().includes(s) ||
+         (p.sheetName||p.category||'').toLowerCase().includes(s) ||
+         (p.comment||'').toLowerCase().includes(s);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// RAG HISTORY SPARKLINE
+// ═══════════════════════════════════════════════════════════
+async function loadRagSparkline(projectId, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  try {
+    const history = await sbFetch(
+      'rag_history?project_id=eq.' + projectId +
+      '&select=new_rag,changed_at&order=changed_at.asc&limit=12'
+    );
+    if (!history.length) {
+      container.innerHTML = '<span style="font-size:11px;color:var(--text-muted)">No history yet</span>';
+      return;
+    }
+    const dots = history.map(h => {
+      const d = new Date(h.changed_at);
+      const label = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      return '<span class="rag-dot ' + h.new_rag + '" title="' + h.new_rag + ' · ' + label + '"></span>';
+    }).join('');
+    container.innerHTML = '<div class="rag-sparkline-wrap">' +
+      '<span class="rag-sparkline-label">RAG History:</span>' +
+      '<div class="rag-sparkline">' + dots + '</div>' +
+      '</div>';
+  } catch(e) {
+    container.innerHTML = '';
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// OVERDUE TASK ALERTS
+// ═══════════════════════════════════════════════════════════
+function renderOverdueAlerts(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const projects = typeof getAllProjects === 'function' ? getAllProjects() : [];
+  
+  const overdue = [];
+  projects.forEach(p => {
+    (p.tasks || []).forEach(t => {
+      if (!t.milestoneDate || t.progress >= 100) return;
+      const due = new Date(t.milestoneDate + 'T00:00:00');
+      if (due < today) {
+        const daysLate = Math.floor((today - due) / 86400000);
+        overdue.push({
+          projectName: p.projectName || p.name,
+          taskName:    t.taskName,
+          responsible: t.responsible || p.responsible || '—',
+          daysLate,
+          rag:         t.rag || 'Green'
+        });
+      }
+    });
+    // Also check project milestone
+    if (p.milestoneDate && parseInt(p.progress||0) < 100) {
+      const due = new Date(p.milestoneDate + 'T00:00:00');
+      if (due < today) {
+        const daysLate = Math.floor((today - due) / 86400000);
+        overdue.push({
+          projectName: p.projectName || p.name,
+          taskName:    'Project Milestone',
+          responsible: p.responsible || '—',
+          daysLate,
+          rag: p.rag || 'Green'
+        });
+      }
+    }
+  });
+  
+  overdue.sort((a,b) => b.daysLate - a.daysLate);
+  
+  if (!overdue.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">✅ No overdue tasks</div>';
+    return;
+  }
+  
+  // Group by responsible
+  const byPerson = {};
+  overdue.forEach(o => {
+    const key = o.responsible;
+    if (!byPerson[key]) byPerson[key] = [];
+    byPerson[key].push(o);
+  });
+  
+  container.innerHTML = Object.entries(byPerson).map(([person, items]) => `
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <span style="background:#FEF2F2;color:#DC2626;padding:2px 8px;border-radius:10px;border:1px solid #FECACA">
+          ${esc(person)} — ${items.length} overdue
+        </span>
+      </div>
+      ${items.map(o => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#FFF7F7;border:1px solid #FEE2E2;border-radius:6px;margin-bottom:4px;font-size:12px">
+          <span style="color:#DC2626;font-weight:700">⏰ ${o.daysLate}d late</span>
+          <span style="flex:1">${esc(o.taskName)}</span>
+          <span style="color:var(--text-muted)">${esc(o.projectName)}</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════
+(function initKeyboard() {
+  window.addEventListener('keydown', function(e) {
+    // Ignore when typing in inputs
+    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    switch(e.key) {
+      case 'Escape':
+        // Close any open modal
+        document.querySelectorAll('.modal-overlay.open').forEach(m => {
+          m.classList.remove('open');
+        });
+        // Close project view if open
+        if (typeof closeProjectView === 'function') closeProjectView();
+        // Close activity panel
+        const ap = document.getElementById('activity-panel');
+        if (ap && ap.classList.contains('open')) ap.classList.remove('open');
+        break;
+      case 'n': case 'N':
+        if (typeof openAddModal === 'function') openAddModal();
+        else if (typeof openAddProjectModal === 'function') openAddProjectModal();
+        break;
+      case '/':
+        e.preventDefault();
+        const search = document.querySelector('.global-search-input');
+        if (search) search.focus();
+        break;
+      case 'r': case 'R':
+        if (typeof loadData === 'function') { clearCache(); loadData(false); showToast('🔄 Refreshing…','info'); }
+        break;
+      case 'e': case 'E':
+        if (typeof exportToExcel === 'function') exportToExcel();
+        break;
+    }
+  });
+
+  // Keyboard shortcut hint tooltip on '?' key
+  window.addEventListener('keydown', function(e) {
+    if (e.key === '?' && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
+      showToast('Shortcuts: N=New  /=Search  R=Refresh  E=Export  Esc=Close', 'info');
+    }
+  });
+})();
+
+
+
+function searchAndRender(val) {
+  _searchTerm = (val||'').trim().toLowerCase();
+  renderAll ? renderAll() : (renderProjects && renderProjects());
+}
+
+
+
+function openProjectViewWithSparkline(sheetKey, projectName) {
+  openProjectView(sheetKey, projectName);
+}
 
 </script>
 </body>
