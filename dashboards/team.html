@@ -1801,7 +1801,6 @@ async function saveProject() {
     comment:          projectRow.comment,
     milestoneDate:    futureTasks[0]?.milestoneDate || '',
     editedBy:         typeof currentUser !== 'undefined' ? (currentUser?.name||'Team') : 'Team',
-    editedBy:         currentUser.name,  // for changelog
     tasks:            allTasks
   };
 
@@ -1821,7 +1820,9 @@ async function saveProject() {
     if (data.success || data.message) {
       localStorage.removeItem('pmo_data_cache');
       showToast(`✅ "${name}" saved`, 'success');
-      loadData(true);
+      // Don't force-reload — optimistic UI already shows correct state
+      // Silent background refresh after 2s
+      setTimeout(() => loadData(false), 2000);
     } else {
       showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
     }
