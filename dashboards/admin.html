@@ -1271,6 +1271,398 @@
   .risks-empty { text-align:center; padding:60px 20px; color:var(--text-muted); }
   .risks-empty .icon { font-size:48px; margin-bottom:12px; opacity:.4; }
 
+
+/* ═══════════════════════════════════════════════════════════
+   BOLD UI REDESIGN — v2
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── GLOBAL RESET & BASE ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --glow-blue: 0 0 0 3px rgba(26,95,204,0.18);
+  --glow-green: 0 0 0 3px rgba(22,163,74,0.18);
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ── RIPPLE ──────────────────────────────────────────────── */
+.ripple-host { position: relative !important; overflow: hidden !important; }
+.ripple-wave {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.32);
+  transform: scale(0); animation: ripple-expand 0.55s ease-out forwards;
+  pointer-events: none; z-index: 99;
+}
+@keyframes ripple-expand { to { transform: scale(4); opacity: 0; } }
+
+/* ── BUTTON PRESS FEEDBACK ───────────────────────────────── */
+button, .btn, .pill, .sidebar-item, .cat-card, .back-btn {
+  user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: var(--transition) !important;
+}
+button:active:not(:disabled), .btn:active, .pill:active,
+.back-btn:active { transform: scale(0.94) !important; filter: brightness(0.92); }
+.btn-primary:active, .login-btn:active {
+  box-shadow: 0 0 0 4px rgba(26,95,204,0.28) !important;
+}
+
+/* ── ENHANCED CARDS ──────────────────────────────────────── */
+.card, .proj-header-card, .gantt-card, .timeline-card,
+.chart-card, .risk-card, .cat-card, .rag-item {
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.cat-card:hover, .rag-item:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 16px 40px rgba(15,30,53,0.14) !important;
+}
+.risk-card:hover {
+  transform: translateX(4px) !important;
+  box-shadow: 0 8px 24px rgba(15,30,53,0.12) !important;
+}
+
+/* ── KPI CARDS ───────────────────────────────────────────── */
+.kpi-card, .stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(15,30,53,0.06);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition) !important;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light));
+  opacity: 0; transition: opacity 0.2s ease;
+}
+.kpi-card:hover::before { opacity: 1; }
+.kpi-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 32px rgba(15,30,53,0.12) !important; }
+.kpi-value, .ps-val { font-size: 2.2rem !important; font-weight: 800 !important; line-height: 1 !important; }
+
+/* ── PROGRESS BARS ───────────────────────────────────────── */
+.prog-bar { height: 7px !important; border-radius: 6px !important; background: #EEF2F7 !important; }
+.prog-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, var(--blue), var(--blue-light));
+  transition: width 0.7s cubic-bezier(0.4,0,0.2,1) !important;
+  box-shadow: 0 1px 4px rgba(26,95,204,0.3);
+}
+.prog-fill.done { background: linear-gradient(90deg, var(--green), #22C55E) !important; box-shadow: 0 1px 4px rgba(22,163,74,0.3); }
+.prog-fill.warn { background: linear-gradient(90deg, var(--amber), var(--gold)) !important; box-shadow: 0 1px 4px rgba(217,119,6,0.3); }
+
+/* ── ENHANCED TABLE ──────────────────────────────────────── */
+.tbl { border-collapse: separate !important; border-spacing: 0 !important; }
+.tbl thead th {
+  font-size: 10px !important; letter-spacing: 0.8px !important;
+  font-weight: 700 !important; text-transform: uppercase !important;
+  color: #94A3B8 !important; background: #F8FAFC !important;
+  padding: 12px 16px !important; border-bottom: 2px solid var(--border) !important;
+}
+.tbl tbody tr {
+  transition: background 0.12s ease;
+  animation: rowSlideIn 0.25s ease both;
+}
+.tbl tbody tr:nth-child(even) td { background: #FAFBFD; }
+.tbl tbody tr.clickable:hover td {
+  background: #EFF6FF !important;
+  cursor: pointer;
+}
+@keyframes rowSlideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── ENHANCED BADGES ─────────────────────────────────────── */
+.badge {
+  font-size: 10px !important; font-weight: 700 !important;
+  letter-spacing: 0.3px; padding: 3px 9px !important;
+  border-radius: 6px !important;
+}
+.rag { font-weight: 600 !important; }
+.rag-dot {
+  width: 8px !important; height: 8px !important;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.8), 0 0 0 3px currentColor;
+}
+.rag-dot.green { background: var(--green) !important; color: var(--green); }
+.rag-dot.amber { background: var(--amber) !important; color: var(--amber); }
+.rag-dot.red   { background: var(--red)   !important; color: var(--red); }
+
+/* ── ENHANCED MODALS ─────────────────────────────────────── */
+.modal-overlay { backdrop-filter: blur(4px) !important; }
+.adv-modal, .login-box {
+  animation: modalSpring 0.28s cubic-bezier(0.34,1.56,0.64,1) both !important;
+  border-radius: 18px !important;
+  box-shadow: 0 32px 80px rgba(15,30,53,0.24) !important;
+}
+@keyframes modalSpring {
+  from { opacity: 0; transform: scale(0.88) translateY(-12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── ENHANCED TOAST ──────────────────────────────────────── */
+.toast-item, #toast-container > div {
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
+  font-weight: 600 !important;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(60px) scale(0.88); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ── ENHANCED INPUTS ─────────────────────────────────────── */
+input, textarea, select {
+  border-radius: 8px !important;
+  border: 1.5px solid var(--border) !important;
+  transition: var(--transition) !important;
+  font-size: 13px !important;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border-color: var(--blue) !important;
+  box-shadow: var(--glow-blue) !important;
+  background: #fff !important;
+}
+
+/* ── SECTION HEADERS ─────────────────────────────────────── */
+.section-header h2 {
+  font-size: 15px !important; font-weight: 700 !important; letter-spacing: -0.2px;
+}
+.section-divider {
+  width: 4px !important; height: 20px !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, var(--blue), var(--blue-light)) !important;
+  box-shadow: 0 2px 6px rgba(26,95,204,0.35) !important;
+}
+
+/* ── SIDEBAR ENHANCEMENTS ────────────────────────────────── */
+.sidebar-item {
+  border-radius: 10px !important; margin: 1px 6px !important;
+  transition: var(--transition) !important;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.09) !important; padding-left: 22px !important; }
+.sidebar-item.active {
+  background: rgba(26,95,204,0.22) !important;
+  box-shadow: inset 3px 0 0 var(--blue-light) !important;
+}
+
+/* ── HERO ENHANCEMENT ────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, #0A1628 0%, #0F1E35 40%, #1A2E52 80%, #1B3A6B 100%) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+.hero-stat .num {
+  font-size: 2.4rem !important; font-weight: 800 !important;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #fff 60%, rgba(255,255,255,0.7));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-stat.num.green { -webkit-text-fill-color: #4ADE80 !important; }
+
+/* ── PROJECT CARDS ENHANCEMENT ───────────────────────────── */
+.project-card {
+  border-radius: 14px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(15,30,53,0.06) !important;
+  transition: var(--transition) !important;
+  overflow: hidden;
+  position: relative;
+}
+.project-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--green); transition: width 0.2s ease;
+}
+.project-card.rag-amber::before { background: var(--amber); }
+.project-card.rag-red::before   { background: var(--red); }
+.project-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 48px rgba(15,30,53,0.16) !important;
+  border-color: rgba(26,95,204,0.2) !important;
+}
+.project-card:hover::before { width: 6px; }
+
+/* ── FILTER PILLS ────────────────────────────────────────── */
+.pill {
+  border-radius: 20px !important; font-weight: 600 !important;
+  font-size: 12px !important; padding: 5px 14px !important;
+  border: 1.5px solid var(--border) !important;
+  background: var(--white) !important;
+  color: var(--text-muted) !important;
+  cursor: pointer; transition: var(--transition) !important;
+}
+.pill:hover { border-color: var(--blue) !important; color: var(--blue) !important; }
+.pill.active {
+  background: var(--blue) !important; color: #fff !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 4px 12px rgba(26,95,204,0.3) !important;
+}
+
+/* ── STAGGER ANIMATIONS ──────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.projects-grid > *:nth-child(1) { animation: fadeSlideUp 0.25s ease 0.04s both; }
+.projects-grid > *:nth-child(2) { animation: fadeSlideUp 0.25s ease 0.08s both; }
+.projects-grid > *:nth-child(3) { animation: fadeSlideUp 0.25s ease 0.12s both; }
+.projects-grid > *:nth-child(4) { animation: fadeSlideUp 0.25s ease 0.16s both; }
+.projects-grid > *:nth-child(5) { animation: fadeSlideUp 0.25s ease 0.20s both; }
+.projects-grid > *:nth-child(6) { animation: fadeSlideUp 0.25s ease 0.24s both; }
+.kpi-grid > *:nth-child(1) { animation: fadeSlideUp 0.25s ease 0.05s both; }
+.kpi-grid > *:nth-child(2) { animation: fadeSlideUp 0.25s ease 0.10s both; }
+.kpi-grid > *:nth-child(3) { animation: fadeSlideUp 0.25s ease 0.15s both; }
+.kpi-grid > *:nth-child(4) { animation: fadeSlideUp 0.25s ease 0.20s both; }
+.kpi-grid > *:nth-child(5) { animation: fadeSlideUp 0.25s ease 0.25s both; }
+.kpi-grid > *:nth-child(6) { animation: fadeSlideUp 0.25s ease 0.30s both; }
+
+/* ── SKELETON PULSE ──────────────────────────────────────── */
+@keyframes skeletonShimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E8EDF4 50%, #F1F5F9 75%) !important;
+  background-size: 800px 100% !important;
+  animation: skeletonShimmer 1.5s infinite linear !important;
+  border-radius: 6px !important;
+}
+
+/* ── LIVE ACTIVITY WIDGET ────────────────────────────────── */
+#activity-widget {
+  position: fixed; bottom: 28px; right: 28px; z-index: 8000;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+#activity-toggle {
+  background: linear-gradient(135deg, var(--blue), #1348A0);
+  color: #fff; border: none; border-radius: 50px;
+  padding: 11px 20px; font-size: 13px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 6px 20px rgba(26,95,204,0.4);
+  transition: var(--transition) !important;
+}
+#activity-toggle:hover { transform: translateY(-2px) !important; box-shadow: 0 10px 28px rgba(26,95,204,0.5) !important; }
+#activity-badge-count {
+  background: #EF4444; color: #fff; border-radius: 50%;
+  width: 20px; height: 20px; font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  animation: badgePop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes badgePop { from { transform: scale(0); } to { transform: scale(1); } }
+#activity-panel {
+  position: absolute; bottom: 58px; right: 0; width: 380px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 20px; box-shadow: 0 24px 64px rgba(15,30,53,0.2);
+  display: none; flex-direction: column; max-height: 540px;
+  overflow: hidden;
+  animation: modalSpring 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+#activity-panel.open { display: flex; }
+.activity-panel-header {
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.activity-panel-header h4 { margin: 0; font-size: 14px; font-weight: 700; }
+.activity-live-dot {
+  width: 8px; height: 8px; background: #10B981;
+  border-radius: 50%; display: inline-block; margin-right: 6px;
+  animation: livePulse 1.5s ease infinite;
+  box-shadow: 0 0 0 0 rgba(16,185,129,0.5);
+}
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+.activity-tabs {
+  display: flex; gap: 4px; padding: 10px 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-tab {
+  padding: 6px 14px; font-size: 12px; font-weight: 600;
+  border: none; background: none; cursor: pointer;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0; transition: var(--transition-fast) !important;
+}
+.activity-tab:hover { color: var(--blue); background: #F0F7FF; }
+.activity-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+#activity-list { overflow-y: auto; flex: 1; padding: 8px 12px; }
+.activity-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 8px; border-radius: 10px; margin-bottom: 2px;
+  transition: background 0.12s ease;
+  animation: fadeSlideUp 0.2s ease both;
+}
+.activity-row:hover { background: #F8FAFC; }
+.activity-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #1348A0);
+  color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 2px 6px rgba(26,95,204,0.3);
+}
+.activity-avatar.public { background: linear-gradient(135deg, #7C3AED, #5B21B6); box-shadow: 0 2px 6px rgba(124,58,237,0.3); }
+.activity-meta { flex: 1; min-width: 0; }
+.activity-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.activity-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.activity-time { font-size: 10px; color: #94A3B8; flex-shrink: 0; font-weight: 500; }
+.activity-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+.activity-panel-footer {
+  padding: 10px 16px; border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  background: #FAFBFC;
+}
+.activity-footer-count { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+/* ── COUNT-UP KPI ANIMATION ──────────────────────────────── */
+.kpi-counting { transition: all 0.05s ease; }
+
+/* ── SEARCH BAR ──────────────────────────────────────────── */
+.global-search-wrap { position: relative; }
+.global-search-input {
+  padding: 8px 36px 8px 14px !important;
+  border-radius: 20px !important;
+  border: 1.5px solid var(--border) !important;
+  font-size: 13px; background: var(--bg);
+  transition: var(--transition) !important; width: 100%;
+}
+.global-search-input:focus {
+  background: #fff !important; border-color: var(--blue) !important;
+  box-shadow: var(--glow-blue) !important;
+}
+
+/* ── MOBILE RESPONSIVE ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero { padding: 20px 16px 18px !important; }
+  .hero-stats { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+  .hero-stat .num { font-size: 1.8rem !important; }
+  .main-content { padding: 14px !important; }
+  .kpi-grid, .stats-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
+  .projects-grid { grid-template-columns: 1fr !important; }
+  .charts-row { grid-template-columns: 1fr !important; }
+  .category-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .sidebar { width: 100% !important; flex-direction: row !important; overflow-x: auto !important; padding: 6px !important; }
+  .adv-modal { border-radius: 20px 20px 0 0 !important; max-height: 90vh !important; }
+  .modal-overlay { align-items: flex-end !important; }
+  #activity-widget { bottom: 14px !important; right: 14px !important; }
+  #activity-panel { width: 320px !important; }
+}
+
 </style>
 </head>
 <body>
@@ -2455,6 +2847,7 @@ function renderKPIs() {
   document.getElementById('kpi-at-risk').textContent   = atRisk;
   document.getElementById('kpi-avg').textContent       = avg + '%';
   document.getElementById('kpi-res').textContent       = allResources.length || loadTeamMembers().length;
+  setTimeout(triggerKPICountUp, 60);
 }
 
 function getAllProjects() {
@@ -4905,6 +5298,163 @@ document.addEventListener('keydown', e => {
 });
 
 // changeGanttView replaced by DashboardTimeline
+
+
+
+// ═══════════════════════════════════════════════════════════
+// BOLD UI ENHANCEMENTS
+// ═══════════════════════════════════════════════════════════
+
+// ── RIPPLE EFFECT ─────────────────────────────────────────
+(function() {
+  function ripple(e) {
+    const el = e.currentTarget;
+    el.classList.add('ripple-host');
+    el.querySelectorAll('.ripple-wave').forEach(r => r.remove());
+    const rect = el.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 1.8;
+    const x = (e.clientX - rect.left) - size/2;
+    const y = (e.clientY - rect.top)  - size/2;
+    const wave = document.createElement('span');
+    wave.className = 'ripple-wave';
+    wave.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+    el.appendChild(wave);
+    wave.addEventListener('animationend', () => wave.remove(), {once:true});
+  }
+  function attach(root) {
+    const sel = 'button,.btn,.pill,.login-btn,.logout-btn,.back-btn,.export-btn,.gantt-view-btn,.sidebar-item';
+    (root||document).querySelectorAll(sel).forEach(el => {
+      if (!el._ripple) { el.addEventListener('click', ripple); el._ripple = true; }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    attach();
+    new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType===1 && attach(n))))
+      .observe(document.body, {childList:true, subtree:true});
+  });
+})();
+
+// ── COUNT-UP ANIMATION ────────────────────────────────────
+function animateCountUp(el, target, duration) {
+  if (!el) return;
+  const isPercent = String(target).includes('%');
+  const num = parseInt(String(target).replace('%','')) || 0;
+  if (num === 0) { el.textContent = target; return; }
+  const start = performance.now();
+  (function step(now) {
+    const p = Math.min((now-start)/duration, 1);
+    const ease = 1 - Math.pow(1-p, 3);
+    el.textContent = isPercent ? Math.round(ease*num)+'%' : Math.round(ease*num);
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  })(start);
+}
+function triggerKPICountUp() {
+  ['kpi-total','kpi-active','kpi-completed','kpi-avg','kpi-at-risk','kpi-res',
+   'k-total','k-active','k-completed','k-risk','k-avg','k-team',
+   'h-total','h-active','h-green','h-amber','h-avg',
+   'rag-green','rag-amber','rag-red','rag-completed'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.textContent.trim();
+    if (val && val !== '—') animateCountUp(el, val, 900);
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LIVE ACTIVITY WIDGET — Admin only
+// ═══════════════════════════════════════════════════════════
+(function() {
+  let _sessions = [], _filter = 'all', _open = false, _lastCount = 0;
+
+  function init() {
+    const w = document.createElement('div');
+    w.id = 'activity-widget';
+    w.innerHTML = `
+      <div id="activity-panel">
+        <div class="activity-panel-header">
+          <h4><span class="activity-live-dot"></span>Live Activity</h4>
+          <button style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:4px 8px;border-radius:6px;transition:background 0.15s" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='none'" onclick="window._actRefresh()">🔄 Refresh</button>
+        </div>
+        <div class="activity-tabs">
+          <button class="activity-tab active" onclick="window._actFilter('all',this)">All</button>
+          <button class="activity-tab" onclick="window._actFilter('team',this)">👥 Team</button>
+          <button class="activity-tab" onclick="window._actFilter('public',this)">🌐 Public</button>
+        </div>
+        <div id="activity-list"><div class="activity-empty">⏳ Loading...</div></div>
+        <div class="activity-panel-footer">
+          <span class="activity-footer-count" id="act-footer">—</span>
+          <span style="font-size:10px;color:#94A3B8">Updates every 8s</span>
+        </div>
+      </div>
+      <button id="activity-toggle" onclick="window._actToggle()">
+        👁 Live Users <span id="activity-badge-count">0</span>
+      </button>`;
+    document.body.appendChild(w);
+    fetch_();
+    setInterval(fetch_, 8000);
+  }
+
+  async function fetch_() {
+    try {
+      const cut = new Date(Date.now()-30000).toISOString();
+      const data = await sbFetch('user_sessions?last_seen=gte.'+encodeURIComponent(cut)+'&order=last_seen.desc&limit=50');
+      _sessions = data || [];
+      render_();
+    } catch(e) { console.warn('Activity fetch:', e.message); }
+  }
+
+  function render_() {
+    const list = (_filter==='all') ? _sessions : _sessions.filter(s=>s.dashboard===_filter);
+    const badge = document.getElementById('activity-badge-count');
+    const count = _sessions.length;
+    if (badge) { badge.textContent = count; badge.style.background = count>0?'#EF4444':'#94A3B8'; }
+    if (count > _lastCount && _lastCount > 0 && typeof showToast==='function')
+      showToast('👁 '+(count-_lastCount)+' new user(s) online','info');
+    _lastCount = count;
+    const footer = document.getElementById('act-footer');
+    if (footer) footer.textContent = count+' user'+(count!==1?'s':'')+' online now';
+    const el = document.getElementById('activity-list');
+    if (!el) return;
+    if (!list.length) { el.innerHTML='<div class="activity-empty">🔇 No active users right now</div>'; return; }
+    el.innerHTML = list.map(s => {
+      const ini = (s.user_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const isPub = s.dashboard==='public';
+      const ago = timeAgo_(s.last_seen);
+      const loc = [s.current_page, s.current_section].filter(Boolean).join(' › ');
+      return `<div class="activity-row">
+        <div class="activity-avatar ${isPub?'public':''}">${ini}</div>
+        <div class="activity-meta">
+          <div class="activity-name">${esc_(s.user_name||'Anonymous')} <span style="font-size:10px;font-weight:400;color:#94A3B8">${isPub?'🌐':'👥'}</span></div>
+          <div class="activity-detail" title="${esc_(loc)} · ${esc_(s.last_action||'')}">📍 ${esc_(loc||'Dashboard')} · ${esc_(s.last_action||'Browsing')}</div>
+        </div>
+        <div class="activity-time">${ago}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo_(iso) {
+    const d = Math.floor((Date.now()-new Date(iso))/1000);
+    if (d<10) return 'now'; if (d<60) return d+'s'; if (d<3600) return Math.floor(d/60)+'m'; return Math.floor(d/3600)+'h';
+  }
+  function esc_(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  window._actToggle = function() {
+    _open = !_open;
+    document.getElementById('activity-panel').classList.toggle('open',_open);
+    if (_open) fetch_();
+  };
+  window._actFilter = function(f,el) {
+    _filter = f;
+    document.querySelectorAll('.activity-tab').forEach(t=>t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    render_();
+  };
+  window._actRefresh = function() { fetch_(); if(typeof showToast==='function') showToast('Refreshed','info'); };
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
 
 </script>
 </body>
