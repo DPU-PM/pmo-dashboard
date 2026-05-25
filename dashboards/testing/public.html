@@ -1150,7 +1150,7 @@ input.valid, select.valid { border-color: var(--green) !important; }
 // CONFIG
 // ═══════════════════════════════════════════════════════════
 // Supabase replaces Apps Script
-const CACHE_KEY = 'pmo_test_test_public_cache'; // separate key — avoids team cache pollution
+const CACHE_KEY = 'pmo_test_public_cache'; // separate key — avoids team cache pollution
 const CACHE_TTL  = 5 * 60 * 1000; // 5 min
 
 // ── GLOBAL STATE ─────────────────────────────────────────────
@@ -1699,8 +1699,11 @@ function filterPublic(projects) {
   const pub = {};
   for (const [key, list] of Object.entries(projects)) {
     pub[key] = (list||[]).filter(p => {
-      const v = p.publicVisibility || p.public_visibility;
-      return v === true || v === 'Yes' || v === 'yes' || v === 1 || v === '1';
+      // publicVisibility is mapped from p.public_visibility ? 'Yes' : 'No'
+      // so check the converted string AND the raw boolean
+      const pv = p.publicVisibility;
+      const raw = p.public_visibility;
+      return pv === 'Yes' || raw === true || raw === 1 || raw === 'true';
     });
   }
   return pub;
@@ -1729,6 +1732,10 @@ window.addEventListener('DOMContentLoaded', () => {
 async function loadFresh() {
   try {
     const data = await sbGetAllData();
+    // Debug: log what we got from Supabase
+    const totalProjects = Object.values(data.projects||{}).reduce((s,a)=>s+a.length,0);
+    const pubProjects   = Object.values(filterPublic(data.projects||{})).reduce((s,a)=>s+a.length,0);
+    console.log('PMO Public: loaded', totalProjects, 'projects,', pubProjects, 'public');
     setCache(data);
     applyData(data);
   if(window.trackPage) trackPage('Public Dashboard','Overview');
@@ -1758,9 +1765,9 @@ function refreshBackground() {
 function applyData(data) {
   const projects = data.projects || {};
   const filtered = filterPublic(projects);
-  // If no public projects found, show all (dev fallback)
   const hasAny = Object.values(filtered).some(arr => arr.length > 0);
-  publicProjectsGlobal = hasAny ? filtered : projects; // store globally
+  // Fallback: if nothing passes public filter, show all projects
+  publicProjectsGlobal = hasAny ? filtered : projects;
   renderHero(publicProjectsGlobal);
   renderRAG(publicProjectsGlobal);
   renderCategories(publicProjectsGlobal);
