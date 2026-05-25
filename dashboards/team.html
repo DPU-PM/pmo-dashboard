@@ -1424,7 +1424,7 @@ async function loadData(forceRefresh = false) {
         setCache(data);
         renderKPIs(); renderProjects(); renderResources(); if(document.getElementById('donut-chart')) renderTeamCharts();
         document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
-      }).catch(() => {});
+      }).catch(e => console.warn('Background refresh failed:', e.message));
       return;
     }
   }
@@ -1442,7 +1442,8 @@ async function loadData(forceRefresh = false) {
     renderKPIs(); renderProjects(); renderResources();
     document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
   } catch(e) {
-    showToast('Failed to load data', 'error');
+    showToast('Load error: ' + e.message, 'error');
+    console.error('loadData failed:', e);
   } finally {
     document.getElementById('proj-loading').classList.remove('show');
   }
@@ -1823,7 +1824,9 @@ async function saveProject() {
     if (data.success || data.message) {
       localStorage.removeItem('pmo_data_cache');
       showToast(`✅ "${name}" saved`, 'success');
-      loadData(true);
+      // Update local cache and re-render without a full Supabase reload
+      clearCache();
+      setTimeout(() => loadData(false), 1500);
     } else {
       showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
     }
