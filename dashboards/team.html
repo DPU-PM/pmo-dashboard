@@ -1415,7 +1415,7 @@ async function loadData(forceRefresh = false) {
       allData = cached.projects || {};
       allResources = cached.resources || [];
       renderKPIs(); renderProjects(); renderResources();
-      document.getElementById('proj-loading').classList.remove('show');
+      document.getElementById('proj-loading')?.classList.remove('show');
       document.getElementById('last-updated').textContent = 'Cached · ' + new Date().toLocaleTimeString();
       // Refresh silently in background
       sbGetAllData().then(data => {
@@ -1423,14 +1423,16 @@ async function loadData(forceRefresh = false) {
         allResources = data.resources || [];
         setCache(data);
         renderKPIs(); renderProjects(); renderResources(); if(document.getElementById('donut-chart')) renderTeamCharts();
-        document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+        const _lu = document.getElementById('last-updated');
+    if (_lu) _lu.textContent = 'Updated: ' + new Date().toLocaleTimeString();
       }).catch(e => console.warn('Background refresh failed:', e.message));
       return;
     }
   }
   // No cache — show skeleton
-  document.getElementById('proj-loading').classList.add('show');
-  document.getElementById('projects-container').innerHTML =
+  document.getElementById('proj-loading')?.classList.add('show');
+  const _pc = document.getElementById('projects-container');
+  if (_pc) _pc.innerHTML =
     '<div class="projects-grid">' +
     Array(6).fill('<div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;height:160px"><div class="skel" style="width:60%;margin-bottom:12px"></div><div class="skel" style="width:40%;margin-bottom:20px"></div><div class="skel" style="height:7px;margin-bottom:8px"></div><div class="skel" style="width:80%"></div></div>').join('') +
     '</div>';
@@ -1440,12 +1442,13 @@ async function loadData(forceRefresh = false) {
     allResources = data.resources || [];
     setCache(data);
     renderKPIs(); renderProjects(); renderResources();
-    document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    const _lu = document.getElementById('last-updated');
+    if (_lu) _lu.textContent = 'Updated: ' + new Date().toLocaleTimeString();
   } catch(e) {
     showToast('Load error: ' + e.message, 'error');
     console.error('loadData failed:', e);
   } finally {
-    document.getElementById('proj-loading').classList.remove('show');
+    document.getElementById('proj-loading')?.classList.remove('show');
   }
 }
 
@@ -1825,7 +1828,7 @@ async function saveProject() {
       localStorage.removeItem('pmo_data_cache');
       showToast(`✅ "${name}" saved`, 'success');
       // Update local cache and re-render without a full Supabase reload
-      clearCache();
+      localStorage.removeItem(CACHE_KEY);
       setTimeout(() => loadData(false), 1500);
     } else {
       showToast(`⚠️ ${data.error || 'Save error'}`, 'error');
