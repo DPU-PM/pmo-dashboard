@@ -2252,13 +2252,13 @@ async function openProjectView(sheetKey, projectName) {
   pv.classList.add('active');
 
   // Set breadcrumb immediately
-  document.getElementById('pv-breadcrumb').textContent = projectName;
+  (document.getElementById('pv-breadcrumb')||{textContent:''}).textContent = projectName;
 
   // Show loading state
-  document.getElementById('pv-name').textContent = projectName;
-  document.getElementById('pv-timeline').innerHTML =
+  (document.getElementById('pv-name')||{textContent:''}).textContent = projectName;
+  (document.getElementById('pv-timeline')||{innerHTML:''}).innerHTML =
     '<div style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading project...</div>';
-  document.getElementById('pv-gantt').innerHTML =
+  (document.getElementById('pv-gantt')||{innerHTML:''}).innerHTML =
     '<div style="text-align:center;padding:30px;color:var(--text-muted)">Loading timeline...</div>';
 
   // ── STEP 1: Show header from local cache instantly ──────────
@@ -2268,11 +2268,11 @@ async function openProjectView(sheetKey, projectName) {
   renderProjectHeader(proj, [], sheetKey);
 
   // Show skeleton for tasks/gantt
-  document.getElementById('pv-timeline').innerHTML = `
+  (document.getElementById('pv-timeline')||{innerHTML:''}).innerHTML = `
     <div style="padding:16px">
       ${Array(3).fill('<div class="skel" style="height:56px;margin-bottom:10px"></div>').join('')}
     </div>`;
-  document.getElementById('pv-gantt').innerHTML =
+  (document.getElementById('pv-gantt')||{innerHTML:''}).innerHTML =
     '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">⏳ Loading timeline...</div>';
 
   // ── STEP 2: Load full tasks from Supabase in background ──
@@ -2328,7 +2328,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   card.className = 'proj-header-card rag-' + rag;
 
   // Name
-  document.getElementById('pv-name').textContent = proj.projectName;
+  (document.getElementById('pv-name')||{textContent:''}).textContent = proj.projectName;
 
   // Meta badges
   const TYPE_MAP = {'Content Projects':'type-content','Software Projects':'type-software','Marketing & Growth':'type-marketing','Initiatives':'type-initiatives','Sales Projects':'type-sales'};
@@ -2336,7 +2336,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   const STATUS_BADGE = {'Active':'badge-blue','Completed':'badge-green','On Hold':'badge-gray','Upcoming':'badge-purple','Cancelled':'badge-red'};
   const sheetName = SHEETS[sheetKey] || sheetKey;
 
-  document.getElementById('pv-meta').innerHTML = `
+  (document.getElementById('pv-meta')||{innerHTML:''}).innerHTML = `
     <span class="badge ${STATUS_BADGE[proj.status]||'badge-gray'}">${esc(proj.status||'Active')}</span>
     <span class="type-tag ${TYPE_MAP[sheetName]||''}" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid">${TYPE_SHORT[sheetName]||esc(sheetName)}</span>
     <span class="rag"><span class="rag-dot ${rag}"></span>${esc(proj.rag||'Green')}</span>
@@ -2347,21 +2347,21 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   // Actions — Edit button opens existing modal
   const canEditPerm = (typeof hasPerm === 'function') ? hasPerm('editProjects') : true;
   const canEdit2 = typeof hasPerm === 'function' ? hasPerm('editProjects') : true;
-  document.getElementById('pv-actions').innerHTML = canEdit2 ? `
+  (document.getElementById('pv-actions')||{innerHTML:''}).innerHTML = canEdit2 ? `
     <button class="btn btn-primary btn-sm" onclick="openEditModalFromView('${esc(sheetKey)}','${esc(proj.projectName||projectName)}')">✏️ Edit Project</button>
   ` : '';
 
   // Progress
-  document.getElementById('pv-prog-pct').textContent = pct + '%';
+  (document.getElementById('pv-prog-pct')||{textContent:''}).textContent = pct + '%';
   const fill = document.getElementById('pv-prog-fill');
   fill.style.width = pct + '%';
   fill.className = 'overall-prog-fill' + (pct>=100?' done':pct<30?' warn':'');
 
   // Stats
-  document.getElementById('pv-total-tasks').textContent = taskList.length;
-  document.getElementById('pv-done-tasks').textContent  = done;
-  document.getElementById('pv-inprog-tasks').textContent = inprog;
-  document.getElementById('pv-todo-tasks').textContent  = todo;
+  (document.getElementById('pv-total-tasks')||{textContent:''}).textContent = taskList.length;
+  (document.getElementById('pv-done-tasks')||{textContent:''}).textContent  = done;
+  (document.getElementById('pv-inprog-tasks')||{textContent:''}).textContent = inprog;
+  (document.getElementById('pv-todo-tasks')||{textContent:''}).textContent  = todo;
 
   // Summary chips
   let chips = '';
@@ -2369,11 +2369,11 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   if (inprog) chips += `<span class="summary-chip chip-prog">🔵 ${inprog} In Progress</span>`;
   if (todo)   chips += `<span class="summary-chip chip-todo">⬜ ${todo} Not Started</span>`;
   if (late)   chips += `<span class="summary-chip chip-late">⚠️ ${late} Overdue</span>`;
-  document.getElementById('pv-summary-chips').innerHTML = chips;
+  (document.getElementById('pv-summary-chips')||{innerHTML:''}).innerHTML = chips;
 
   // Comment banner
   if (proj.comment) {
-    document.getElementById('pv-summary-chips').innerHTML += `
+    (document.getElementById('pv-summary-chips')||{innerHTML:''}).innerHTML += `
       <div style="width:100%;background:#FFFBEB;border:1px solid #FEF08A;border-radius:6px;padding:8px 14px;font-size:12px;color:#854D0E;margin-top:4px">
         💬 ${esc(proj.comment)}
       </div>`;
@@ -2396,11 +2396,11 @@ function renderVerticalTimeline(taskList) {
 
   if (!phaseOrder.length) {
     container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>No tasks yet</h3><p>Add tasks via the Edit Project button</p></div>';
-    document.getElementById('pv-phase-count').textContent = '';
+    (document.getElementById('pv-phase-count')||{textContent:''}).textContent = '';
     return;
   }
 
-  document.getElementById('pv-phase-count').textContent = phaseOrder.length + ' phase' + (phaseOrder.length!==1?'s':'');
+  (document.getElementById('pv-phase-count')||{textContent:''}).textContent = phaseOrder.length + ' phase' + (phaseOrder.length!==1?'s':'');
 
   container.innerHTML = phaseOrder.map(ph => {
     const tasks = phases[ph];
@@ -3297,7 +3297,7 @@ let currentViewMode  = 'month';
 function renderGantt(taskList) {
   const container = document.getElementById('pv-gantt');
   if (!container) return;
-  document.getElementById('pv-gantt-range').textContent = '';
+  (document.getElementById('pv-gantt-range')||{textContent:''}).textContent = '';
 
   const tasksWithDates = (taskList || []).filter(t =>
     t.milestoneDate && String(t.milestoneDate).trim() && t.taskName
