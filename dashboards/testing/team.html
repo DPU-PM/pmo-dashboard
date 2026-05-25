@@ -2289,7 +2289,7 @@ function renamePhase(oldName, newName) {
   renderTaskEditor();
 }
 
-function deletePhase(name) {
+async function deletePhase(name) {
   const _cfOk = await showConfirm({ title: 'Confirm', msg: `Delete phase "${name}" and all its tasks?`, okText: 'Confirm', icon: '⚠️', danger: true });
   if (!_cfOk) return;
   currentTasks = currentTasks.filter(t => t.phase !== name);

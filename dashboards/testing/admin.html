@@ -3105,7 +3105,7 @@ function renderResources() {
   `).join('');
 }
 
-function promptDeleteResource(name) {
+async function promptDeleteResource(name) {
   const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}" from resources?`, okText: 'Confirm', icon: '⚠️', danger: true });
   if (!_cfOk) return;
   allResources = allResources.filter(r => r.name !== name);
@@ -3395,7 +3395,7 @@ function renamePhase(oldName, newName) {
   renderTaskEditor();
 }
 
-function deletePhase(phaseName) {
+async function deletePhase(phaseName) {
   const _cfOk = await showConfirm({ title: 'Confirm', msg: `Delete phase "${phaseName}" and all its tasks?`, okText: 'Confirm', icon: '⚠️', danger: true });
   if (!_cfOk) return;
   currentTasks = currentTasks.filter(t => t.phase !== phaseName);
@@ -3740,7 +3740,7 @@ function updateMemberField(idx, field, val) {
   saveTeamMembers(members);
 }
 
-function removeMember(idx) {
+async function removeMember(idx) {
   const members = loadTeamMembers();
   const name = members[idx]?.name || 'member';
   const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}"? They will no longer be able to log in.`, okText: 'Confirm', icon: '⚠️', danger: true });
