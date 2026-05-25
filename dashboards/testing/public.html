@@ -1698,13 +1698,12 @@ function getAllFrom(data) {
 function filterPublic(projects) {
   const pub = {};
   for (const [key, list] of Object.entries(projects)) {
-    pub[key] = (list||[]).filter(p => {
-      // publicVisibility is mapped from p.public_visibility ? 'Yes' : 'No'
-      // so check the converted string AND the raw boolean
-      const pv = p.publicVisibility;
-      const raw = p.public_visibility;
-      return pv === 'Yes' || raw === true || raw === 1 || raw === 'true';
-    });
+    pub[key] = (list||[]).filter(p =>
+      p.publicVisibility === 'Yes' ||
+      p.publicVisibility === true  ||
+      p.public_visibility === true  ||
+      p.public_visibility === 'Yes'
+    );
   }
   return pub;
 }
@@ -1764,10 +1763,7 @@ function refreshBackground() {
 // ═══════════════════════════════════════════════════════════
 function applyData(data) {
   const projects = data.projects || {};
-  const filtered = filterPublic(projects);
-  const hasAny = Object.values(filtered).some(arr => arr.length > 0);
-  // Fallback: if nothing passes public filter, show all projects
-  publicProjectsGlobal = hasAny ? filtered : projects;
+  publicProjectsGlobal = filterPublic(projects); // store globally
   renderHero(publicProjectsGlobal);
   renderRAG(publicProjectsGlobal);
   renderCategories(publicProjectsGlobal);
