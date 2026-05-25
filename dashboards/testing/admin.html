@@ -1893,6 +1893,44 @@ input.valid, select.valid { border-color: var(--green) !important; }
 .notify-toast.warning .toast-progress { background:var(--amber); }
 .notify-toast.error   .toast-progress { background:var(--red); }
 
+
+/* ── ENHANCED CHANGELOG ──────────────────────────────── */
+.cl-toolbar { display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap; }
+.cl-filter-btn { padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer;transition:all .15s; }
+.cl-filter-btn:hover { border-color:var(--blue);color:var(--blue); }
+.cl-filter-btn.active { background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 4px 12px rgba(26,95,204,.3); }
+.cl-search { margin-left:auto;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;background:var(--bg);font-family:inherit;width:200px;transition:all .15s; }
+.cl-search:focus { outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,95,204,.15); }
+.cl-badge { display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:6px; }
+.cl-table { width:100%;border-collapse:collapse;font-size:13px; }
+.cl-table thead th { font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#94A3B8;background:#F8FAFC;padding:10px 16px;border-bottom:2px solid var(--border);text-align:left;position:sticky;top:0;z-index:1; }
+.cl-table tbody tr { border-bottom:1px solid #F1F5F9;transition:background .12s;animation:fadeSlideUp .2s ease both; }
+.cl-table tbody tr:hover { background:#F8FAFC; }
+.cl-table td { padding:11px 16px;vertical-align:middle; }
+.cl-ts { font-size:11px;color:var(--text-muted);white-space:nowrap; }
+.cl-who { font-weight:600;font-size:12px; }
+.cl-proj { font-weight:600;max-width:180px; }
+.cl-change { font-size:12px; }
+.cl-diff-old { color:var(--red);text-decoration:line-through;opacity:.7;font-size:11px; }
+.cl-diff-new { color:var(--green);font-weight:600;font-size:11px; }
+.cl-diff-arrow { color:var(--text-muted);margin:0 4px;font-size:10px; }
+.cl-action-badge { display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase; }
+.cl-add    { background:#DCFCE7;color:#15803D; }
+.cl-update { background:#DBEAFE;color:#1E40AF; }
+.cl-delete { background:#FEE2E2;color:#DC2626; }
+.cl-other  { background:#F1F5F9;color:#64748B; }
+.cl-rag    { background:#F3E8FF;color:#7C3AED; }
+.cl-avatar { width:28px;height:28px;border-radius:50%;font-size:10px;font-weight:700;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px; }
+.cl-expand-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px;padding:2px 6px;border-radius:4px;transition:all .12s; }
+.cl-expand-btn:hover { background:var(--bg);color:var(--blue); }
+.cl-detail-row td { background:#F8FAFC;padding:10px 16px;font-size:12px;color:var(--text-muted);border-bottom:2px solid var(--border); }
+.cl-empty { text-align:center;padding:60px 24px; }
+.cl-empty-icon { font-size:48px;opacity:.4;margin-bottom:12px; }
+[data-theme="dark"] .cl-table thead th { background:#0D1829; }
+[data-theme="dark"] .cl-table tbody tr:hover { background:rgba(255,255,255,.03); }
+[data-theme="dark"] .cl-detail-row td { background:#0D1829; }
+#cl-unread-badge { display:none; }
+
 </style>
 </head>
 <body>
@@ -2278,6 +2316,14 @@ input.valid, select.valid { border-color: var(--green) !important; }
         </div>
       </div>
       <div class="card">
+        <div class="cl-toolbar" id="cl-toolbar-wrap">
+          <button class="cl-filter-btn active" onclick="setClFilter('all',this)">All</button>
+          <button class="cl-filter-btn" onclick="setClFilter('add',this)">➕ Added</button>
+          <button class="cl-filter-btn" onclick="setClFilter('update',this)">✏️ Updated</button>
+          <button class="cl-filter-btn" onclick="setClFilter('delete',this)">🗑️ Deleted</button>
+          <button class="cl-filter-btn" onclick="setClFilter('rag',this)">🔴 RAG</button>
+          <input class="cl-search" type="text" placeholder="Search changelog..." oninput="_clSearch=this.value;_renderChangelog()">
+        </div>
         <div id="changelog-list">
           <div class="empty-state"><div class="icon">📋</div><h3>No changes yet</h3></div>
         </div>
@@ -3348,7 +3394,7 @@ async function promptDeleteResource(name) {
   allResources = allResources.filter(r => r.name !== name);
   renderResources();
   updateSidebar();
-  showToast(`"${name}" removed`, 'info');
+  notify.send({ title:"Member Removed", message:`<b>${name}</b> removed from team.`, type:"warning" });
   sbGetUsers().then(users => {
     const u = users.find(x => x.name === name);
     if (u) sbDeleteUser(u.id);
@@ -3366,12 +3412,12 @@ function openAddResourceModal() {
 async function saveResource() {
   const name = document.getElementById('res_name').value.trim();
   const role = document.getElementById('res_role').value.trim();
-  if (!name) { showToast('Name is required', 'error'); return; }
+  if (!name) { notify.send({ title:'Validation Error', message:'Name is required.', type:'error' }); return; }
   if (!allResources.find(r => r.name === name)) allResources.push({ name, role });
   renderResources();
   updateSidebar();
   document.getElementById('resourceModal').classList.remove('open');
-  showToast(`✅ "${name}" added`, 'success');
+  notify.send({ title:'Member Added', message:`<b>${name}</b> added successfully.`, type:'success' });
   const email = name.toLowerCase().replace(/\s+/g,'_') + '@team.local';
   sbSaveUser({ name, email, password_hash: 'changeme', role: 'editor',
     permissions: {viewProjects:true,addProjects:true,editProjects:true,editTasks:true,manageResources:false,viewChangelog:false}
@@ -3623,7 +3669,7 @@ function addPhase() {
     currentTasks.push({ taskName: '', phase: name, taskType: 'task', progress: 0, rag: 'Green', responsible: '', milestoneDate: '', dependsOn: '' });
   }
   renderTaskEditor();
-  showToast(`Phase "${name}" added`, 'success');
+  notify.send({ title:'Success', message:`Phase "${name}" added`, type:'success' });
 }
 
 function renamePhase(oldName, newName) {
@@ -3637,7 +3683,7 @@ async function deletePhase(phaseName) {
   if (!_cfOk) return;
   currentTasks = currentTasks.filter(t => t.phase !== phaseName);
   renderTaskEditor();
-  showToast('Phase deleted', 'info');
+  notify.send({ title:'Phase Deleted', message:`Phase <b>${phaseName}</b> removed.`, type:'warning' });
 }
 
 function addTask(phaseName) {
@@ -3709,7 +3755,7 @@ async function saveProject() {
   const nameEl = document.getElementById('p_name');
   if (!validateForm([[nameEl, { required: 'Project name is required', minLen: 2 }]])) return;
   const name = document.getElementById('adv_projectName').value.trim();
-  if (!name) { showToast('Project name is required', 'error'); return; }
+  if (!name) { notify.send({ title:'Validation Error', message:'Project name is required.', type:'error' }); return; }
 
   const sheetName = document.getElementById('adv_projectType').value;
   const tasks = currentTasks.filter(t => t.taskType !== 'project');
@@ -3776,13 +3822,13 @@ async function saveProject() {
   sbSaveProject(payload, currentProject, !!currentProject).then(data => {
     if (data.success || data.message) {
       clearCache();
-      showToast(`✅ "${name}" saved to server`, 'success');
+      notify.send({ title:'Success', message:`✅ "${name}" saved to server`, type:'success' });
       loadData(true); // refresh in bg to sync IDs
     } else {
-      showToast(`⚠️ Server error: ${data.error || 'unknown'}`, 'error');
+      notify.send({ title:'Error', message:`⚠️ Server error: ${data.error || 'unknown'}`, type:'error' });
     }
   }).catch(e => {
-    showToast(`❌ Save failed: ${e.message}`, 'error');
+    notify.send({ title:'Error', message:`❌ Save failed: ${e.message}`, type:'error' });
   });
 }
 
@@ -3809,7 +3855,7 @@ async function confirmDelete() {
   const sheetName = keyToSheetName(sheetKey);
   allProjectsData[sheetKey] = (allProjectsData[sheetKey] || []).filter(p => p.projectName !== name);
   renderAll();
-  showToast(`"${name}" deleted`, 'info');
+  notify.send({ title:'Project Deleted', message:`<b>${name}</b> deleted.`, type:'warning', buttons:[{ text:'View Changelog', onClick:()=>switchTab('changelog') }] });
 
   // Background delete from Supabase
   const allProjs = Object.values(allProjectsData).flat();
@@ -3921,7 +3967,7 @@ function saveEditMember() {
   saveTeamMembers(members);
   document.getElementById('editMemberModal').classList.remove('open');
   renderTeamMembers();
-  showToast(`✅ "${name}" updated`, 'success');
+  notify.send({ title:'Success', message:`✅ "${name}" updated`, type:'success' });
 }
 
 function openAddMemberModal() {
@@ -3947,7 +3993,7 @@ function saveNewMember() {
   saveTeamMembers(members);
   document.getElementById('tmModal').classList.remove('open');
   renderTeamMembers();
-  showToast(`✅ "${name}" added`, 'success');
+  notify.send({ title:'Success', message:`✅ "${name}" added`, type:'success' });
 }
 
 function applyRolePreset(idx, role) {
@@ -3991,6 +4037,97 @@ async function removeMember(idx) {
 // ═══════════════════════════════════════════════════════════
 // CHANGELOG
 // ═══════════════════════════════════════════════════════════
+
+// ── CHANGELOG STATE ───────────────────────────────────
+var _clFilter  = 'all';
+var _clSearch  = '';
+var _clEntries = [];
+
+function setClFilter(f, el) {
+  _clFilter = f;
+  document.querySelectorAll('.cl-filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  localStorage.setItem('pmo_cl_seen', new Date().toISOString());
+  var badge = document.getElementById('cl-unread-badge');
+  if (badge) badge.style.display = 'none';
+  _renderChangelog();
+}
+
+function _clActionType(action) {
+  var a = (action||'').toUpperCase();
+  if (a.includes('DELETE')) return 'delete';
+  if (a.includes('ADD') || a.includes('CREATE')) return 'add';
+  if (a.includes('UPDATE') || a.includes('EDIT')) return 'update';
+  if (a.includes('RAG') || a.includes('STATUS')) return 'rag';
+  return 'other';
+}
+
+function _clToggleDetail(btn, idx) {
+  var row = document.getElementById('cl-detail-' + idx);
+  if (!row) return;
+  var open = row.style.display !== 'none';
+  row.style.display = open ? 'none' : 'table-row';
+  btn.textContent = open ? '...' : 'x';
+}
+
+function _renderChangelog() {
+  var listEl = document.getElementById('changelog-list');
+  if (!listEl) return;
+  var entries = _clEntries;
+  if (_clFilter !== 'all') entries = entries.filter(function(e){ return _clActionType(e.action) === _clFilter; });
+  if (_clSearch && _clSearch.trim()) {
+    var q = _clSearch.toLowerCase();
+    entries = entries.filter(function(e){
+      return (e.projectName||'').toLowerCase().includes(q) ||
+             (e.user||'').toLowerCase().includes(q) ||
+             (e.action||'').toLowerCase().includes(q) ||
+             (e.fieldChanged||'').toLowerCase().includes(q);
+    });
+  }
+  if (!entries.length) {
+    listEl.innerHTML = '<div class="cl-empty"><div class="cl-empty-icon">📋</div><h3>No entries found</h3><p>Try a different filter or clear search.</p></div>';
+    return;
+  }
+  function fmtTime(ts) {
+    if (!ts) return '--';
+    try { return new Date(ts).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).replace(',',''); }
+    catch(ex) { return ts; }
+  }
+  function timeAgo(ts) {
+    var s = Math.floor((Date.now() - new Date(ts)) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  }
+  function actionBadge(action) {
+    var t = _clActionType(action);
+    var labels = { add:'Added', update:'Updated', delete:'Deleted', rag:'RAG Change', other: action||'Other' };
+    return '<span class="cl-action-badge cl-' + t + '">' + esc(labels[t]||action) + '</span>';
+  }
+  var lastSeen = localStorage.getItem('pmo_cl_seen') || '1970-01-01';
+  var rows = entries.map(function(e, i) {
+    var isNew = e.timestamp > lastSeen;
+    var hasDiff = e.fieldChanged && e.fieldChanged !== 'N/A' && e.oldValue;
+    var av = (typeof nameToColor === 'function' ? nameToColor(e.user) : '#1A5FCC');
+    var ini = esc((e.user||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2));
+    return '<tr' + (isNew ? ' style="background:#EFF6FF"' : '') + '>' +
+      '<td class="cl-ts">' + timeAgo(e.timestamp) + '<div style="font-size:10px;color:#94A3B8">' + fmtTime(e.timestamp) + '</div></td>' +
+      '<td class="cl-who"><span class="cl-avatar" style="background:' + av + '">' + ini + '</span>' + esc(e.user) + '</td>' +
+      '<td>' + actionBadge(e.action) + '</td>' +
+      '<td class="cl-proj">' + esc(e.projectName) + (e.sheet ? '<div style="font-size:10px;color:var(--text-muted)">' + esc(e.sheet) + '</div>' : '') + '</td>' +
+      '<td class="cl-change">' + (hasDiff
+        ? '<strong>' + esc(e.fieldChanged) + '</strong><div style="margin-top:3px"><span class="cl-diff-old">' + esc(e.oldValue) + '</span><span class="cl-diff-arrow"> &rarr; </span><span class="cl-diff-new">' + esc(e.newValue) + '</span></div>'
+        : '<span style="color:var(--text-muted)">' + esc(e.newValue||'--') + '</span>'
+      ) + '</td>' +
+      '<td><button class="cl-expand-btn" onclick="_clToggleDetail(this,' + i + ')">...</button></td></tr>' +
+      '<tr class="cl-detail-row" id="cl-detail-' + i + '" style="display:none"><td colspan="6">' +
+      'Action: ' + esc(e.action) + ' | Field: ' + esc(e.fieldChanged||'--') + ' | Old: ' + esc(e.oldValue||'--') + ' | New: ' + esc(e.newValue||'--') + ' | ' + fmtTime(e.timestamp) +
+      '</td></tr>';
+  });
+  listEl.innerHTML = '<div style="overflow-x:auto"><table class="cl-table"><thead><tr><th style="width:140px">When</th><th style="width:110px">Who</th><th style="width:100px">Action</th><th style="width:180px">Project</th><th>What Changed</th><th style="width:40px"></th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+}
+
 async function loadChangelog() {
   try {
     const raw = await sbGetChangelog(100);
@@ -4817,7 +4954,7 @@ async function saveDecision(containerId) {
     }
     input.value = '';
     await loadDecisions(currentDecisionProjectId, currentDecisionProjectName, containerId);
-    showToast('Entry added ✅', 'success');
+    notify.send({ title:'Entry Added', message:'Entry saved to project.', type:'success' });
   } catch(e) {
     showToast('Failed to save: ' + e.message, 'error');
   }
