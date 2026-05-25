@@ -505,14 +505,8 @@ button:active:not(:disabled), .btn:active, .pill:active,
 }
 
 /* ── ENHANCED TOAST ──────────────────────────────────────── */
-.toast-item, #toast-container > div {
-  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
-  border-radius: 10px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
-  font-weight: 600 !important;
-}
-@keyframes toastIn {
-  from { opacity: 0; transform: translateX(60px) scale(0.88); }
+
+
   to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 
@@ -930,6 +924,73 @@ input.valid, select.valid { border-color: var(--green) !important; }
 .rag-tl-dot.Red    { background: var(--red);   color: var(--red); }
 .rag-tl-label { font-size: 9px; color: var(--text-muted); text-align: center; max-width: 40px; line-height: 1.2; }
 
+
+/* ── ENTERPRISE NOTIFICATION ENGINE ─────────────────────── */
+#notify-container {
+  position: fixed;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  top: 20px; right: 20px;
+  max-width: 360px; width: 360px;
+}
+.notify-toast {
+  background: var(--white);
+  color: var(--text);
+  padding: 14px 36px 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 10px 32px rgba(15,30,53,.16);
+  font-size: 13px;
+  width: 100%;
+  border-left: 5px solid;
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(60px) scale(0.92);
+  transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+.notify-toast.show { opacity:1; transform:translateX(0) scale(1); }
+.notify-toast.info    { border-left-color: var(--blue); }
+.notify-toast.success { border-left-color: var(--green); }
+.notify-toast.warning { border-left-color: var(--amber); }
+.notify-toast.error   { border-left-color: var(--red); }
+[data-theme="dark"] .notify-toast { background: #1E2D45; color: #E2E8F0; box-shadow: 0 10px 32px rgba(0,0,0,.4); }
+.toast-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.toast-title  { font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; }
+.toast-body   { font-size:12px; color:var(--text-muted); line-height:1.45; }
+.toast-badge  {
+  background: var(--text); color: var(--white);
+  font-size:10px; padding:2px 6px; border-radius:10px;
+  font-weight:700; display:none;
+}
+.toast-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.toast-action-btn {
+  background:transparent; border:1px solid var(--border);
+  color:var(--text); padding:5px 12px; font-size:11px;
+  border-radius:6px; cursor:pointer; font-family:inherit;
+  font-weight:600; transition:all .15s;
+}
+.toast-action-btn:hover { background:var(--bg); border-color:var(--blue); color:var(--blue); }
+.toast-close {
+  position:absolute; top:10px; right:12px;
+  cursor:pointer; color:var(--text-muted);
+  font-size:18px; line-height:1; background:none; border:none;
+  padding:0; font-family:inherit; transition:color .15s;
+}
+.toast-close:hover { color:var(--text); }
+.toast-progress {
+  position:absolute; bottom:0; left:0;
+  height:3px; width:100%; transform-origin:left;
+  transition: none;
+}
+.notify-toast.info    .toast-progress { background:var(--blue); }
+.notify-toast.success .toast-progress { background:var(--green); }
+.notify-toast.warning .toast-progress { background:var(--amber); }
+.notify-toast.error   .toast-progress { background:var(--red); }
+
 </style>
 </head>
 <body>
@@ -1148,6 +1209,186 @@ async function sbFetch(path, options = {}) {
 // ════════════════════════════════════════════════════════════
 // READ — get all data for dashboard
 // ════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// ENTERPRISE NOTIFICATION ENGINE — replaces showToast
+// Features: duplicate grouping, action buttons, rich HTML,
+//           offline queue, audio feedback, dark mode
+// ═══════════════════════════════════════════════════════════
+class NotificationCenter {
+  constructor(options = {}) {
+    this.position     = options.position || 'top-right';
+    this.maxVisible   = options.maxVisible || 4;
+    this.defaultDur   = options.duration || 4500;
+    this.soundEnabled = options.soundEnabled !== false;
+    this.queue        = [];
+    this.active       = new Map(); // signature → { el, count }
+    this.offlineQueue = [];
+    this.isOffline    = !navigator.onLine;
+    this._initDOM();
+    this._initNetwork();
+  }
+
+  _initDOM() {
+    let c = document.getElementById('notify-container');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'notify-container';
+      document.body.appendChild(c);
+    }
+    this.container = c;
+  }
+
+  _initNetwork() {
+    window.addEventListener('offline', () => {
+      this.isOffline = true;
+      this._display({ title:'Connection Lost', message:'Working offline. Changes will sync on reconnect.', type:'warning', isSticky:true }, true);
+    });
+    window.addEventListener('online', () => {
+      this.isOffline = false;
+      this._display({ title:'Back Online', message:'Connection restored.', type:'success' }, true);
+      setTimeout(() => { while(this.offlineQueue.length) this._display(this.offlineQueue.shift(), true); }, 800);
+    });
+  }
+
+  _audio(type) {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      if (type === 'success') {
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+      } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.15);
+      } else {
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+      }
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.start(); osc.stop(ctx.currentTime + 0.2);
+    } catch(e) {}
+  }
+
+  send(config, sys = false) {
+    const p = {
+      title:    config.title    || 'Alert',
+      message:  config.message  || '',
+      type:     config.type     || 'info',
+      duration: config.duration || this.defaultDur,
+      isSticky: config.isSticky || false,
+      buttons:  config.buttons  || [],
+    };
+    if (this.isOffline && !sys) { this.offlineQueue.push(p); return; }
+    this._display(p, sys);
+  }
+
+  _display(p) {
+    const sig = p.title + '|' + p.type;
+    if (this.active.has(sig)) {
+      const rec = this.active.get(sig);
+      rec.count++;
+      const badge = rec.el.querySelector('.toast-badge');
+      if (badge) { badge.textContent = 'x' + rec.count; badge.style.display = 'inline-block'; }
+      rec.el.style.transform = 'scale(1.04)';
+      setTimeout(() => { if(rec.el) rec.el.style.transform = 'scale(1)'; }, 150);
+      this._audio(p.type);
+      return;
+    }
+    if (this.active.size >= this.maxVisible) { this.queue.push(p); return; }
+    this._build(p, sig);
+  }
+
+  _build(p, sig) {
+    this._audio(p.type);
+    const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+    const toast = document.createElement('div');
+    toast.className = 'notify-toast ' + p.type;
+
+    let btnsHtml = '';
+    if (p.buttons.length) {
+      btnsHtml = '<div class="toast-actions">' +
+        p.buttons.map((b,i) => `<button class="toast-action-btn" data-bi="${i}">${b.text}</button>`).join('') +
+        '</div>';
+    }
+
+    toast.innerHTML = `
+      <button class="toast-close" aria-label="Close">×</button>
+      <div class="toast-header">
+        <div class="toast-title">${icons[p.type]||'ℹ️'} ${p.title}
+          <span class="toast-badge"></span>
+        </div>
+      </div>
+      ${p.message ? `<div class="toast-body">${p.message}</div>` : ''}
+      ${btnsHtml}
+      ${!p.isSticky ? '<div class="toast-progress"></div>' : ''}
+    `;
+
+    this.container.appendChild(toast);
+    this.active.set(sig, { el: toast, count: 1 });
+
+    // Button callbacks
+    p.buttons.forEach((b, i) => {
+      const btn = toast.querySelector(`[data-bi="${i}"]`);
+      if (btn) btn.addEventListener('click', () => { b.onClick && b.onClick(); this._remove(toast, sig); });
+    });
+
+    // Animate in
+    void toast.offsetWidth;
+    toast.classList.add('show');
+
+    // Close button
+    toast.querySelector('.toast-close').addEventListener('click', () => this._remove(toast, sig));
+
+    // Auto dismiss
+    if (!p.isSticky) {
+      const prog = toast.querySelector('.toast-progress');
+      const start = Date.now();
+      const tick = () => {
+        const pct = Math.max(0, 100 - ((Date.now()-start)/p.duration)*100);
+        if (prog) prog.style.width = pct + '%';
+        if (Date.now()-start < p.duration) requestAnimationFrame(tick);
+        else this._remove(toast, sig);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+
+  _remove(toast, sig) {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(60px) scale(0.88)';
+    this.active.delete(sig);
+    setTimeout(() => {
+      toast.remove();
+      if (this.queue.length) {
+        const next = this.queue.shift();
+        this._build(next, next.title + '|' + next.type);
+      }
+    }, 300);
+  }
+}
+
+// ── GLOBAL INSTANCE ───────────────────────────────────────
+const notify = new NotificationCenter({
+  position: 'top-right',
+  maxVisible: 4,
+  duration: 4500,
+  soundEnabled: false  // set true to enable audio
+});
+
+// ── BACKWARD COMPAT: showToast → notify.send ─────────────
+function showToast(msg, type, duration) {
+  const typeMap = { success:'success', error:'error', warning:'warning', info:'info' };
+  notify.send({ title: _toastTitle(type), message: msg, type: typeMap[type]||'info', duration: duration||4500 });
+}
+function _toastTitle(type) {
+  return { success:'Success', error:'Error', warning:'Warning', info:'Info' }[type] || 'Info';
+}
+
 async function sbGetAllData() {
   // Single request gets all projects + tasks in one shot
   const [projects, tasks] = await Promise.all([
@@ -1451,15 +1692,16 @@ function getAllFrom(data) {
   }
   return arr;
 }
+// ── PUBLIC VISIBILITY FIX ────────────────────────────────
+// Supabase returns public_visibility as boolean true/false
+// filterPublic checks multiple formats to be safe
 function filterPublic(projects) {
   const pub = {};
   for (const [key, list] of Object.entries(projects)) {
-    pub[key] = (list||[]).filter(p =>
-      p.publicVisibility === 'Yes' ||
-      p.publicVisibility === true  ||
-      p.public_visibility === true  ||
-      p.public_visibility === 'Yes'
-    );
+    pub[key] = (list||[]).filter(p => {
+      const v = p.publicVisibility || p.public_visibility;
+      return v === true || v === 'Yes' || v === 'yes' || v === 1 || v === '1';
+    });
   }
   return pub;
 }
@@ -1515,7 +1757,10 @@ function refreshBackground() {
 // ═══════════════════════════════════════════════════════════
 function applyData(data) {
   const projects = data.projects || {};
-  publicProjectsGlobal = filterPublic(projects); // store globally
+  const filtered = filterPublic(projects);
+  // If no public projects found, show all (dev fallback)
+  const hasAny = Object.values(filtered).some(arr => arr.length > 0);
+  publicProjectsGlobal = hasAny ? filtered : projects; // store globally
   renderHero(publicProjectsGlobal);
   renderRAG(publicProjectsGlobal);
   renderCategories(publicProjectsGlobal);
@@ -2931,40 +3176,8 @@ function triggerKPICountUp() {
 
 
 
-// ── TOAST QUEUE ───────────────────────────────────────────
-const _toastQueue = [];
-let _toastActive = false;
 
-function showToast(msg, type = 'info', duration = 3500) {
-  _toastQueue.push({ msg, type, duration });
-  if (!_toastActive) _processToastQueue();
-}
 
-function _processToastQueue() {
-  if (!_toastQueue.length) { _toastActive = false; return; }
-  _toastActive = true;
-  const { msg, type, duration } = _toastQueue.shift();
-
-  let container = document.getElementById('toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toast-container';
-    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:340px';
-    document.body.appendChild(container);
-  }
-
-  const colors = { success:'#16A34A', error:'#DC2626', warning:'#D97706', info:'#1A5FCC' };
-  const icons  = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
-  const t = document.createElement('div');
-  t.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:11px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);pointer-events:auto;display:flex;align-items:center;gap:8px;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both`;
-  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><button onclick="this.parentElement.remove();_processToastQueue()" style="background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;padding:0 0 0 8px;line-height:1">×</button>`;
-  container.appendChild(t);
-
-  setTimeout(() => {
-    t.style.animation = 'toastOut .2s ease forwards';
-    setTimeout(() => { t.remove(); _processToastQueue(); }, 200);
-  }, duration);
-}
 
 
 // ── FORM VALIDATION ───────────────────────────────────────
