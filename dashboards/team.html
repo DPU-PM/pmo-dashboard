@@ -759,7 +759,12 @@
       <span class="pill" onclick="filterRisks('open',this)">🔴 Open</span>
       <span class="pill" onclick="filterRisks('responded',this)">✅ Responded</span>
     </div>
-    <div id="risks-body"></div>
+    <div class="risk-filter-bar" style="margin-bottom:8px">
+  <button class="pill active" data-filter="open" onclick="setRisksFilter('open',this)">🔴 Open</button>
+  <button class="pill" data-filter="closed" onclick="setRisksFilter('closed',this)">✅ Closed</button>
+  <button class="pill" data-filter="all" onclick="setRisksFilter('all',this)">All</button>
+</div>
+<div id="risks-body"></div>
   </div>
 
   <!-- Charts Row -->
@@ -2999,15 +3004,15 @@ document.addEventListener('keydown', ev => {
 // ═══════════════════════════════════════════════════════════
 // PROJECT RISKS — with Open / Closed tabs
 // ═══════════════════════════════════════════════════════════
-let allRisks = [];
-let risksFilter = 'open';
+
+
 
 
 // ═══════════════════════════════════════════════════════════
 // PROJECT RISKS v2
 // ═══════════════════════════════════════════════════════════
-let allRisks    = [];
-let risksFilter = 'open'; // open | closed | all
+
+ // open | closed | all
 
 async function loadProjectRisks() {
   const container = document.getElementById('risks-body');

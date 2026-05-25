@@ -358,6 +358,16 @@
   .gantt-amber .bar{fill:var(--amber)!important}.gantt-amber .bar-progress{fill:var(--gold)!important}
   .gantt-red .bar{fill:var(--red)!important}.gantt-red .bar-progress{fill:#EF4444!important}
   .gantt .bar-label{fill:#fff;font-family:"IBM Plex Sans",sans-serif;}
+
+  /* ── BUTTONS ── */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);font-family:inherit;transition:all .15s;}
+  .btn:hover{background:var(--bg);}
+  .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .btn-primary:hover{background:#1348A0;}
+  .btn-secondary{background:var(--bg);color:var(--text);}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+  .btn-danger{background:var(--red);color:#fff;border-color:var(--red);}
+
 </style>
 </head>
 <body>
@@ -443,6 +453,11 @@
 <div class="section-header" style="margin-top:8px">
   <div class="section-divider"></div>
   <h2>⚠️ Project Risks <span class="risk-count-badge" id="risks-badge">0</span></h2>
+</div>
+<div class="risk-filter-bar">
+  <button class="pill active" data-filter="open" onclick="setRisksFilter('open',this)">🔴 Open</button>
+  <button class="pill" data-filter="closed" onclick="setRisksFilter('closed',this)">✅ Closed</button>
+  <button class="pill" data-filter="all" onclick="setRisksFilter('all',this)">All</button>
 </div>
 <div id="risks-body" style="margin-bottom:20px"></div>
 
@@ -2041,15 +2056,15 @@ document.addEventListener('keydown', ev => {
 // ═══════════════════════════════════════════════════════════
 // PROJECT RISKS — with Open / Closed tabs
 // ═══════════════════════════════════════════════════════════
-let allRisks = [];
-let risksFilter = 'open';
+
+
 
 
 // ═══════════════════════════════════════════════════════════
 // PROJECT RISKS v2
 // ═══════════════════════════════════════════════════════════
-let allRisks    = [];
-let risksFilter = 'open'; // open | closed | all
+
+ // open | closed | all
 
 async function loadProjectRisks() {
   const container = document.getElementById('risks-body');
@@ -2241,4 +2256,21 @@ async function submitRiskResponse(riskId, projectId) {
   }
 }
 
+
+// ── TOAST NOTIFICATIONS ──────────────────────────────────
+function showToast(msg, type) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none';
+    document.body.appendChild(container);
+  }
+  const t = document.createElement('div');
+  const bg = type==='error'?'#DC2626':type==='success'?'#16A34A':type==='warning'?'#D97706':'#1A5FCC';
+  t.style.cssText = `background:${bg};color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:auto;max-width:320px`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
 </script>
