@@ -2090,9 +2090,9 @@ function projectCard(p) {
 
   const cid = 'c' + Math.random().toString(36).substr(2,6);
 
-  return `<div class="project-card rag-${ragCls}" style="cursor:pointer" onclick="openProjectView('${esc(p.sheetKey)}','${esc(p.projectName)}')">
+  return `<div class="project-card rag-${ragCls}" style="cursor:pointer" onclick="openProjectView('${esc(p.sheetKey)}','${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}')">
     <div class="pc-header">
-      <div><div class="pc-name">${esc(p.projectName)}</div></div>
+      <div><div class="pc-name">${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}</div></div>
       <div class="pc-badges">
         <span class="badge ${STATUS_BADGE[p.status]||'badge-gray'}">${esc(p.status||'Active')}</span>
         <span class="pc-type ${TYPE_CSS[p.sheetName]||''}">${TYPE_SHORT[p.sheetName]||esc(p.sheetName)}</span>
@@ -2290,7 +2290,8 @@ function renamePhase(oldName, newName) {
 }
 
 function deletePhase(name) {
-  if (!confirm(`Delete phase "${name}" and all its tasks?`)) return;
+  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Delete phase "${name}" and all its tasks?`, okText: 'Confirm', icon: '⚠️', danger: true });
+  if (!_cfOk) return;
   currentTasks = currentTasks.filter(t => t.phase !== name);
   renderTaskEditor();
   showToast('Phase deleted', 'info');
@@ -3632,11 +3633,7 @@ function renderRisksTable() {
 
   if (!filtered.length) {
     const msgs = { open:'No open risks 🎉', closed:'No closed risks yet', all:'No risks logged yet' };
-    container.innerHTML = `<div class="risks-empty">
-      <div class="icon">🛡️</div>
-      <h3>${msgs[risksFilter]||'No risks'}</h3>
-      <p>Risks added via project Decisions & Actions appear here</p>
-    </div>`;
+    renderEmptyState(container, { icon:'🛡️', title: msgs[risksFilter]||'No risks', subtitle:'Risks added via project Decisions & Actions appear here.' });
     return;
   }
 

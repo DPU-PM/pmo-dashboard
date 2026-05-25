@@ -1753,15 +1753,18 @@ input.valid, select.valid { border-color: var(--green) !important; }
 /* ── NOTIFICATION CENTER ─────────────────────────────────── */
 #notif-btn {
   position: relative; cursor: pointer;
-  background: none; border: none; font-size: 20px; padding: 4px 8px;
-  color: #fff; border-radius: 8px; transition: background .15s;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+  font-size: 18px; padding: 7px 10px;
+  color: #fff; border-radius: 10px; transition: all .15s;
+  display: flex; align-items: center; gap: 4px;
 }
-#notif-btn:hover { background: rgba(255,255,255,.1); }
+#notif-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.05); }
 #notif-dot {
-  position: absolute; top: 2px; right: 2px;
-  width: 8px; height: 8px; background: #EF4444;
+  position: absolute; top: 4px; right: 4px;
+  width: 9px; height: 9px; background: #EF4444;
   border-radius: 50%; border: 2px solid var(--navy);
-  display: none;
+  display: none; animation: badgePop .3s cubic-bezier(.34,1.56,.64,1);
+  font-size: 0;
 }
 #notif-panel {
   position: fixed; top: 56px; right: 16px; width: 340px;
@@ -1871,7 +1874,8 @@ input.valid, select.valid { border-color: var(--green) !important; }
   </div>
   <div class="topbar-actions">
           <button id="notif-btn" onclick="toggleNotifPanel()" title="Notifications">
-            🔔<span id="notif-dot"></span>
+            🔔 <span id="notif-count-label" style="font-size:11px;font-weight:700;display:none"></span>
+            <span id="notif-dot"></span>
           </button>
     <div class="topbar-user">
       <div class="avatar">PM</div>
@@ -3057,7 +3061,7 @@ function renderProjects(searchVal) {
       <td><span style="font-weight:600;cursor:pointer;color:var(--blue);text-decoration:none" 
         onmouseover="this.style.textDecoration='underline'" 
         onmouseout="this.style.textDecoration='none'"
-        onclick="openProjectView('${esc(key)}','${esc(p.projectName)}')">${esc(p.projectName)}</span></td>
+        onclick="openProjectView('${esc(key)}','${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}')">${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}</span></td>
       <td>${typeTag(p.sheetName)}</td>
       <td>${statusBadge(p.status)}</td>
       <td><span class="task-chip">📋 ${taskCount} tasks</span></td>
@@ -3102,7 +3106,8 @@ function renderResources() {
 }
 
 function promptDeleteResource(name) {
-  if (!confirm(`Remove "${name}" from resources?`)) return;
+  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}" from resources?`, okText: 'Confirm', icon: '⚠️', danger: true });
+  if (!_cfOk) return;
   allResources = allResources.filter(r => r.name !== name);
   renderResources();
   updateSidebar();
@@ -3391,7 +3396,8 @@ function renamePhase(oldName, newName) {
 }
 
 function deletePhase(phaseName) {
-  if (!confirm(`Delete phase "${phaseName}" and all its tasks?`)) return;
+  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Delete phase "${phaseName}" and all its tasks?`, okText: 'Confirm', icon: '⚠️', danger: true });
+  if (!_cfOk) return;
   currentTasks = currentTasks.filter(t => t.phase !== phaseName);
   renderTaskEditor();
   showToast('Phase deleted', 'info');
@@ -3737,7 +3743,8 @@ function updateMemberField(idx, field, val) {
 function removeMember(idx) {
   const members = loadTeamMembers();
   const name = members[idx]?.name || 'member';
-  if (!confirm(`Remove "${name}"? They will no longer be able to log in.`)) return;
+  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}"? They will no longer be able to log in.`, okText: 'Confirm', icon: '⚠️', danger: true });
+  if (!_cfOk) return;
   members.splice(idx, 1);
   saveTeamMembers(members);
   renderTeamMembers();
@@ -5225,11 +5232,7 @@ function renderRisksTable() {
 
   if (!filtered.length) {
     const msgs = { open:'No open risks 🎉', closed:'No closed risks yet', all:'No risks logged yet' };
-    container.innerHTML = `<div class="risks-empty">
-      <div class="icon">🛡️</div>
-      <h3>${msgs[risksFilter]||'No risks'}</h3>
-      <p>Risks added via project Decisions & Actions appear here</p>
-    </div>`;
+    renderEmptyState(container, { icon:'🛡️', title: msgs[risksFilter]||'No risks', subtitle:'Risks added via project Decisions & Actions appear here.' });
     return;
   }
 
@@ -5829,7 +5832,9 @@ function addNotification(msg, type = 'info') {
   _unreadCount++;
   _renderNotifs();
   const dot = document.getElementById('notif-dot');
-  if (dot) { dot.style.display = 'block'; dot.textContent = _unreadCount > 9 ? '9+' : _unreadCount; }
+  const lbl = document.getElementById('notif-count-label');
+  if (dot) dot.style.display = 'block';
+  if (lbl) { lbl.style.display = _unreadCount > 0 ? 'inline' : 'none'; lbl.textContent = _unreadCount > 9 ? '9+' : _unreadCount; }
 }
 
 function _renderNotifs() {
@@ -5862,7 +5867,9 @@ function toggleNotifPanel() {
     _notifs.forEach(n => n.read = true);
     _unreadCount = 0;
     const dot = document.getElementById('notif-dot');
+    const lbl2 = document.getElementById('notif-count-label');
     if (dot) dot.style.display = 'none';
+    if (lbl2) lbl2.style.display = 'none';
     _renderNotifs();
   }
 }
