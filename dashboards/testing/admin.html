@@ -1931,6 +1931,24 @@ input.valid, select.valid { border-color: var(--green) !important; }
 [data-theme="dark"] .cl-detail-row td { background:#0D1829; }
 #cl-unread-badge { display:none; }
 
+
+/* ── KEYBOARD SHORTCUTS TOAST ────────────────────────── */
+#kb-hint {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: rgba(15,30,53,.92); color: #fff; border-radius: 10px;
+  padding: 10px 18px; font-size: 12px; display: none; z-index: 99998;
+  backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  animation: fadeSlideUp .2s ease both; pointer-events: none;
+  white-space: nowrap;
+}
+#kb-hint.show { display: block; }
+kbd {
+  display: inline-block; background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25); border-radius: 4px;
+  padding: 1px 6px; font-size: 11px; font-family: inherit;
+  font-weight: 700; margin: 0 2px;
+}
+
 </style>
 </head>
 <body>
@@ -2068,7 +2086,7 @@ input.valid, select.valid { border-color: var(--green) !important; }
           <span class="pill" onclick="filterType('Marketing & Growth',this)">Marketing</span>
           <span class="pill" onclick="filterType('Initiatives',this)">Initiatives</span>
           <span class="pill" onclick="filterType('Sales Projects',this)">Sales</span>
-          <input type="text" class="search-input" placeholder="🔍 Search projects..." oninput="searchProjects(this.value)">
+          <input id="kb-search-input" type="text" class="search-input" placeholder="🔍 Search projects..." oninput="searchProjects(this.value)">
         </div>
         <div class="card-body">
           <table class="tbl" id="projects-table">
@@ -4639,7 +4657,8 @@ function exportPDF(title, projects, kpis) {
       <tbody>${rows}</tbody>
     </table>
     <div class="footer">PMO Portfolio Dashboard · Confidential · ${all.length} projects listed</div>
-  </body></html>`;
+  <div id="kb-hint"></div>
+</body></html>`;
 
   const win = window.open('', '_blank', 'width=900,height=700');
   win.document.write(html);
@@ -6313,6 +6332,58 @@ document.addEventListener('DOMContentLoaded', () => {
     card => { /* swipe right = mark progress */ showToast('Swipe right to update progress — coming soon', 'info'); }
   );
 });
+
+(function() {
+  function showHint(msg) {
+    var el = document.getElementById('kb-hint');
+    if (!el) return;
+    el.innerHTML = msg; el.style.display = 'block';
+    clearTimeout(el._t);
+    el._t = setTimeout(function() { el.style.display = 'none'; }, 2000);
+  }
+  document.addEventListener('keydown', function(e) {
+    var tag = (e.target.tagName||'').toLowerCase();
+    var inInput = tag==='input'||tag==='textarea'||tag==='select';
+    if (inInput) {
+      if ((e.ctrlKey||e.metaKey) && e.key==='s') {
+        e.preventDefault();
+        var sb=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');
+        if (sb) { sb.click(); showHint('<kbd>Ctrl+S</kbd> Saving...'); }
+      }
+      return;
+    }
+    var anyModal = document.querySelector('.adv-modal.open')||document.querySelector('.modal-overlay.open');
+    if (anyModal && e.key!=='Escape' && !(e.ctrlKey&&e.key==='s')) return;
+    if (e.key==='/') {
+      e.preventDefault();
+      var s=document.getElementById('kb-search-input');
+      if (s) { s.focus(); s.select(); showHint('<kbd>/</kbd> Search focused'); }
+    } else if ((e.key==='r'||e.key==='R') && !e.ctrlKey && !e.metaKey) {
+      loadData(true);
+      showHint('<kbd>R</kbd> Refreshing...');
+    } else if (e.key==='n'||e.key==='N') {
+      openAddProjectModal();
+      showHint('<kbd>N</kbd> New project');
+    } else if (e.key==='c'||e.key==='C') {
+      if (typeof switchTab==='function') { switchTab('changelog'); showHint('<kbd>C</kbd> Changelog'); }
+    } else if (e.key==='d'||e.key==='D') {
+      var btn=document.getElementById('dark-toggle');
+      if (btn) { btn.click(); showHint('<kbd>D</kbd> Dark mode toggled'); }
+    } else if (e.key==='Escape') {
+      var ov=document.querySelector('.modal-overlay.open'); if (ov) { ov.classList.remove('open'); return; }
+      var adv=document.querySelector('.adv-modal.open'); if (adv) { adv.classList.remove('open'); return; }
+      var pv=document.getElementById('proj-view'); var bb=document.querySelector('.back-btn');
+      if (pv&&pv.classList.contains('active')&&bb) { bb.click(); showHint('<kbd>Esc</kbd> Back'); }
+    } else if (e.key==='?') {
+      showHint('<kbd>/</kbd> Search &nbsp;|&nbsp; <kbd>N</kbd> New project &nbsp;|&nbsp; <kbd>C</kbd> Changelog &nbsp;|&nbsp; <kbd>R</kbd> Refresh &nbsp;|&nbsp; <kbd>D</kbd> Dark mode &nbsp;|&nbsp; <kbd>Esc</kbd> Close &nbsp;|&nbsp; <kbd>Ctrl+S</kbd> Save &nbsp;|&nbsp; <kbd>?</kbd> Help');
+    } else if ((e.ctrlKey||e.metaKey) && e.key==='s') {
+      e.preventDefault();
+      var sb2=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');
+      if (sb2) { sb2.click(); showHint('<kbd>Ctrl+S</kbd> Saving...'); }
+      else { var pv2=document.getElementById('proj-view'); if(pv2&&pv2.classList.contains('active')) { saveProject(); showHint('<kbd>Ctrl+S</kbd> Saving...'); } }
+    }
+  });
+})();
 </script>
 </body>
 </html>
