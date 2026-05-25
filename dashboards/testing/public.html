@@ -1163,6 +1163,7 @@ const TYPE_SHORT = {'Content Projects':'Content','Software Projects':'Software',
 const STATUS_BADGE = {'Active':'badge-blue','Completed':'badge-green','On Hold':'badge-gray','Upcoming':'badge-purple','Cancelled':'badge-red'};
 
 let publicProjectsGlobal = {}; // filtered public projects — global scope
+let _searchTerm = ''; // global search term for highlight
 let currentProjView = null;
 
 // ════════════════════════════════════════════════════════════
