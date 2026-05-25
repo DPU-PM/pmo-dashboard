@@ -1956,6 +1956,7 @@ function toggleTasks(cid) {
 // ── RESOURCES ─────────────────────────────────────────────────
 function renderResources() {
   const grid = document.getElementById('resource-grid');
+  if (!grid) return; // element doesn't exist on this page — exit silently
   if (!allResources.length) {
     grid.innerHTML = `<div style="padding:20px;color:var(--text-muted)">No team members found</div>`;
     return;
