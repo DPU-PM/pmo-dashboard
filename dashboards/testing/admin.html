@@ -2994,8 +2994,16 @@ function updateSidebar() {
 function switchTab(name) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  const pane = document.getElementById('tab-' + name);
+  if (pane) pane.classList.add('active');
+  // Highlight sidebar item — use event if present, else match by name
+  if (typeof event !== 'undefined' && event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar-item').forEach(i => {
+      if ((i.getAttribute('onclick')||'').includes("'" + name + "'")) i.classList.add('active');
+    });
+  }
   if (name === 'risks')      loadProjectRisks();
   if (name === 'changelog')  loadChangelog();
   if (name === 'team')       renderTeamMembers();
@@ -4469,9 +4477,7 @@ let risksFilter = 'all'; // all | open | responded
 
 
 
-if (!customElements.get('dashboard-timeline')) {
-    customElements.define('dashboard-timeline', DashboardTimeline);
-}
+// (DashboardTimeline removed — replaced by simple renderGantt)
 
 
 
