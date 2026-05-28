@@ -467,14 +467,18 @@
   .confirm-modal .actions { display: flex; gap: 10px; justify-content: center; }
 
   /* ── TOAST ────────────────────────────────────────── */
-  
+  #toast-container {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+  }
   .toast {
     padding: 12px 18px; border-radius: var(--radius);
     font-size: 13px; font-weight: 500; color: #fff;
     box-shadow: var(--shadow-lg); animation: toastIn .2s ease;
     max-width: 320px; display: flex; align-items: center; gap: 8px;
   }
-  
+  @keyframes toastIn {
+    from { transform: translateX(20px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
   }
   .toast.success { background: var(--green); }
@@ -1404,8 +1408,14 @@ button:active:not(:disabled), .btn:active, .pill:active,
 }
 
 /* ── ENHANCED TOAST ──────────────────────────────────────── */
-
-
+.toast-item, #toast-container > div {
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
+  font-weight: 600 !important;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(60px) scale(0.88); }
   to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 
@@ -1654,305 +1664,16 @@ input:focus, textarea:focus, select:focus {
 }
 
 
-/* ── TESTING ENVIRONMENT BANNER ─────────────────────────── */
-#test-banner {
-  background: linear-gradient(90deg, #D97706, #F59E0B);
-  color: #fff;
-  text-align: center;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  position: sticky;
-  top: 0;
-  z-index: 99999;
-  box-shadow: 0 2px 8px rgba(217,119,6,0.4);
-}
-#test-banner span { opacity: 0.85; font-weight: 400; margin-left: 8px; font-size: 12px; }
-
-
-/* ── FORM VALIDATION ─────────────────────────────────────── */
-.field-wrap { position: relative; margin-bottom: 4px; }
-.field-error {
-  color: var(--red); font-size: 11px; font-weight: 600;
-  margin-top: 4px; display: none; align-items: center; gap: 4px;
-  animation: fadeSlideUp .15s ease both;
-}
-.field-error.show { display: flex; }
-.field-error::before { content: '⚠'; font-size: 10px; }
-input.invalid, select.invalid, textarea.invalid {
-  border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(220,38,38,0.15) !important;
-  animation: shake .3s ease;
-}
-input.valid, select.valid { border-color: var(--green) !important; }
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20%,60%  { transform: translateX(-4px); }
-  40%,80%  { transform: translateX(4px); }
-}
-
-/* ── CONFIRM DIALOG ──────────────────────────────────────── */
-#confirm-overlay {
-  position: fixed; inset: 0; background: rgba(15,30,53,.5);
-  backdrop-filter: blur(4px); z-index: 99998;
-  display: none; align-items: center; justify-content: center;
-}
-#confirm-overlay.open { display: flex; }
-#confirm-box {
-  background: var(--white); border-radius: 16px;
-  padding: 28px 28px 24px; max-width: 400px; width: 90%;
-  box-shadow: 0 32px 80px rgba(15,30,53,.24);
-  animation: modalSpring .25s cubic-bezier(.34,1.56,.64,1) both;
-  text-align: center;
-}
-#confirm-icon { font-size: 36px; margin-bottom: 12px; }
-#confirm-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-#confirm-msg { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
-.confirm-actions { display: flex; gap: 10px; justify-content: center; }
-.confirm-actions .btn { min-width: 100px; justify-content: center; }
-
-/* ── DARK MODE ───────────────────────────────────────────── */
-[data-theme="dark"] {
-  --navy:#0A1628; --navy2:#111E33; --blue:#3B82F6; --blue-light:#60A5FA;
-  --text:#E2E8F0; --text-muted:#94A3B8; --border:#1E2D45;
-  --bg:#0D1829; --white:#111E33;
-  --green-bg:rgba(22,163,74,.15); --amber-bg:rgba(217,119,6,.15); --red-bg:rgba(220,38,38,.15);
-}
-[data-theme="dark"] .hero { background: linear-gradient(135deg,#060E1A 0%,#0A1628 60%,#0F1E35 100%) !important; }
-[data-theme="dark"] .tbl th { background: #0D1829 !important; }
-[data-theme="dark"] .tbl tbody tr:nth-child(even) td { background: rgba(255,255,255,.02); }
-[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea {
-  background: #0D1829 !important; color: var(--text) !important;
-}
-[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,.7) !important; }
-[data-theme="dark"] .skel { background: linear-gradient(90deg,#1E2D45 25%,#253548 50%,#1E2D45 75%) !important; }
-
-/* Dark mode toggle button */
-#dark-toggle {
-  position: fixed; bottom: 28px; left: 28px; z-index: 8000;
-  width: 40px; height: 40px; border-radius: 50%;
-  background: var(--white); border: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(0,0,0,.12);
-  cursor: pointer; font-size: 18px; display: flex;
-  align-items: center; justify-content: center;
-  transition: all .2s ease;
-}
-#dark-toggle:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
-
-/* ── NOTIFICATION CENTER ─────────────────────────────────── */
-#notif-btn {
-  position: relative; cursor: pointer;
-  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
-  font-size: 18px; padding: 7px 10px;
-  color: #fff; border-radius: 10px; transition: all .15s;
-  display: flex; align-items: center; gap: 4px;
-}
-#notif-btn:hover { background: rgba(255,255,255,.22); transform: scale(1.05); }
-#notif-dot {
-  position: absolute; top: 4px; right: 4px;
-  width: 9px; height: 9px; background: #EF4444;
-  border-radius: 50%; border: 2px solid var(--navy);
-  display: none; animation: badgePop .3s cubic-bezier(.34,1.56,.64,1);
-  font-size: 0;
-}
-#notif-panel {
-  position: fixed; top: 56px; right: 16px; width: 340px;
-  background: var(--white); border: 1px solid var(--border);
-  border-radius: 16px; box-shadow: 0 20px 60px rgba(15,30,53,.2);
-  z-index: 9000; display: none; flex-direction: column;
-  max-height: 440px; overflow: hidden;
-  animation: modalSpring .2s cubic-bezier(.34,1.56,.64,1) both;
-}
-#notif-panel.open { display: flex; }
-.notif-header {
-  padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.notif-header h4 { font-size: 14px; font-weight: 700; margin: 0; }
-.notif-clear { font-size: 11px; color: var(--blue); cursor: pointer; background: none; border: none; font-weight: 600; }
-.notif-list { overflow-y: auto; flex: 1; }
-.notif-item {
-  padding: 12px 16px; border-bottom: 1px solid #F1F5F9;
-  display: flex; gap: 10px; align-items: flex-start;
-  transition: background .1s; cursor: default;
-  animation: fadeSlideUp .2s ease both;
-}
-.notif-item:hover { background: #F8FAFC; }
-.notif-item.unread { background: #EFF6FF; border-left: 3px solid var(--blue); }
-.notif-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-.notif-text { flex: 1; font-size: 12px; color: var(--text); line-height: 1.4; }
-.notif-time { font-size: 10px; color: #94A3B8; margin-top: 3px; }
-.notif-empty { text-align: center; padding: 32px; color: var(--text-muted); font-size: 13px; }
-
-/* ── ONBOARDING TOOLTIPS ─────────────────────────────────── */
-.coach-mark {
-  position: absolute; background: var(--navy);
-  color: #fff; border-radius: 10px;
-  padding: 10px 14px; font-size: 12px; line-height: 1.5;
-  max-width: 220px; z-index: 9999;
-  box-shadow: 0 8px 24px rgba(0,0,0,.25);
-  animation: fadeSlideUp .25s ease both;
-  pointer-events: none;
-}
-.coach-mark::before {
-  content: ''; position: absolute;
-  width: 0; height: 0;
-  border: 6px solid transparent;
-}
-.coach-mark.top::before    { bottom:-12px;left:50%;transform:translateX(-50%);border-top-color:var(--navy); }
-.coach-mark.bottom::before { top:-12px;left:50%;transform:translateX(-50%);border-bottom-color:var(--navy); }
-.coach-mark .coach-close   { position:absolute;top:6px;right:8px;cursor:pointer;opacity:.7;font-size:14px;pointer-events:auto; }
-.coach-mark strong         { display:block;margin-bottom:3px;font-size:13px; }
-
-/* ── RAG HISTORY TIMELINE ────────────────────────────────── */
-.rag-timeline { display: flex; align-items: center; gap: 0; margin: 8px 0; }
-.rag-tl-point {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  flex: 1; position: relative; cursor: default;
-}
-.rag-tl-point:not(:last-child)::after {
-  content: ''; position: absolute; top: 7px; left: 50%; width: 100%;
-  height: 2px; background: var(--border); z-index: 0;
-}
-.rag-tl-dot {
-  width: 14px; height: 14px; border-radius: 50%; z-index: 1;
-  border: 2px solid #fff; box-shadow: 0 0 0 1px currentColor;
-  transition: transform .15s; position: relative;
-}
-.rag-tl-dot:hover { transform: scale(1.4); }
-.rag-tl-dot.Green  { background: var(--green); color: var(--green); }
-.rag-tl-dot.Amber  { background: var(--amber); color: var(--amber); }
-.rag-tl-dot.Red    { background: var(--red);   color: var(--red); }
-.rag-tl-label { font-size: 9px; color: var(--text-muted); text-align: center; max-width: 40px; line-height: 1.2; }
-
-
-/* ── ENTERPRISE NOTIFICATION ENGINE ─────────────────────── */
-#notify-container {
-  position: fixed;
-  z-index: 99999;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  pointer-events: none;
-  top: 20px; right: 20px;
-  max-width: 360px; width: 360px;
-}
-.notify-toast {
-  background: var(--white);
-  color: var(--text);
-  padding: 14px 36px 14px 18px;
-  border-radius: 12px;
-  box-shadow: 0 10px 32px rgba(15,30,53,.16);
-  font-size: 13px;
-  width: 100%;
-  border-left: 5px solid;
-  position: relative;
-  overflow: hidden;
-  pointer-events: auto;
-  opacity: 0;
-  transform: translateX(60px) scale(0.92);
-  transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-}
-.notify-toast.show { opacity:1; transform:translateX(0) scale(1); }
-.notify-toast.info    { border-left-color: var(--blue); }
-.notify-toast.success { border-left-color: var(--green); }
-.notify-toast.warning { border-left-color: var(--amber); }
-.notify-toast.error   { border-left-color: var(--red); }
-[data-theme="dark"] .notify-toast { background: #1E2D45; color: #E2E8F0; box-shadow: 0 10px 32px rgba(0,0,0,.4); }
-.toast-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
-.toast-title  { font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; }
-.toast-body   { font-size:12px; color:var(--text-muted); line-height:1.45; }
-.toast-badge  {
-  background: var(--text); color: var(--white);
-  font-size:10px; padding:2px 6px; border-radius:10px;
-  font-weight:700; display:none;
-}
-.toast-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.toast-action-btn {
-  background:transparent; border:1px solid var(--border);
-  color:var(--text); padding:5px 12px; font-size:11px;
-  border-radius:6px; cursor:pointer; font-family:inherit;
-  font-weight:600; transition:all .15s;
-}
-.toast-action-btn:hover { background:var(--bg); border-color:var(--blue); color:var(--blue); }
-.toast-close {
-  position:absolute; top:10px; right:12px;
-  cursor:pointer; color:var(--text-muted);
-  font-size:18px; line-height:1; background:none; border:none;
-  padding:0; font-family:inherit; transition:color .15s;
-}
-.toast-close:hover { color:var(--text); }
-.toast-progress {
-  position:absolute; bottom:0; left:0;
-  height:3px; width:100%; transform-origin:left;
-  transition: none;
-}
-.notify-toast.info    .toast-progress { background:var(--blue); }
-.notify-toast.success .toast-progress { background:var(--green); }
-.notify-toast.warning .toast-progress { background:var(--amber); }
-.notify-toast.error   .toast-progress { background:var(--red); }
-
-
-/* ── ENHANCED CHANGELOG ──────────────────────────────── */
-.cl-toolbar { display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap; }
-.cl-filter-btn { padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer;transition:all .15s; }
-.cl-filter-btn:hover { border-color:var(--blue);color:var(--blue); }
-.cl-filter-btn.active { background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 4px 12px rgba(26,95,204,.3); }
-.cl-search { margin-left:auto;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;background:var(--bg);font-family:inherit;width:200px;transition:all .15s; }
-.cl-search:focus { outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(26,95,204,.15); }
-.cl-badge { display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:6px; }
-.cl-table { width:100%;border-collapse:collapse;font-size:13px; }
-.cl-table thead th { font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#94A3B8;background:#F8FAFC;padding:10px 16px;border-bottom:2px solid var(--border);text-align:left;position:sticky;top:0;z-index:1; }
-.cl-table tbody tr { border-bottom:1px solid #F1F5F9;transition:background .12s;animation:fadeSlideUp .2s ease both; }
-.cl-table tbody tr:hover { background:#F8FAFC; }
-.cl-table td { padding:11px 16px;vertical-align:middle; }
-.cl-ts { font-size:11px;color:var(--text-muted);white-space:nowrap; }
-.cl-who { font-weight:600;font-size:12px; }
-.cl-proj { font-weight:600;max-width:180px; }
-.cl-change { font-size:12px; }
-.cl-diff-old { color:var(--red);text-decoration:line-through;opacity:.7;font-size:11px; }
-.cl-diff-new { color:var(--green);font-weight:600;font-size:11px; }
-.cl-diff-arrow { color:var(--text-muted);margin:0 4px;font-size:10px; }
-.cl-action-badge { display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase; }
-.cl-add    { background:#DCFCE7;color:#15803D; }
-.cl-update { background:#DBEAFE;color:#1E40AF; }
-.cl-delete { background:#FEE2E2;color:#DC2626; }
-.cl-other  { background:#F1F5F9;color:#64748B; }
-.cl-rag    { background:#F3E8FF;color:#7C3AED; }
-.cl-avatar { width:28px;height:28px;border-radius:50%;font-size:10px;font-weight:700;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px; }
-.cl-expand-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px;padding:2px 6px;border-radius:4px;transition:all .12s; }
-.cl-expand-btn:hover { background:var(--bg);color:var(--blue); }
-.cl-detail-row td { background:#F8FAFC;padding:10px 16px;font-size:12px;color:var(--text-muted);border-bottom:2px solid var(--border); }
-.cl-empty { text-align:center;padding:60px 24px; }
-.cl-empty-icon { font-size:48px;opacity:.4;margin-bottom:12px; }
-[data-theme="dark"] .cl-table thead th { background:#0D1829; }
-[data-theme="dark"] .cl-table tbody tr:hover { background:rgba(255,255,255,.03); }
-[data-theme="dark"] .cl-detail-row td { background:#0D1829; }
-#cl-unread-badge { display:none; }
-
-
-/* ── KEYBOARD SHORTCUTS TOAST ────────────────────────── */
-#kb-hint {
-  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-  background: rgba(15,30,53,.92); color: #fff; border-radius: 10px;
-  padding: 10px 18px; font-size: 12px; display: none; z-index: 99998;
-  backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  animation: fadeSlideUp .2s ease both; pointer-events: none;
-  white-space: nowrap;
-}
-#kb-hint.show { display: block; }
-kbd {
-  display: inline-block; background: rgba(255,255,255,.15);
-  border: 1px solid rgba(255,255,255,.25); border-radius: 4px;
-  padding: 1px 6px; font-size: 11px; font-family: inherit;
-  font-weight: 700; margin: 0 2px;
-}
+@keyframes rexp { to { transform:scale(4);opacity:0; } }
+[data-theme="dark"] { --navy:#0A1628;--navy2:#111E33;--blue:#3B82F6;--text:#E2E8F0;--text-muted:#94A3B8;--border:#1E2D45;--bg:#0D1829;--white:#111E33; }
+[data-theme="dark"] thead th,[data-theme="dark"] .tbl th { background:#0D1829 !important; }
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea { background:#0D1829 !important;color:var(--text) !important; }
+#dark-toggle:hover { transform:scale(1.1) !important; }
 
 </style>
 </head>
 <body>
-<div id="test-banner">⚠️ TESTING ENVIRONMENT — Changes here do NOT affect production<span>testing branch</span></div>
+<div id="test-banner" style="background:linear-gradient(90deg,#D97706,#F59E0B);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:.5px;position:sticky;top:0;z-index:99999;box-shadow:0 2px 8px rgba(217,119,6,.4)">⚠️ TESTING ENVIRONMENT — Changes here do NOT affect production<span style="opacity:.85;font-weight:400;margin-left:8px;font-size:12px">testing branch</span></div>
 
 <!-- ADMIN LOGIN OVERLAY -->
 <div class="login-overlay" id="adminLoginOverlay">
@@ -1986,10 +1707,6 @@ kbd {
     <a class="dash-nav-link" href='https://dpu-pm.github.io/pmo-dashboard/dashboards/public.html' target="_blank">🌐 Public</a>
   </div>
   <div class="topbar-actions">
-          <button id="notif-btn" onclick="toggleNotifPanel()" title="Notifications">
-            🔔 <span id="notif-count-label" style="font-size:11px;font-weight:700;display:none"></span>
-            <span id="notif-dot"></span>
-          </button>
     <div class="topbar-user">
       <div class="avatar">PM</div>
       <span>Admin</span>
@@ -2334,15 +2051,8 @@ kbd {
         </div>
       </div>
       <div class="card">
-        <div class="cl-toolbar" id="cl-toolbar-wrap">
-          <button class="cl-filter-btn active" onclick="setClFilter('all',this)">All</button>
-          <button class="cl-filter-btn" onclick="setClFilter('add',this)">➕ Added</button>
-          <button class="cl-filter-btn" onclick="setClFilter('update',this)">✏️ Updated</button>
-          <button class="cl-filter-btn" onclick="setClFilter('delete',this)">🗑️ Deleted</button>
-          <button class="cl-filter-btn" onclick="setClFilter('rag',this)">🔴 RAG</button>
-          <input class="cl-search" type="text" placeholder="Search changelog..." oninput="_clSearch=this.value;_renderChangelog()">
-        </div>
-        <div id="changelog-list">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap"><button class="cl-filter-btn active" onclick="setClFilter('all',this)" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">All</button><button class="cl-filter-btn" onclick="setClFilter('add',this)" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer">Added</button><button class="cl-filter-btn" onclick="setClFilter('update',this)" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer">Updated</button><button class="cl-filter-btn" onclick="setClFilter('delete',this)" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer">Deleted</button><button class="cl-filter-btn" onclick="setClFilter('rag',this)" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--white);color:var(--text-muted);cursor:pointer">RAG</button><input type="text" placeholder="Search changelog..." oninput="_clSearch=this.value;_renderChangelog()" style="margin-left:auto;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;background:var(--bg);font-family:inherit;width:200px"></div>
+    <div id="changelog-list">
           <div class="empty-state"><div class="icon">📋</div><h3>No changes yet</h3></div>
         </div>
       </div>
@@ -2590,6 +2300,7 @@ kbd {
 <div id="toast-container"></div>
 
 <script>
+
 // ═══════════════════════════════════════════════════════════
 // CONFIGURATION
 // ═══════════════════════════════════════════════════════════
@@ -2687,7 +2398,6 @@ function showAdminApp() {
   document.getElementById('adminLoginOverlay').style.display = 'none';
   document.getElementById('adminApp').style.display = 'block';
   loadData();
-  runOnboarding();
 }
 
 function doAdminLogout() {
@@ -2742,186 +2452,6 @@ async function sbFetch(path, options = {}) {
 // ════════════════════════════════════════════════════════════
 // READ — get all data for dashboard
 // ════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════
-// ENTERPRISE NOTIFICATION ENGINE — replaces showToast
-// Features: duplicate grouping, action buttons, rich HTML,
-//           offline queue, audio feedback, dark mode
-// ═══════════════════════════════════════════════════════════
-class NotificationCenter {
-  constructor(options = {}) {
-    this.position     = options.position || 'top-right';
-    this.maxVisible   = options.maxVisible || 4;
-    this.defaultDur   = options.duration || 4500;
-    this.soundEnabled = options.soundEnabled !== false;
-    this.queue        = [];
-    this.active       = new Map(); // signature → { el, count }
-    this.offlineQueue = [];
-    this.isOffline    = !navigator.onLine;
-    this._initDOM();
-    this._initNetwork();
-  }
-
-  _initDOM() {
-    let c = document.getElementById('notify-container');
-    if (!c) {
-      c = document.createElement('div');
-      c.id = 'notify-container';
-      document.body.appendChild(c);
-    }
-    this.container = c;
-  }
-
-  _initNetwork() {
-    window.addEventListener('offline', () => {
-      this.isOffline = true;
-      this._display({ title:'Connection Lost', message:'Working offline. Changes will sync on reconnect.', type:'warning', isSticky:true }, true);
-    });
-    window.addEventListener('online', () => {
-      this.isOffline = false;
-      this._display({ title:'Back Online', message:'Connection restored.', type:'success' }, true);
-      setTimeout(() => { while(this.offlineQueue.length) this._display(this.offlineQueue.shift(), true); }, 800);
-    });
-  }
-
-  _audio(type) {
-    if (!this.soundEnabled) return;
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      if (type === 'success') {
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-      } else if (type === 'error') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(180, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.15);
-      } else {
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-      }
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
-      osc.start(); osc.stop(ctx.currentTime + 0.2);
-    } catch(e) {}
-  }
-
-  send(config, sys = false) {
-    const p = {
-      title:    config.title    || 'Alert',
-      message:  config.message  || '',
-      type:     config.type     || 'info',
-      duration: config.duration || this.defaultDur,
-      isSticky: config.isSticky || false,
-      buttons:  config.buttons  || [],
-    };
-    if (this.isOffline && !sys) { this.offlineQueue.push(p); return; }
-    this._display(p, sys);
-  }
-
-  _display(p) {
-    const sig = p.title + '|' + p.type;
-    if (this.active.has(sig)) {
-      const rec = this.active.get(sig);
-      rec.count++;
-      const badge = rec.el.querySelector('.toast-badge');
-      if (badge) { badge.textContent = 'x' + rec.count; badge.style.display = 'inline-block'; }
-      rec.el.style.transform = 'scale(1.04)';
-      setTimeout(() => { if(rec.el) rec.el.style.transform = 'scale(1)'; }, 150);
-      this._audio(p.type);
-      return;
-    }
-    if (this.active.size >= this.maxVisible) { this.queue.push(p); return; }
-    this._build(p, sig);
-  }
-
-  _build(p, sig) {
-    this._audio(p.type);
-    const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
-    const toast = document.createElement('div');
-    toast.className = 'notify-toast ' + p.type;
-
-    let btnsHtml = '';
-    if (p.buttons.length) {
-      btnsHtml = '<div class="toast-actions">' +
-        p.buttons.map((b,i) => `<button class="toast-action-btn" data-bi="${i}">${b.text}</button>`).join('') +
-        '</div>';
-    }
-
-    toast.innerHTML = `
-      <button class="toast-close" aria-label="Close">×</button>
-      <div class="toast-header">
-        <div class="toast-title">${icons[p.type]||'ℹ️'} ${p.title}
-          <span class="toast-badge"></span>
-        </div>
-      </div>
-      ${p.message ? `<div class="toast-body">${p.message}</div>` : ''}
-      ${btnsHtml}
-      ${!p.isSticky ? '<div class="toast-progress"></div>' : ''}
-    `;
-
-    this.container.appendChild(toast);
-    this.active.set(sig, { el: toast, count: 1 });
-
-    // Button callbacks
-    p.buttons.forEach((b, i) => {
-      const btn = toast.querySelector(`[data-bi="${i}"]`);
-      if (btn) btn.addEventListener('click', () => { b.onClick && b.onClick(); this._remove(toast, sig); });
-    });
-
-    // Animate in
-    void toast.offsetWidth;
-    toast.classList.add('show');
-
-    // Close button
-    toast.querySelector('.toast-close').addEventListener('click', () => this._remove(toast, sig));
-
-    // Auto dismiss
-    if (!p.isSticky) {
-      const prog = toast.querySelector('.toast-progress');
-      const start = Date.now();
-      const tick = () => {
-        const pct = Math.max(0, 100 - ((Date.now()-start)/p.duration)*100);
-        if (prog) prog.style.width = pct + '%';
-        if (Date.now()-start < p.duration) requestAnimationFrame(tick);
-        else this._remove(toast, sig);
-      };
-      requestAnimationFrame(tick);
-    }
-  }
-
-  _remove(toast, sig) {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(60px) scale(0.88)';
-    this.active.delete(sig);
-    setTimeout(() => {
-      toast.remove();
-      if (this.queue.length) {
-        const next = this.queue.shift();
-        this._build(next, next.title + '|' + next.type);
-      }
-    }, 300);
-  }
-}
-
-// ── GLOBAL INSTANCE ───────────────────────────────────────
-const notify = new NotificationCenter({
-  position: 'top-right',
-  maxVisible: 4,
-  duration: 4500,
-  soundEnabled: false  // set true to enable audio
-});
-
-// ── BACKWARD COMPAT: showToast → notify.send ─────────────
-function showToast(msg, type, duration) {
-  const typeMap = { success:'success', error:'error', warning:'warning', info:'info' };
-  notify.send({ title: _toastTitle(type), message: msg, type: typeMap[type]||'info', duration: duration||4500 });
-}
-function _toastTitle(type) {
-  return { success:'Success', error:'Error', warning:'Warning', info:'Info' }[type] || 'Info';
-}
-
 async function sbGetAllData() {
   // Single request gets all projects + tasks in one shot
   const [projects, tasks] = await Promise.all([
@@ -3193,7 +2723,7 @@ async function sbDeleteUser(id) {
 // ═══════════════════════════════════════════════════════════
 // CACHE — localStorage for instant load
 // ═══════════════════════════════════════════════════════════
-const CACHE_KEY = 'pmo_test_test_cache';
+const CACHE_KEY = 'pmo_test_admin_cache';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 function getCached() {
@@ -3236,7 +2766,7 @@ async function loadData(forceRefresh = false) {
     setCache(data);
     renderAll();
   } catch(e) {
-    notify.send({ title:'Load Failed', message:e.message, type:'error', isSticky:true });
+    showToast('Failed to load: ' + e.message, 'error');
     loadDemoData();
   } finally {
     document.getElementById('projects-loading').classList.remove('show');
@@ -3362,7 +2892,7 @@ function renderProjects(searchVal) {
       <td><span style="font-weight:600;cursor:pointer;color:var(--blue);text-decoration:none" 
         onmouseover="this.style.textDecoration='underline'" 
         onmouseout="this.style.textDecoration='none'"
-        onclick="openProjectView('${esc(key)}','${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}')">${highlightMatch(p.projectName||'', typeof _searchTerm!=='undefined'?_searchTerm:'')}</span></td>
+        onclick="openProjectView('${esc(key)}','${esc(p.projectName)}')">${esc(p.projectName)}</span></td>
       <td>${typeTag(p.sheetName)}</td>
       <td>${statusBadge(p.status)}</td>
       <td><span class="task-chip">📋 ${taskCount} tasks</span></td>
@@ -3394,7 +2924,7 @@ function renderResources() {
   const colors = ['#1A5FCC','#16A34A','#D97706','#7C3AED','#DC2626','#0D7377'];
   grid.innerHTML = allResources.map((r,i) => `
     <div class="resource-card">
-      <div class="resource-avatar" style="background:${nameToColor(r.name)}">${initials(r.name)}</div>
+      <div class="resource-avatar" style="background:${colors[i%colors.length]}">${initials(r.name)}</div>
       <div class="resource-info">
         <div class="name">${esc(r.name)}</div>
         <div class="role">${esc(r.role||'—')}</div>
@@ -3406,13 +2936,12 @@ function renderResources() {
   `).join('');
 }
 
-async function promptDeleteResource(name) {
-  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}" from resources?`, okText: 'Confirm', icon: '⚠️', danger: true });
-  if (!_cfOk) return;
+function promptDeleteResource(name) {
+  if (!confirm(`Remove "${name}" from resources?`)) return;
   allResources = allResources.filter(r => r.name !== name);
   renderResources();
   updateSidebar();
-  notify.send({ title:"Member Removed", message:`<b>${name}</b> removed from team.`, type:"warning" });
+  showToast(`"${name}" removed`, 'info');
   sbGetUsers().then(users => {
     const u = users.find(x => x.name === name);
     if (u) sbDeleteUser(u.id);
@@ -3430,12 +2959,12 @@ function openAddResourceModal() {
 async function saveResource() {
   const name = document.getElementById('res_name').value.trim();
   const role = document.getElementById('res_role').value.trim();
-  if (!name) { notify.send({ title:'Validation Error', message:'Name is required.', type:'error' }); return; }
+  if (!name) { showToast('Name is required', 'error'); return; }
   if (!allResources.find(r => r.name === name)) allResources.push({ name, role });
   renderResources();
   updateSidebar();
   document.getElementById('resourceModal').classList.remove('open');
-  notify.send({ title:'Member Added', message:`<b>${name}</b> added successfully.`, type:'success' });
+  showToast(`✅ "${name}" added`, 'success');
   const email = name.toLowerCase().replace(/\s+/g,'_') + '@team.local';
   sbSaveUser({ name, email, password_hash: 'changeme', role: 'editor',
     permissions: {viewProjects:true,addProjects:true,editProjects:true,editTasks:true,manageResources:false,viewChangelog:false}
@@ -3687,7 +3216,7 @@ function addPhase() {
     currentTasks.push({ taskName: '', phase: name, taskType: 'task', progress: 0, rag: 'Green', responsible: '', milestoneDate: '', dependsOn: '' });
   }
   renderTaskEditor();
-  notify.send({ title:'Success', message:`Phase "${name}" added`, type:'success' });
+  showToast(`Phase "${name}" added`, 'success');
 }
 
 function renamePhase(oldName, newName) {
@@ -3696,12 +3225,11 @@ function renamePhase(oldName, newName) {
   renderTaskEditor();
 }
 
-async function deletePhase(phaseName) {
-  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Delete phase "${phaseName}" and all its tasks?`, okText: 'Confirm', icon: '⚠️', danger: true });
-  if (!_cfOk) return;
+function deletePhase(phaseName) {
+  if (!confirm(`Delete phase "${phaseName}" and all its tasks?`)) return;
   currentTasks = currentTasks.filter(t => t.phase !== phaseName);
   renderTaskEditor();
-  notify.send({ title:'Phase Deleted', message:`Phase <b>${phaseName}</b> removed.`, type:'warning' });
+  showToast('Phase deleted', 'info');
 }
 
 function addTask(phaseName) {
@@ -3769,11 +3297,8 @@ function updateProgressDisplay() {
 // SAVE PROJECT
 // ═══════════════════════════════════════════════════════════
 async function saveProject() {
-  // Validate required fields
-  const nameEl = document.getElementById('p_name');
-  if (!validateForm([[nameEl, { required: 'Project name is required', minLen: 2 }]])) return;
   const name = document.getElementById('adv_projectName').value.trim();
-  if (!name) { notify.send({ title:'Validation Error', message:'Project name is required.', type:'error' }); return; }
+  if (!name) { showToast('Project name is required', 'error'); return; }
 
   const sheetName = document.getElementById('adv_projectType').value;
   const tasks = currentTasks.filter(t => t.taskType !== 'project');
@@ -3840,13 +3365,13 @@ async function saveProject() {
   sbSaveProject(payload, currentProject, !!currentProject).then(data => {
     if (data.success || data.message) {
       clearCache();
-      notify.send({ title:'Success', message:`✅ "${name}" saved to server`, type:'success' });
+      showToast(`✅ "${name}" saved to server`, 'success');
       loadData(true); // refresh in bg to sync IDs
     } else {
-      notify.send({ title:'Error', message:`⚠️ Server error: ${data.error || 'unknown'}`, type:'error' });
+      showToast(`⚠️ Server error: ${data.error || 'unknown'}`, 'error');
     }
   }).catch(e => {
-    notify.send({ title:'Error', message:`❌ Save failed: ${e.message}`, type:'error' });
+    showToast(`❌ Save failed: ${e.message}`, 'error');
   });
 }
 
@@ -3873,7 +3398,7 @@ async function confirmDelete() {
   const sheetName = keyToSheetName(sheetKey);
   allProjectsData[sheetKey] = (allProjectsData[sheetKey] || []).filter(p => p.projectName !== name);
   renderAll();
-  notify.send({ title:'Project Deleted', message:`<b>${name}</b> deleted.`, type:'warning', buttons:[{ text:'View Changelog', onClick:()=>switchTab('changelog') }] });
+  showToast(`"${name}" deleted`, 'info');
 
   // Background delete from Supabase
   const allProjs = Object.values(allProjectsData).flat();
@@ -3985,7 +3510,7 @@ function saveEditMember() {
   saveTeamMembers(members);
   document.getElementById('editMemberModal').classList.remove('open');
   renderTeamMembers();
-  notify.send({ title:'Success', message:`✅ "${name}" updated`, type:'success' });
+  showToast(`✅ "${name}" updated`, 'success');
 }
 
 function openAddMemberModal() {
@@ -4011,7 +3536,7 @@ function saveNewMember() {
   saveTeamMembers(members);
   document.getElementById('tmModal').classList.remove('open');
   renderTeamMembers();
-  notify.send({ title:'Success', message:`✅ "${name}" added`, type:'success' });
+  showToast(`✅ "${name}" added`, 'success');
 }
 
 function applyRolePreset(idx, role) {
@@ -4041,11 +3566,10 @@ function updateMemberField(idx, field, val) {
   saveTeamMembers(members);
 }
 
-async function removeMember(idx) {
+function removeMember(idx) {
   const members = loadTeamMembers();
   const name = members[idx]?.name || 'member';
-  const _cfOk = await showConfirm({ title: 'Confirm', msg: `Remove "${name}"? They will no longer be able to log in.`, okText: 'Confirm', icon: '⚠️', danger: true });
-  if (!_cfOk) return;
+  if (!confirm(`Remove "${name}"? They will no longer be able to log in.`)) return;
   members.splice(idx, 1);
   saveTeamMembers(members);
   renderTeamMembers();
@@ -4056,162 +3580,6 @@ async function removeMember(idx) {
 // CHANGELOG
 // ═══════════════════════════════════════════════════════════
 
-// ── CHANGELOG STATE ───────────────────────────────────
-var _clFilter  = 'all';
-var _clSearch  = '';
-var _clEntries = [];
-
-function setClFilter(f, el) {
-  _clFilter = f;
-  document.querySelectorAll('.cl-filter-btn').forEach(function(b){ b.classList.remove('active'); });
-  if (el) el.classList.add('active');
-  localStorage.setItem('pmo_cl_seen', new Date().toISOString());
-  var badge = document.getElementById('cl-unread-badge');
-  if (badge) badge.style.display = 'none';
-  _renderChangelog();
-}
-
-function _clActionType(action) {
-  var a = (action||'').toUpperCase();
-  if (a.includes('DELETE')) return 'delete';
-  if (a.includes('ADD') || a.includes('CREATE')) return 'add';
-  if (a.includes('UPDATE') || a.includes('EDIT')) return 'update';
-  if (a.includes('RAG') || a.includes('STATUS')) return 'rag';
-  return 'other';
-}
-
-function _clToggleDetail(btn, idx) {
-  var row = document.getElementById('cl-detail-' + idx);
-  if (!row) return;
-  var open = row.style.display !== 'none';
-  row.style.display = open ? 'none' : 'table-row';
-  btn.textContent = open ? '...' : 'x';
-}
-
-function _renderChangelog() {
-  var listEl = document.getElementById('changelog-list');
-  if (!listEl) return;
-  var entries = _clEntries;
-  if (_clFilter !== 'all') entries = entries.filter(function(e){ return _clActionType(e.action) === _clFilter; });
-  if (_clSearch && _clSearch.trim()) {
-    var q = _clSearch.toLowerCase();
-    entries = entries.filter(function(e){
-      return (e.projectName||'').toLowerCase().includes(q) ||
-             (e.user||'').toLowerCase().includes(q) ||
-             (e.action||'').toLowerCase().includes(q) ||
-             (e.fieldChanged||'').toLowerCase().includes(q);
-    });
-  }
-  if (!entries.length) {
-    listEl.innerHTML = '<div class="cl-empty"><div class="cl-empty-icon">📋</div><h3>No entries found</h3><p>Try a different filter or clear search.</p></div>';
-    return;
-  }
-  function fmtTime(ts) {
-    if (!ts) return '--';
-    try { return new Date(ts).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).replace(',',''); }
-    catch(ex) { return ts; }
-  }
-  function timeAgo(ts) {
-    var s = Math.floor((Date.now() - new Date(ts)) / 1000);
-    if (s < 60) return 'just now';
-    if (s < 3600) return Math.floor(s/60) + 'm ago';
-    if (s < 86400) return Math.floor(s/3600) + 'h ago';
-    return Math.floor(s/86400) + 'd ago';
-  }
-  function actionBadge(action) {
-    var t = _clActionType(action);
-    var labels = { add:'Added', update:'Updated', delete:'Deleted', rag:'RAG Change', other: action||'Other' };
-    return '<span class="cl-action-badge cl-' + t + '">' + esc(labels[t]||action) + '</span>';
-  }
-  var lastSeen = localStorage.getItem('pmo_cl_seen') || '1970-01-01';
-  var rows = entries.map(function(e, i) {
-    var isNew = e.timestamp > lastSeen;
-    var hasDiff = e.fieldChanged && e.fieldChanged !== 'N/A' && e.oldValue;
-    var av = (typeof nameToColor === 'function' ? nameToColor(e.user) : '#1A5FCC');
-    var ini = esc((e.user||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2));
-    return '<tr' + (isNew ? ' style="background:#EFF6FF"' : '') + '>' +
-      '<td class="cl-ts">' + timeAgo(e.timestamp) + '<div style="font-size:10px;color:#94A3B8">' + fmtTime(e.timestamp) + '</div></td>' +
-      '<td class="cl-who"><span class="cl-avatar" style="background:' + av + '">' + ini + '</span>' + esc(e.user) + '</td>' +
-      '<td>' + actionBadge(e.action) + '</td>' +
-      '<td class="cl-proj">' + esc(e.projectName) + (e.sheet ? '<div style="font-size:10px;color:var(--text-muted)">' + esc(e.sheet) + '</div>' : '') + '</td>' +
-      '<td class="cl-change">' + (hasDiff
-        ? '<strong>' + esc(e.fieldChanged) + '</strong><div style="margin-top:3px"><span class="cl-diff-old">' + esc(e.oldValue) + '</span><span class="cl-diff-arrow"> &rarr; </span><span class="cl-diff-new">' + esc(e.newValue) + '</span></div>'
-        : '<span style="color:var(--text-muted)">' + esc(e.newValue||'--') + '</span>'
-      ) + '</td>' +
-      '<td><button class="cl-expand-btn" onclick="_clToggleDetail(this,' + i + ')">...</button></td></tr>' +
-      '<tr class="cl-detail-row" id="cl-detail-' + i + '" style="display:none"><td colspan="6">' +
-      'Action: ' + esc(e.action) + ' | Field: ' + esc(e.fieldChanged||'--') + ' | Old: ' + esc(e.oldValue||'--') + ' | New: ' + esc(e.newValue||'--') + ' | ' + fmtTime(e.timestamp) +
-      '</td></tr>';
-  });
-  listEl.innerHTML = '<div style="overflow-x:auto"><table class="cl-table"><thead><tr><th style="width:140px">When</th><th style="width:110px">Who</th><th style="width:100px">Action</th><th style="width:180px">Project</th><th>What Changed</th><th style="width:40px"></th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
-}
-
-async function loadChangelog() {
-  try {
-    const raw = await sbGetChangelog(100);
-    const entries = raw.map(e => ({
-      timestamp:    e.changed_at,
-      user:         e.changed_by,
-      action:       e.action,
-      projectName:  e.project_name,
-      sheet:        e.category,
-      fieldChanged: e.field_changed,
-      oldValue:     e.old_value,
-      newValue:     e.new_value
-    }));
-    if (!entries.length) {
-      document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">📋</div><h3>No entries yet</h3></div>`;
-      return;
-    }
-    const actionBadge = (a) => {
-      const s = (a||'').toLowerCase();
-      if (s.includes('add'))    return `<span class="cl-action-badge cl-add">${esc(a)}</span>`;
-      if (s.includes('update')) return `<span class="cl-action-badge cl-update">${esc(a)}</span>`;
-      if (s.includes('delete')) return `<span class="cl-action-badge cl-delete">${esc(a)}</span>`;
-      return `<span class="cl-action-badge cl-other">${esc(a)}</span>`;
-    };
-    // Format timestamp to Cairo time (UTC+3)
-    const fmtCairo = (ts) => {
-      if (!ts) return '—';
-      try {
-        const d = new Date(ts);
-        if (isNaN(d)) return esc(String(ts));
-        return d.toLocaleString('en-GB', {
-          timeZone: 'Africa/Cairo',
-          day:   '2-digit', month: '2-digit', year: 'numeric',
-          hour:  '2-digit', minute: '2-digit', hour12: true
-        }).replace(',', '');
-      } catch(e) { return esc(String(ts)); }
-    };
-
-    document.getElementById('changelog-list').innerHTML = `
-      <table class="cl-table">
-        <thead>
-          <tr>
-            <th style="width:160px">Date &amp; Time</th>
-            <th style="width:110px">Who</th>
-            <th style="width:120px">Action</th>
-            <th style="width:170px">Project</th>
-            <th>What Changed</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${entries.map(e => `<tr>
-            <td class="cl-ts">${fmtCairo(e.timestamp)}</td>
-            <td class="cl-who">${esc(e.user||'Admin')}</td>
-            <td>${actionBadge(e.action)}</td>
-            <td class="cl-proj">${esc(e.projectName||'—')} ${e.sheet?`<span style="font-size:10px;color:var(--text-muted);">(${esc(e.sheet)})</span>`:''}</td>
-            <td class="cl-change">${e.fieldChanged && e.fieldChanged !== 'N/A'
-              ? `<strong>${esc(e.fieldChanged)}</strong>: ${esc(e.oldValue||'—')} → ${esc(e.newValue||'—')}`
-              : `<span style="color:var(--text-muted)">${esc(e.newValue||'—')}</span>`
-            }</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>`;
-  } catch(e) {
-    document.getElementById('changelog-list').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Failed to load</h3></div>`;
-  }
-}
 
 // ═══════════════════════════════════════════════════════════
 // HELPERS
@@ -4639,7 +4007,7 @@ function exportPDF(title, projects, kpis) {
       .section-title { font-size:14px; font-weight:700; margin-bottom:8px; color:#0F1E35; padding-bottom:6px; border-bottom:2px solid #E2E8F0; }
       .footer { margin-top:24px; font-size:11px; color:#94A3B8; text-align:center; padding-top:16px; border-top:1px solid #F1F5F9; }
     </style></head><body>
-<div id="test-banner">⚠️ TESTING ENVIRONMENT — Changes here do NOT affect production<span>testing branch</span></div>
+<div id="test-banner" style="background:linear-gradient(90deg,#D97706,#F59E0B);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:.5px;position:sticky;top:0;z-index:99999;box-shadow:0 2px 8px rgba(217,119,6,.4)">⚠️ TESTING ENVIRONMENT — Changes here do NOT affect production<span style="opacity:.85;font-weight:400;margin-left:8px;font-size:12px">testing branch</span></div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
       <div style="width:36px;height:36px;background:#E8A838;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#0F1E35">PMO</div>
       <div><h1>${esc(title)}</h1><div class="sub">Generated ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'})} · ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>
@@ -4657,7 +4025,7 @@ function exportPDF(title, projects, kpis) {
       <tbody>${rows}</tbody>
     </table>
     <div class="footer">PMO Portfolio Dashboard · Confidential · ${all.length} projects listed</div>
-  <div id="kb-hint"></div>
+  <div id="kb-hint" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,30,53,.92);color:#fff;border-radius:10px;padding:10px 18px;font-size:12px;display:none;z-index:99998;backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap"></div>
 </body></html>`;
 
   const win = window.open('', '_blank', 'width=900,height=700');
@@ -4973,7 +4341,7 @@ async function saveDecision(containerId) {
     }
     input.value = '';
     await loadDecisions(currentDecisionProjectId, currentDecisionProjectName, containerId);
-    notify.send({ title:'Entry Added', message:'Entry saved to project.', type:'success' });
+    showToast('Entry added ✅', 'success');
   } catch(e) {
     showToast('Failed to save: ' + e.message, 'error');
   }
@@ -5093,423 +4461,7 @@ let risksFilter = 'all'; // all | open | responded
 
 // DashboardTimeline v2 — PMO Edition
 // Full-featured Gantt web component with swimlanes, drag, tooltips, fullscreen
-class DashboardTimeline extends HTMLElement {
-    constructor() {
-        super();
-        this._rawData = [];
-        this._pendingData = null;
-        this._connected  = false;
-        this.config = {
-            barColor:'#1A5FCC', barHoverColor:'#1348A0', progressColor:'#0D3A9E',
-            barHeight:26, rowHeight:78, paddingTop:140, theme:'light',
-            zoomLevel:'month', showTodayLine:true,
-            enableDragAndDrop:false, snapToGrid:true,
-        };
-        this.timelineBounds = { start:null, end:null, totalDuration:null };
-        this._boundMM = this._onMouseMove.bind(this);
-        this._boundMU = this._onMouseUp.bind(this);
-        this.dragState = { active:false, resizing:false, idx:null, startX:0, scrollStart:0, origStart:'', origEnd:'', wasDrag:false };
-    }
 
-    static get observedAttributes() { return ['theme','zoom','color']; }
-
-    attributeChangedCallback(n, ov, nv) {
-        if (ov===nv) return;
-        if (n==='theme') this.config.theme = nv;
-        if (n==='zoom')  this.config.zoomLevel = (nv||'month').toLowerCase();
-        if (n==='color') {
-            this.config.barColor = nv;
-            this.config.progressColor = this._dim(nv,-35);
-        }
-        if (this._connected) this.render();
-    }
-
-    connectedCallback() {
-        this._connected = true;
-        this._injectStyles();
-        this._initTooltip();
-        if (this._pendingData) { this._rawData = this._pendingData; this._pendingData = null; }
-        // Use rAF so offsetWidth is real
-        requestAnimationFrame(() => this.render());
-    }
-
-    disconnectedCallback() { this._connected = false; }
-
-    set data(v) {
-        const d = Array.isArray(v) ? v : [];
-        if (this._connected) { this._rawData = d; requestAnimationFrame(() => this.render()); }
-        else { this._pendingData = d; }
-    }
-    get data() { return this._rawData; }
-
-    changeViewMode(mode) {
-        this.config.zoomLevel = (mode||'month').toLowerCase();
-        this.render();
-        requestAnimationFrame(() => this._scrollToToday());
-    }
-
-    // ── RENDER ──────────────────────────────────────────────────────────────────
-    render() {
-        if (!this._connected) return;
-        if (!this._rawData || !this._rawData.length) {
-            this.innerHTML = `<div style="text-align:center;padding:48px 20px;color:#94A3B8;font-size:13px">
-                📅 No tasks with milestone dates to display</div>`;
-            return;
-        }
-
-        this._calcBounds(this._rawData);
-        const { start:tS, end:tE, totalDuration:tD } = this.timelineBounds;
-
-        // CRITICAL: get real width. Fall back to parent or 800
-        const containerW = Math.max(
-            this.offsetWidth || this.parentElement?.offsetWidth || 800, 400
-        );
-
-        const totalDays = tD / 86400000;
-        const z = this.config.zoomLevel;
-        const canvasW = z==='day'  ? Math.max(containerW, totalDays*65+150) :
-                        z==='week' ? Math.max(containerW, totalDays*22+150) :
-                        z==='year' ? Math.max(containerW, totalDays*4 +150) :
-                                     Math.max(containerW, totalDays*13+150);
-
-        const isDark  = this.config.theme === 'dark';
-        const bg      = isDark ? '#1A1A2E' : '#FFFFFF';
-        const grid    = isDark ? '#2D2D45' : '#EAEAEA';
-        const laneAlt = isDark ? '#1E1E30' : '#FAFBFC';
-        const txt     = isDark ? '#9090AA' : '#64748B';
-        const bH      = this.config.barHeight;
-        const rH      = this.config.rowHeight;
-        const pT      = this.config.paddingTop;
-        const LW      = 130; // label column width
-
-        const getX  = d => LW + ((d-tS)/tD) * (canvasW-LW-20);
-        const getFmt = d => d.toISOString().split('T')[0];
-        this.getX    = getX;
-        this.getDate = x => new Date(tS.getTime()+((x-LW)/(canvasW-LW-20))*tD);
-
-        // Tiers
-        const tiers = z==='day'  ? ['year','month','week','day'] :
-                      z==='week' ? ['year','month','week'] :
-                      z==='year' ? ['year'] : ['year','month'];
-        const tH    = 28;
-        const hTop  = 8;
-        const hBot  = hTop + tiers.length * tH;
-
-        // Swimlanes
-        const lanes = {};
-        this._rawData.forEach((t,i) => {
-            const ln = t.swimlane||'Tasks';
-            if (!lanes[ln]) lanes[ln]=[];
-            lanes[ln].push({t,i});
-        });
-        const rows = [];
-        Object.keys(lanes).forEach(ln => lanes[ln].forEach(item => rows.push({...item,ln})));
-        const svgH = Math.max(hBot + rows.length*rH + 40, 220);
-
-        // Priority/RAG colours
-        const PRI_COL = {Critical:'#EF4444',High:'#F97316',Medium:'#1A5FCC',Low:'#16A34A'};
-
-        let s = `<div class="dt-scroll"><svg class="dt-svg"
-            viewBox="0 0 ${canvasW} ${svgH}"
-            style="background:${bg};width:${canvasW}px;display:block;font-family:inherit"
-            xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="dt-sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="${isDark?'.3':'.08'}"/></filter>
-            <marker id="dt-ar" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="${this.config.barColor}" opacity=".7"/>
-            </marker>
-          </defs>`;
-
-        // ── Header lines ─────────────────────────────────────────────────────────
-        for (let i=0;i<=tiers.length;i++) {
-            s += `<line x1="${LW}" y1="${hTop+i*tH}" x2="${canvasW-10}" y2="${hTop+i*tH}" stroke="${grid}" stroke-width="1"/>`;
-        }
-
-        // ── Year tier ────────────────────────────────────────────────────────────
-        if (tiers.includes('year')) {
-            let d = new Date(tS.getFullYear(),0,1);
-            while (d < tE) {
-                const nd = new Date(d.getFullYear()+1,0,1);
-                const x1=Math.max(getX(d),LW), x2=Math.min(getX(nd),canvasW-10);
-                if (getX(nd)<=canvasW-10) s += `<line x1="${getX(nd)}" y1="${hTop}" x2="${getX(nd)}" y2="${hTop+tH}" stroke="${grid}" stroke-width="1.5"/>`;
-                if (x2-x1>40) s += `<text x="${x1+(x2-x1)/2}" y="${hTop+tH-8}" fill="${this.config.barColor}" font-size="13" font-weight="700" text-anchor="middle">${d.getFullYear()}</text>`;
-                d = nd;
-            }
-        }
-
-        // ── Month tier ───────────────────────────────────────────────────────────
-        if (tiers.includes('month')) {
-            const ty = hTop + tiers.indexOf('month')*tH;
-            let d = new Date(tS.getFullYear(),tS.getMonth(),1);
-            while (d < tE) {
-                const nd = new Date(d.getFullYear(),d.getMonth()+1,1);
-                const x1=Math.max(getX(d),LW), x2=Math.min(getX(nd),canvasW-10);
-                const btm = tiers.length===2 ? svgH-10 : ty+tH;
-                if (getX(nd)<=canvasW-10) s += `<line x1="${getX(nd)}" y1="${ty}" x2="${getX(nd)}" y2="${btm}" stroke="${grid}" stroke-width="1"/>`;
-                if (x2-x1>24) {
-                    const lbl = (x2-x1>64) ? d.toLocaleString('default',{month:'long'}) : d.toLocaleString('default',{month:'short'});
-                    s += `<text x="${x1+(x2-x1)/2}" y="${ty+tH-7}" fill="${txt}" font-size="11" font-weight="600" text-anchor="middle">${lbl}</text>`;
-                }
-                d = nd;
-            }
-        }
-
-        // ── Week tier ────────────────────────────────────────────────────────────
-        if (tiers.includes('week')) {
-            const ty = hTop + tiers.indexOf('week')*tH;
-            let d = new Date(tS); d.setDate(d.getDate()-d.getDay()); d.setHours(0,0,0,0);
-            while (d < tE) {
-                const nd = new Date(d); nd.setDate(d.getDate()+7);
-                const x1=Math.max(getX(d),LW), x2=Math.min(getX(nd),canvasW-10);
-                if (getX(nd)>=LW && getX(nd)<=canvasW-10) s += `<line x1="${getX(nd)}" y1="${ty}" x2="${getX(nd)}" y2="${svgH-10}" stroke="${grid}" stroke-width="1"/>`;
-                if (x2-x1>36) {
-                    const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
-                    u.setUTCDate(u.getUTCDate()+4-(u.getUTCDay()||7));
-                    const wn=Math.ceil((((u-new Date(Date.UTC(u.getUTCFullYear(),0,1)))/86400000)+1)/7);
-                    s += `<text x="${x1+(x2-x1)/2}" y="${ty+tH-7}" fill="${txt}" font-size="11" font-weight="500" text-anchor="middle">W${wn}</text>`;
-                }
-                d = nd;
-            }
-        }
-
-        // ── Day tier ─────────────────────────────────────────────────────────────
-        if (tiers.includes('day')) {
-            const ty = hTop + tiers.indexOf('day')*tH;
-            let d = new Date(tS); d.setHours(0,0,0,0);
-            while (d < tE) {
-                const nd = new Date(d); nd.setDate(d.getDate()+1);
-                const dx = getX(d);
-                if (dx>=LW && dx<=canvasW-10) {
-                    s += `<line x1="${dx}" y1="${ty}" x2="${dx}" y2="${svgH-10}" stroke="${grid}" stroke-width="1" stroke-dasharray="2 2"/>`;
-                    if ((getX(nd)-dx)>18) s += `<text x="${dx+(getX(nd)-dx)/2}" y="${ty+tH-7}" fill="${txt}" font-size="11" font-weight="600" text-anchor="middle">${d.getDate()}</text>`;
-                }
-                d = nd;
-            }
-        }
-
-        // ── Swimlane bands ───────────────────────────────────────────────────────
-        let rc = 0;
-        Object.keys(lanes).forEach((ln,li) => {
-            const cnt = lanes[ln].length;
-            const topY = hBot + rc*rH;
-            if (li%2===0) s += `<rect x="0" y="${topY}" width="${canvasW}" height="${cnt*rH}" fill="${laneAlt}" opacity=".55"/>`;
-            s += `<line x1="0" y1="${topY}" x2="${canvasW}" y2="${topY}" stroke="${grid}" stroke-width="1.5"/>`;
-            // Sticky label
-            s += `<text x="${LW-10}" y="${topY+18}" fill="${this.config.barColor}" font-size="10" font-weight="700" letter-spacing=".5" text-anchor="end" opacity=".85">${ln.length>14?ln.substring(0,13)+'…':ln}</text>`;
-            rc += cnt;
-        });
-
-        // ── Today line ───────────────────────────────────────────────────────────
-        const todayX = getX(new Date());
-        if (this.config.showTodayLine && todayX>=LW && todayX<=canvasW-10) {
-            s += `<line x1="${todayX}" y1="${hBot}" x2="${todayX}" y2="${svgH-10}" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4 2"/>`;
-            s += `<rect x="${todayX-22}" y="${hBot+3}" width="44" height="18" rx="4" fill="#EF4444"/>`;
-            s += `<text x="${todayX}" y="${hBot+15}" fill="#fff" font-size="9" font-weight="700" text-anchor="middle">TODAY</text>`;
-        }
-
-        // ── Task bars + popup cards ───────────────────────────────────────────────
-        const taskPos = {};
-        rows.forEach(({t,i,ln}, vi) => {
-            const se = new Date(t.start+'T00:00:00');
-            const ee = new Date(t.end+'T00:00:00');
-            const sx = getX(se), ex = getX(ee);
-            const bW = Math.max(ex-sx, 36);
-            const bY = hBot + vi*rH + Math.round((rH-bH)/2);
-            const isMilestone = t.start===t.end;
-            const col = PRI_COL[t.priority] || t.ragColor || this.config.barColor;
-            const progW = bW * ((t.progress||0)/100);
-            const dur = Math.round((ee-se)/86400000);
-            taskPos[t.id] = { cx:sx, cy:bY+bH/2, x2:sx+bW };
-
-            // Connector line card→bar
-            const cardH=78, cardW=Math.max(bW*0.9,170);
-            const cardY = vi%2===0 ? bY-cardH-8 : bY-cardH/2-4;
-            s += `<line x1="${sx+10}" y1="${cardY+cardH}" x2="${sx+10}" y2="${bY}" stroke="${col}" stroke-width="1" opacity=".25"/>`;
-
-            if (isMilestone) {
-                const mx=sx, my=bY+bH/2;
-                s += `<g class="dt-bar" data-i="${i}" data-tip="${t.title} — Milestone — ${t.end}">
-                    <path d="M ${mx} ${my-11} L ${mx+11} ${my} L ${mx} ${my+11} L ${mx-11} ${my} Z"
-                        fill="${col}" filter="url(#dt-sh)" style="cursor:pointer"/>
-                </g>`;
-            } else {
-                s += `<g class="dt-bar ${this.config.enableDragAndDrop?'dt-drag':''}"
-                    data-i="${i}" data-tip="${t.title} · ${dur}d · ${t.progress||0}%" filter="url(#dt-sh)">
-                    <rect x="${sx}" y="${bY}" width="${bW}" height="${bH}" fill="${col}" rx="5"/>
-                    <rect x="${sx}" y="${bY}" width="${progW}" height="${bH}" fill="${this._dim(col,-28)}" rx="5" opacity=".9"/>
-                    <text x="${sx+9}" y="${bY+bH-7}" fill="#fff" font-size="11" font-weight="700"
-                        style="user-select:none;pointer-events:none">${(t.label||'').substring(0,14)}</text>
-                </g>`;
-            }
-
-            // Popup card (foreignObject)
-            const cardBg   = isDark ? '#1E1E2E' : '#FFFFFF';
-            const cardBdr  = isDark ? '#2D2D45' : '#E2E8F0';
-            const cardTxt  = isDark ? '#F1F5F9' : '#0F172A';
-            const cardSub  = isDark ? '#94A3B8' : '#64748B';
-            const pillBg   = col;
-            s += `<foreignObject x="${sx}" y="${cardY}" width="${cardW}" height="${cardH}">
-                <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;padding:2px">
-                    <div style="background:${cardBg};border:1px solid ${cardBdr};border-top:3px solid ${pillBg};
-                        border-radius:8px;padding:9px 11px;box-shadow:0 3px 10px rgba(0,0,0,${isDark?'.3':'.09'});
-                        height:calc(100% - 4px);box-sizing:border-box;overflow:hidden">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;gap:4px">
-                            <span style="font-weight:700;font-size:12px;color:${cardTxt};overflow:hidden;
-                                text-overflow:ellipsis;white-space:nowrap;max-width:110px">${t.title}</span>
-                            ${t.priority?`<span style="font-size:9px;padding:1px 5px;background:${pillBg};
-                                color:#fff;border-radius:3px;font-weight:700;white-space:nowrap">${t.priority}</span>`:''}
-                        </div>
-                        <div style="font-size:11px;color:${cardSub};line-height:1.3;overflow:hidden;
-                            text-overflow:ellipsis;white-space:nowrap">${t.description||''}</div>
-                        ${t.progress>0?`<div style="margin-top:6px;height:4px;background:${isDark?'#2D2D45':'#E2E8F0'};border-radius:2px;overflow:hidden">
-                            <div style="width:${t.progress}%;height:100%;background:${pillBg};border-radius:2px;opacity:.8"></div>
-                        </div>`:''}
-                    </div>
-                </div>
-            </foreignObject>`;
-        });
-
-        // ── Dependency arrows ────────────────────────────────────────────────────
-        this._rawData.forEach(t => {
-            if (t.dependencies && taskPos[t.dependencies] && taskPos[t.id]) {
-                const from = taskPos[t.dependencies], to = taskPos[t.id];
-                if (to.cx >= from.x2) {
-                    const mx = from.x2 + (to.cx-from.x2)/2;
-                    s += `<path d="M ${from.x2} ${from.cy} C ${mx} ${from.cy} ${mx} ${to.cy} ${to.cx} ${to.cy}"
-                        stroke="${this.config.barColor}" stroke-width="1.5" fill="none"
-                        opacity=".55" stroke-dasharray="3 2" marker-end="url(#dt-ar)"/>`;
-                }
-            }
-        });
-
-        s += `</svg></div>`;
-        this.innerHTML = s;
-        this._bindBars();
-        // scroll to today after paint
-        requestAnimationFrame(() => this._scrollToToday());
-    }
-
-    // ── Scroll to today ──────────────────────────────────────────────────────────
-    _scrollToToday() {
-        const w = this.querySelector('.dt-scroll');
-        if (!w || !this.getX) return;
-        const tx = this.getX(new Date());
-        w.scrollTo({ left: tx - w.clientWidth/2, behavior:'smooth' });
-    }
-
-    // ── Event bindings ───────────────────────────────────────────────────────────
-    _bindBars() {
-        this.querySelectorAll('.dt-bar').forEach(el => {
-            const i = parseInt(el.dataset.i);
-            el.addEventListener('mousemove', e => {
-                if (!this._tt) return;
-                this._tt.textContent = el.dataset.tip;
-                this._tt.style.cssText = `opacity:1;top:${e.pageY-14}px;left:${e.pageX}px`;
-            });
-            el.addEventListener('mouseleave', () => { if(this._tt) this._tt.style.opacity='0'; });
-            el.addEventListener('click', () => {
-                if (!this.dragState.wasDrag) this.dispatchEvent(new CustomEvent('task-click',{detail:this._rawData[i],bubbles:true}));
-            });
-            if (this.config.enableDragAndDrop) {
-                el.addEventListener('mousedown', e => {
-                    const sw = this.querySelector('.dt-scroll');
-                    if(this._tt) this._tt.style.opacity='0';
-                    this.dragState = { active:true, wasDrag:false, idx:i, startX:e.clientX,
-                        scrollStart:sw?sw.scrollLeft:0,
-                        origStart:this._rawData[i].start, origEnd:this._rawData[i].end };
-                    window.addEventListener('mousemove', this._boundMM);
-                    window.addEventListener('mouseup', this._boundMU);
-                    e.preventDefault(); e.stopPropagation();
-                });
-            }
-        });
-    }
-
-    _onMouseMove(e) {
-        if (!this.dragState.active) return;
-        const sw = this.querySelector('.dt-scroll');
-        const svg = this.querySelector('.dt-svg');
-        if (!sw || !svg) return;
-        const scale = (this._rawData.length ? svg.getBoundingClientRect().width / svg.viewBox.baseVal.width : 1);
-        const dScroll = sw.scrollLeft - this.dragState.scrollStart;
-        const dx = ((e.clientX - this.dragState.startX) + dScroll) / scale;
-        const snap = d => { if(this.config.snapToGrid) d.setHours(0,0,0,0); return d; };
-        const fmt  = d => d.toISOString().split('T')[0];
-        const t = this._rawData[this.dragState.idx];
-        const origSX = this.getX(new Date(this.dragState.origStart+'T00:00:00'));
-        const origEX = this.getX(new Date(this.dragState.origEnd+'T00:00:00'));
-        t.start = fmt(snap(this.getDate(origSX+dx)));
-        t.end   = fmt(snap(this.getDate(origEX+dx)));
-        this.dragState.wasDrag = true;
-        this.render();
-    }
-
-    _onMouseUp() {
-        window.removeEventListener('mousemove', this._boundMM);
-        window.removeEventListener('mouseup', this._boundMU);
-        if (this.dragState.active) {
-            this.dispatchEvent(new CustomEvent('task-date-change',{detail:this._rawData[this.dragState.idx],bubbles:true}));
-        }
-        this.dragState.active = false;
-        setTimeout(() => { this.dragState.wasDrag = false; }, 60);
-    }
-
-    // ── Bounds calculation ───────────────────────────────────────────────────────
-    _calcBounds(data) {
-        const dates = [];
-        data.forEach(t => {
-            dates.push(new Date(t.start+'T00:00:00'), new Date(t.end+'T00:00:00'));
-        });
-        if (this.config.showTodayLine) dates.push(new Date());
-        const min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates));
-        const pad = this.config.zoomLevel === 'day' || this.config.zoomLevel === 'week';
-        const tS = pad ? new Date(min.getFullYear(),min.getMonth(),min.getDate()-5)
-                       : new Date(min.getFullYear(),min.getMonth(),1);
-        const tE = pad ? new Date(max.getFullYear(),max.getMonth(),max.getDate()+12)
-                       : new Date(max.getFullYear(),max.getMonth()+2,1);
-        this.timelineBounds = { start:tS, end:tE, totalDuration:tE-tS };
-    }
-
-    // ── Styles ───────────────────────────────────────────────────────────────────
-    _injectStyles() {
-        if (document.getElementById('dt-styles-v2')) return;
-        const style = document.createElement('style');
-        style.id = 'dt-styles-v2';
-        style.textContent = `
-            dashboard-timeline { display:block; width:100%; height:100%; }
-            .dt-scroll { width:100%; height:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
-            .dt-svg { display:block; }
-            .dt-bar { cursor:pointer; }
-            .dt-drag { cursor:grab; user-select:none; }
-            .dt-drag:active { cursor:grabbing; }
-            #dt-tooltip-v2 { position:fixed; background:rgba(15,23,42,.92); color:#fff;
-                padding:6px 10px; border-radius:5px; font-size:11px; font-weight:500;
-                pointer-events:none; opacity:0; z-index:99999; white-space:nowrap;
-                box-shadow:0 3px 8px rgba(0,0,0,.25); font-family:inherit; transition:opacity .1s; }
-        `;
-        document.head.appendChild(style);
-    }
-
-    _initTooltip() {
-        let tt = document.getElementById('dt-tooltip-v2');
-        if (!tt) {
-            tt = document.createElement('div');
-            tt.id = 'dt-tooltip-v2';
-            document.body.appendChild(tt);
-        }
-        this._tt = tt;
-    }
-
-    // ── Colour helper ────────────────────────────────────────────────────────────
-    _dim(hex, pct) {
-        if (!hex || !hex.startsWith('#') || hex.length < 7) return hex||'#1A5FCC';
-        const clamp = n => Math.min(255, Math.max(0, Math.round(n*(100+pct)/100)));
-        const R=clamp(parseInt(hex.slice(1,3),16));
-        const G=clamp(parseInt(hex.slice(3,5),16));
-        const B=clamp(parseInt(hex.slice(5,7),16));
-        return '#'+R.toString(16).padStart(2,'0')+G.toString(16).padStart(2,'0')+B.toString(16).padStart(2,'0');
-    }
-}
 
 
 
@@ -5625,7 +4577,11 @@ function renderRisksTable() {
 
   if (!filtered.length) {
     const msgs = { open:'No open risks 🎉', closed:'No closed risks yet', all:'No risks logged yet' };
-    renderEmptyState(container, { icon:'🛡️', title: msgs[risksFilter]||'No risks', subtitle:'Risks added via project Decisions & Actions appear here.' });
+    container.innerHTML = `<div class="risks-empty">
+      <div class="icon">🛡️</div>
+      <h3>${msgs[risksFilter]||'No risks'}</h3>
+      <p>Risks added via project Decisions & Actions appear here</p>
+    </div>`;
     return;
   }
 
@@ -5772,84 +4728,50 @@ async function submitRiskResponse(riskId, projectId) {
 // TOAST
 // ═══════════════════════════════════════════════════════════
 
+
 // ═══════════════════════════════════════════════════════════
 // FRAPPE GANTT
 // ═══════════════════════════════════════════════════════════
 function renderGantt(taskList) {
-  const container = document.getElementById('pv-gantt');
-  if (!container) return;
-  document.getElementById('pv-gantt-range').textContent = '';
-
-  const tasksWithDates = (taskList || []).filter(t =>
-    t.milestoneDate && String(t.milestoneDate).trim() && t.taskName
-  );
-
-  if (!tasksWithDates.length) {
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:13px">📅 No milestone dates — add due dates to tasks.</div>';
-    return;
-  }
-
-  // Map RAG → colour + priority
-  const RAG_COLOR = { Red:'#DC2626', Amber:'#D97706', Green:'#16A34A' };
-
-  // Build unique ID map for dependencies
-  const idMap = {};
-  tasksWithDates.forEach((t, i) => {
-    idMap[t.taskName] = 'dt_' + i + '_' + (t.taskName||'').replace(/[^a-zA-Z0-9]/g,'_').substring(0,10);
+  var c=document.getElementById('pv-gantt'); if(!c)return;
+  var re=document.getElementById('pv-gantt-range'); if(re)re.textContent='';
+  c.style.height='auto';
+  var tasks=(taskList||[]).filter(function(t){return t.milestoneDate&&t.taskName;});
+  if(!tasks.length){c.innerHTML='<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px">No milestone dates set.</div>';return;}
+  var RAG={Red:'#DC2626',Amber:'#D97706',Green:'#16A34A',red:'#DC2626',amber:'#D97706',green:'#16A34A'};
+  var dates=tasks.map(function(t){return new Date(t.milestoneDate+'T00:00:00');});
+  var minD=new Date(Math.min.apply(null,dates)); var maxD=new Date(Math.max.apply(null,dates));
+  minD.setDate(minD.getDate()-3); maxD.setDate(maxD.getDate()+3);
+  var tD=Math.max(7,Math.round((maxD-minD)/86400000)+1);
+  var DW=Math.max(28,Math.min(48,Math.floor(700/tD)));
+  function f(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}
+  var today=new Date();today.setHours(0,0,0,0);
+  var tOff=Math.round((today-minD)/86400000);
+  var ph={};tasks.forEach(function(t){var p=t.phase||'General';if(!ph[p])ph[p]=[];ph[p].push(t);});
+  var phN=Object.keys(ph); var rows='';
+  phN.forEach(function(pn){
+    if(phN.length>1)rows+='<div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:8px 0 4px 180px">'+pn+'</div>';
+    ph[pn].forEach(function(t){
+      var ed=new Date(t.milestoneDate+'T00:00:00');var sd=new Date(ed);sd.setDate(sd.getDate()-7);
+      if(sd<minD)sd=new Date(minD);
+      var sO=Math.round((sd-minD)/86400000);var eO=Math.round((ed-minD)/86400000);
+      var bW=Math.max(DW,(eO-sO+1)*DW);var bL=sO*DW;
+      var col=RAG[t.rag]||'#1A5FCC';var tW=tD*DW;
+      var tl=(tOff>=0&&tOff<=tD)?'<div style="position:absolute;top:0;bottom:0;width:2px;background:#EF4444;opacity:.7;z-index:2;left:'+tOff*DW+'px"></div>':'';
+      var lb=t.taskName.length>28?t.taskName.substring(0,28)+'...':t.taskName;
+      rows+='<div style="display:flex;align-items:center;margin-bottom:6px;min-height:32px">'
+        +'<div style="width:180px;min-width:180px;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px" title="'+t.taskName+'">'+lb+'</div>'
+        +'<div style="flex:1;position:relative;height:32px;display:flex;align-items:center;width:'+tW+'px;min-width:'+tW+'px">'+tl
+          +'<div style="position:absolute;height:22px;border-radius:6px;left:'+bL+'px;width:'+bW+'px;background:'+col+';color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;padding:0 8px;box-shadow:0 2px 6px rgba(0,0,0,.15);overflow:hidden;white-space:nowrap" title="'+t.taskName+' due '+f(ed)+'">'+f(ed)+'</div>'
+        +'</div>'
+      +'</div>';
+    });
   });
-
-  const ganttTasks = tasksWithDates.map((t) => {
-    const endDate   = new Date(t.milestoneDate + 'T00:00:00');
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - 7);
-    const fmt = d => d.toISOString().split('T')[0];
-    const depId = (t.dependsOn && idMap[t.dependsOn]) ? idMap[t.dependsOn] : '';
-    return {
-      id:           idMap[t.taskName],
-      swimlane:     t.phase || 'General',
-      label:        (t.taskName||'').substring(0, 12),
-      title:        t.taskName || '—',
-      description:  t.responsible ? '👤 ' + t.responsible : '',
-      start:        fmt(startDate),
-      end:          fmt(endDate),
-      progress:     parseInt(t.progress) || 0,
-      priority:     t.rag === 'Red' ? 'Critical' : t.rag === 'Amber' ? 'High' : 'Low',
-      ragColor:     RAG_COLOR[t.rag] || '#1A5FCC',
-      dependencies: depId,
-      rag:          t.rag || 'Green',
-      responsible:  t.responsible || '',
-    };
-  });
-
-  // Create or reuse the dashboard-timeline element
-  let el = container.querySelector('dashboard-timeline');
-  if (!el) {
-    el = document.createElement('dashboard-timeline');
-    el.id = 'pv-gantt-el';
-    el.style.width  = '100%';
-    el.style.height = '100%';
-    el.style.display = 'block';
-    container.innerHTML = '';
-    container.appendChild(el);
-  }
-
-  // Set colour before data to avoid double-render
-  el.config = el.config || {};
-  el.config.barColor     = '#1A5FCC';
-  el.config.zoomLevel    = (currentViewMode || 'month').toLowerCase();
-
-  el.data = ganttTasks;
-  ganttInstance = el;
-
-  // Date range label
-  const dates = tasksWithDates.map(t => new Date(t.milestoneDate + 'T00:00:00')).filter(d => !isNaN(d));
-  if (dates.length) {
-    const mn = new Date(Math.min(...dates)), mx = new Date(Math.max(...dates));
-    const rangeEl = document.getElementById('pv-gantt-range');
-    if (rangeEl) rangeEl.textContent =
-      mn.toLocaleDateString('en-GB',{month:'short',year:'numeric'}) + ' – ' +
-      mx.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
-  }
+  var months=[];var cur=new Date(minD);
+  while(cur<=maxD){var mo=cur.getMonth();var cnt=0;var tmp=new Date(cur);while(tmp<=maxD&&tmp.getMonth()===mo){cnt++;tmp.setDate(tmp.getDate()+1);}months.push({l:cur.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}),d:cnt});cur.setMonth(mo+1);cur.setDate(1);}
+  var hdr='<div style="display:flex;margin-bottom:4px;padding-left:180px">'+months.map(function(m){return'<div style="width:'+m.d*DW+'px;font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;text-align:center;border-left:1px solid #F1F5F9;padding:6px 0 4px">'+m.l+'</div>';}).join('')+'</div>';
+  if(re)re.textContent=f(minD)+' - '+f(maxD);
+  c.innerHTML='<div style="padding:0 20px 20px;overflow-x:auto">'+hdr+rows+'</div>';
 }
 
 
@@ -6022,368 +4944,123 @@ function triggerKPICountUp() {
   document.addEventListener('DOMContentLoaded', init);
 })();
 
-
-
-
-
-
-
-// ── FORM VALIDATION ───────────────────────────────────────
-function validateField(el, rules = {}) {
-  const val = el.value.trim();
-  const wrap = el.closest('.field-wrap') || el.parentElement;
-  let errEl = wrap.querySelector('.field-error');
-  if (!errEl) {
-    errEl = document.createElement('div');
-    errEl.className = 'field-error';
-    wrap.appendChild(errEl);
+class NotificationCenter {
+  constructor(o) {
+    this.maxVisible=o.maxVisible||4; this.defaultDur=o.duration||4500;
+    this.soundEnabled=o.soundEnabled!==false; this.queue=[];
+    this.active=new Map(); this.offlineQueue=[]; this.isOffline=!navigator.onLine;
+    this._initDOM(); this._initNetwork();
   }
-
-  let msg = '';
-  if (rules.required && !val)           msg = rules.required === true ? 'This field is required' : rules.required;
-  else if (rules.minLen && val.length < rules.minLen) msg = `Minimum ${rules.minLen} characters`;
-  else if (rules.maxLen && val.length > rules.maxLen) msg = `Maximum ${rules.maxLen} characters`;
-  else if (rules.pattern && !rules.pattern.test(val)) msg = rules.patternMsg || 'Invalid format';
-
-  if (msg) {
-    el.classList.add('invalid'); el.classList.remove('valid');
-    errEl.textContent = msg; errEl.classList.add('show');
-    return false;
+  _initDOM() {
+    var c=document.getElementById('notify-container');
+    if(!c){c=document.createElement('div');c.id='notify-container';c.style.cssText='position:fixed;top:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:360px;width:360px';document.body.appendChild(c);}
+    this.container=c;
   }
-  el.classList.remove('invalid'); el.classList.add('valid');
-  errEl.classList.remove('show');
-  return true;
+  _initNetwork() {
+    var self=this;
+    window.addEventListener('offline',function(){self.isOffline=true;self._display({title:'Connection Lost',message:'Working offline.',type:'warning',isSticky:true},true);});
+    window.addEventListener('online',function(){self.isOffline=false;self._display({title:'Back Online',message:'Connection restored.',type:'success'},true);setTimeout(function(){while(self.offlineQueue.length)self._display(self.offlineQueue.shift(),true);},800);});
+  }
+  _audio(t) {
+    if(!this.soundEnabled)return;
+    try{var ctx=new(window.AudioContext||window.webkitAudioContext)();var o=ctx.createOscillator();var g=ctx.createGain();o.connect(g);g.connect(ctx.destination);if(t==='success'){o.frequency.setValueAtTime(440,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(880,ctx.currentTime+0.1);}else{o.frequency.setValueAtTime(440,ctx.currentTime);}g.gain.setValueAtTime(0.04,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.18);o.start();o.stop(ctx.currentTime+0.2);}catch(e){}
+  }
+  send(config,sys) {
+    var p={title:config.title||'Alert',message:config.message||'',type:config.type||'info',duration:config.duration||this.defaultDur,isSticky:config.isSticky||false,buttons:config.buttons||[]};
+    if(this.isOffline&&!sys){this.offlineQueue.push(p);return;}
+    this._display(p);
+  }
+  _display(p) {
+    var sig=p.title+'|'+p.type;
+    if(this.active.has(sig)){var rec=this.active.get(sig);rec.count++;var b=rec.el.querySelector('.nb');if(b){b.textContent='x'+rec.count;b.style.display='inline-block';}rec.el.style.transform='scale(1.04)';setTimeout(function(){if(rec.el)rec.el.style.transform='scale(1)';},150);this._audio(p.type);return;}
+    if(this.active.size>=this.maxVisible){this.queue.push(p);return;}
+    this._build(p,sig);
+  }
+  _build(p,sig) {
+    this._audio(p.type);
+    var ic={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+    var cl={success:'var(--green)',error:'var(--red)',warning:'var(--amber)',info:'var(--blue)'};
+    var t=document.createElement('div');
+    t.style.cssText='background:var(--white);color:var(--text);padding:12px 36px 12px 16px;border-radius:12px;box-shadow:0 10px 32px rgba(15,30,53,.16);font-size:13px;width:100%;border-left:5px solid '+(cl[p.type]||'var(--blue)')+';position:relative;overflow:hidden;pointer-events:auto;opacity:0;transform:translateX(60px);transition:all 0.3s ease';
+    var bH='';
+    if(p.buttons.length){bH='<div style="display:flex;gap:8px;margin-top:8px">'+p.buttons.map(function(b,i){return'<button data-bi="'+i+'" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">'+b.text+'</button>';}).join('')+'</div>';}
+    t.innerHTML='<button style="position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0">x</button><div style="font-weight:700;font-size:13px;margin-bottom:2px">'+(ic[p.type]||'i')+' '+p.title+'<span class="nb" style="background:var(--text);color:var(--white);font-size:10px;padding:1px 5px;border-radius:8px;display:none;margin-left:4px"></span></div>'+(p.message?'<div style="font-size:12px;color:var(--text-muted);line-height:1.45">'+p.message+'</div>':'')+bH+(!p.isSticky?'<div class="np" style="position:absolute;bottom:0;left:0;height:3px;background:'+(cl[p.type]||'var(--blue)')+'"></div>':'');
+    this.container.appendChild(t); this.active.set(sig,{el:t,count:1});
+    var self=this;
+    p.buttons.forEach(function(b,i){var btn=t.querySelector('[data-bi="'+i+'"]');if(btn)btn.addEventListener('click',function(){b.onClick&&b.onClick();self._remove(t,sig);});});
+    t.querySelector('button').addEventListener('click',function(){self._remove(t,sig);});
+    void t.offsetWidth; t.style.opacity='1'; t.style.transform='translateX(0)';
+    if(!p.isSticky){var pr=t.querySelector('.np');var s=Date.now();var d=p.duration;var s2=this;(function tick(){if(pr)pr.style.width=Math.max(0,100-((Date.now()-s)/d)*100)+'%';if(Date.now()-s<d)requestAnimationFrame(tick);else s2._remove(t,sig);})();}
+  }
+  _remove(t,sig) {
+    t.style.opacity='0'; t.style.transform='translateX(60px)'; this.active.delete(sig);
+    var self=this;
+    setTimeout(function(){t.remove();if(self.queue.length){var n=self.queue.shift();self._build(n,n.title+'|'+n.type);}},300);
+  }
 }
+const notify=new NotificationCenter({maxVisible:4,duration:4500,soundEnabled:false});
+function showToast(msg,type,dur){notify.send({title:{success:'Success',error:'Error',warning:'Warning',info:'Info'}[type]||'Info',message:msg,type:type||'info',duration:dur||4500});}
 
-function validateForm(fields) {
-  return fields.every(([el, rules]) => el ? validateField(el, rules) : true);
-}
-
-// Clear validation on input
-document.addEventListener('input', e => {
-  if (e.target.classList.contains('invalid')) {
-    e.target.classList.remove('invalid');
-    const wrap = e.target.closest('.field-wrap') || e.target.parentElement;
-    const err = wrap && wrap.querySelector('.field-error');
-    if (err) err.classList.remove('show');
-  }
-});
-
-
-// ── CONFIRM DIALOG ────────────────────────────────────────
-(function() {
-  const overlay = document.createElement('div');
-  overlay.id = 'confirm-overlay';
-  overlay.innerHTML = `
-    <div id="confirm-box">
-      <div id="confirm-icon">🗑️</div>
-      <div id="confirm-title">Are you sure?</div>
-      <div id="confirm-msg"></div>
-      <div class="confirm-actions">
-        <button class="btn btn-secondary" id="confirm-cancel">Cancel</button>
-        <button class="btn btn-danger"    id="confirm-ok">Delete</button>
-      </div>
-    </div>`;
-  document.addEventListener('DOMContentLoaded', () => document.body.appendChild(overlay));
-
-  let _resolve = null;
-
-  window.showConfirm = function({ title, msg, okText = 'Delete', icon = '🗑️', danger = true }) {
-    return new Promise(resolve => {
-      _resolve = resolve;
-      document.getElementById('confirm-icon').textContent  = icon;
-      document.getElementById('confirm-title').textContent = title || 'Are you sure?';
-      document.getElementById('confirm-msg').textContent   = msg   || '';
-      const okBtn = document.getElementById('confirm-ok');
-      okBtn.textContent = okText;
-      okBtn.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
-      overlay.classList.add('open');
-    });
-  };
-
-  document.addEventListener('click', e => {
-    if (e.target.id === 'confirm-cancel' || e.target === overlay) {
-      overlay.classList.remove('open');
-      if (_resolve) { _resolve(false); _resolve = null; }
-    }
-    if (e.target.id === 'confirm-ok') {
-      overlay.classList.remove('open');
-      if (_resolve) { _resolve(true); _resolve = null; }
-    }
+var _clFilter='all',_clSearch='',_clEntries=[];
+function setClFilter(f,el){_clFilter=f;document.querySelectorAll('.cl-filter-btn').forEach(function(b){b.classList.remove('active');});if(el)el.classList.add('active');localStorage.setItem('pmo_cl_seen',new Date().toISOString());var badge=document.getElementById('cl-unread-badge');if(badge)badge.style.display='none';_renderChangelog();}
+function _clActionType(a){var s=(a||'').toUpperCase();if(s.includes('DELETE'))return'delete';if(s.includes('ADD')||s.includes('CREATE'))return'add';if(s.includes('UPDATE')||s.includes('EDIT'))return'update';if(s.includes('RAG')||s.includes('STATUS'))return'rag';return'other';}
+function _clToggleDetail(btn,idx){var row=document.getElementById('cl-detail-'+idx);if(!row)return;var open=row.style.display!=='none';row.style.display=open?'none':'table-row';btn.textContent=open?'...':'x';}
+function _renderChangelog(){
+  var listEl=document.getElementById('changelog-list');if(!listEl)return;
+  var entries=_clEntries.filter(function(e){return _clFilter==='all'||_clActionType(e.action)===_clFilter;});
+  if(_clSearch){var q=_clSearch.toLowerCase();entries=entries.filter(function(e){return(e.projectName||'').toLowerCase().includes(q)||(e.user||'').toLowerCase().includes(q)||(e.action||'').toLowerCase().includes(q);});}
+  if(!entries.length){listEl.innerHTML='<div style="text-align:center;padding:60px 24px"><div style="font-size:48px;opacity:.4;margin-bottom:12px">📋</div><p style="font-size:14px;font-weight:700;color:var(--text)">No entries found</p></div>';return;}
+  function fmtT(ts){if(!ts)return'--';try{return new Date(ts).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).replace(',','');}catch(ex){return ts;}}
+  function ago(ts){var s=Math.floor((Date.now()-new Date(ts))/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+  function actBadge(a){var t=_clActionType(a);var lbl={add:'Added',update:'Updated',delete:'Deleted',rag:'RAG',other:a||'Other'};var clrs={add:'background:#DCFCE7;color:#15803D',update:'background:#DBEAFE;color:#1E40AF',delete:'background:#FEE2E2;color:#DC2626',rag:'background:#F3E8FF;color:#7C3AED',other:'background:#F1F5F9;color:#64748B'};return'<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase;'+clrs[t]+'">'+esc(lbl[t])+'</span>';}
+  var lastSeen=localStorage.getItem('pmo_cl_seen')||'1970-01-01';
+  var rows=entries.map(function(e,i){
+    var isNew=e.timestamp>lastSeen;
+    var hasDiff=e.fieldChanged&&e.fieldChanged!=='N/A'&&e.oldValue;
+    var av=typeof nameToColor==='function'?nameToColor(e.user):'#1A5FCC';
+    var ini=esc((e.user||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2));
+    return'<tr'+(isNew?' style="background:#EFF6FF"':'')+'>'
+      +'<td style="padding:10px 14px;font-size:11px;color:var(--text-muted);white-space:nowrap">'+ago(e.timestamp)+'<br><span style="font-size:10px;color:#94A3B8">'+fmtT(e.timestamp)+'</span></td>'
+      +'<td style="padding:10px 14px;font-weight:600;font-size:12px"><span style="width:26px;height:26px;border-radius:50%;background:'+av+';color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:5px;vertical-align:middle">'+ini+'</span>'+esc(e.user)+'</td>'
+      +'<td style="padding:10px 14px">'+actBadge(e.action)+'</td>'
+      +'<td style="padding:10px 14px;font-weight:600;font-size:12px;max-width:180px">'+esc(e.projectName)+(e.sheet?'<div style="font-size:10px;color:var(--text-muted)">'+esc(e.sheet)+'</div>':'')+'</td>'
+      +'<td style="padding:10px 14px;font-size:12px">'+(hasDiff?'<strong style="color:var(--text)">'+esc(e.fieldChanged)+'</strong><div style="margin-top:2px"><span style="color:var(--red);text-decoration:line-through;font-size:11px">'+esc(e.oldValue)+'</span><span style="color:var(--text-muted);margin:0 3px">&rarr;</span><span style="color:var(--green);font-weight:600;font-size:11px">'+esc(e.newValue)+'</span></div>':'<span style="color:var(--text-muted)">'+esc(e.newValue||'--')+'</span>')+'</td>'
+      +'<td style="padding:10px 14px"><button onclick="_clToggleDetail(this,'+i+')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px">...</button></td>'
+      +'</tr>'
+      +'<tr id="cl-detail-'+i+'" style="display:none"><td colspan="6" style="background:#F8FAFC;padding:10px 14px;font-size:12px;color:var(--text-muted)">'+esc(e.action)+' | '+esc(e.fieldChanged||'--')+' | '+esc(e.oldValue||'--')+' &rarr; '+esc(e.newValue||'--')+' | '+fmtT(e.timestamp)+'</td></tr>';
   });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) {
-      overlay.classList.remove('open');
-      if (_resolve) { _resolve(false); _resolve = null; }
-    }
-    if (e.key === 'Enter' && overlay.classList.contains('open')) {
-      overlay.classList.remove('open');
-      if (_resolve) { _resolve(true); _resolve = null; }
-    }
-  });
-})();
-
-
-// ── EMPTY STATES ──────────────────────────────────────────
-function renderEmptyState(container, { icon, title, subtitle, action, actionFn }) {
-  if (!container) return;
-  container.innerHTML = `
-    <div style="text-align:center;padding:60px 24px;animation:fadeSlideUp .3s ease both">
-      <div style="font-size:52px;margin-bottom:16px;opacity:.6">${icon}</div>
-      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">${title}</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:${action?'20px':'0'};max-width:280px;margin-left:auto;margin-right:auto;line-height:1.5">${subtitle}</div>
-      ${action ? `<button class="btn btn-primary" onclick="${actionFn||''}">${action}</button>` : ''}
-    </div>`;
+  listEl.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#F8FAFC;border-bottom:2px solid var(--border)"><th style="padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;text-align:left">When</th><th style="padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;text-align:left">Who</th><th style="padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;text-align:left">Action</th><th style="padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;text-align:left">Project</th><th style="padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;color:#94A3B8;text-align:left">What Changed</th><th></th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
 }
-
-
-// ── SEARCH HIGHLIGHT ──────────────────────────────────────
-function highlightMatch(text, term) {
-  if (!term || !text) return esc(text || '');
-  const safe = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return String(text).replace(new RegExp(`(${safe})`, 'gi'),
-    '<mark style="background:#FEF08A;color:var(--text);border-radius:2px;padding:0 2px">$1</mark>');
-}
-
-
-// ── AVATAR COLORS ─────────────────────────────────────────
-function nameToColor(name) {
-  const colors = ['#1A5FCC','#16A34A','#D97706','#7C3AED','#DC2626',
-                  '#0D7377','#C2410C','#0369A1','#15803D','#7E22CE'];
-  let hash = 0;
-  for (const ch of (name||'?')) hash = ch.charCodeAt(0) + ((hash<<5) - hash);
-  return colors[Math.abs(hash) % colors.length];
-}
-
-
-// ── DARK MODE ─────────────────────────────────────────────
-(function() {
-  const btn = document.createElement('button');
-  btn.id = 'dark-toggle';
-  btn.title = 'Toggle dark mode';
-
-  function apply(dark) {
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    btn.textContent = dark ? '☀️' : '🌙';
-    localStorage.setItem('pmo_theme', dark ? 'dark' : 'light');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.body.appendChild(btn);
-    const saved = localStorage.getItem('pmo_theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    apply(saved ? saved === 'dark' : prefersDark);
-  });
-
-  btn.addEventListener('click', () => {
-    apply(document.documentElement.getAttribute('data-theme') !== 'dark');
-  });
-})();
-
-
-// ── NOTIFICATION CENTER ───────────────────────────────────
-const _notifs = [];
-let _notifOpen = false;
-let _unreadCount = 0;
-
-function addNotification(msg, type = 'info') {
-  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️', save:'💾', delete:'🗑️' };
-  _notifs.unshift({ msg, type, icon: icons[type]||'ℹ️', time: new Date(), read: false });
-  if (_notifs.length > 50) _notifs.pop();
-  _unreadCount++;
-  _renderNotifs();
-  const dot = document.getElementById('notif-dot');
-  const lbl = document.getElementById('notif-count-label');
-  if (dot) dot.style.display = 'block';
-  if (lbl) { lbl.style.display = _unreadCount > 0 ? 'inline' : 'none'; lbl.textContent = _unreadCount > 9 ? '9+' : _unreadCount; }
-}
-
-function _renderNotifs() {
-  const list = document.getElementById('notif-list-inner');
-  if (!list) return;
-  if (!_notifs.length) {
-    list.innerHTML = '<div class="notif-empty">🔔 No notifications yet</div>';
-    return;
-  }
-  list.innerHTML = _notifs.slice(0,20).map((n,i) => {
-    const ago = _timeAgoNotif(n.time);
-    return `<div class="notif-item ${n.read?'':'unread'}">
-      <div class="notif-icon">${n.icon}</div>
-      <div><div class="notif-text">${n.msg}</div><div class="notif-time">${ago}</div></div>
-    </div>`;
-  }).join('');
-}
-
-function _timeAgoNotif(d) {
-  const s = Math.floor((Date.now()-d)/1000);
-  if (s<60) return 'just now'; if (s<3600) return Math.floor(s/60)+'m ago';
-  if (s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago';
-}
-
-function toggleNotifPanel() {
-  _notifOpen = !_notifOpen;
-  const panel = document.getElementById('notif-panel');
-  if (panel) panel.classList.toggle('open', _notifOpen);
-  if (_notifOpen) {
-    _notifs.forEach(n => n.read = true);
-    _unreadCount = 0;
-    const dot = document.getElementById('notif-dot');
-    const lbl2 = document.getElementById('notif-count-label');
-    if (dot) dot.style.display = 'none';
-    if (lbl2) lbl2.style.display = 'none';
-    _renderNotifs();
+async function loadChangelog(limit){
+  limit=limit||200;
+  var listEl=document.getElementById('changelog-list');if(!listEl)return;
+  listEl.innerHTML='<div style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</div>';
+  try{
+    var raw=await sbFetch('changelog?select=*&order=changed_at.desc&limit='+limit);
+    _clEntries=(raw||[]).map(function(e){return{id:e.id,timestamp:e.changed_at,user:e.changed_by||'Admin',action:e.action||'',projectName:e.project_name||'--',sheet:e.category||'',fieldChanged:e.field_changed||'',oldValue:e.old_value||'',newValue:e.new_value||''};});
+    var lastSeen=localStorage.getItem('pmo_cl_seen')||'1970-01-01';
+    var unread=_clEntries.filter(function(e){return e.timestamp>lastSeen;}).length;
+    var badge=document.getElementById('cl-unread-badge');if(badge){badge.textContent=unread;badge.style.display=unread>0?'inline-flex':'none';}
+    _renderChangelog();
+  }catch(e){
+    if(listEl)listEl.innerHTML='<div style="padding:40px;text-align:center;color:var(--red)">Failed: '+e.message+'</div>';
+    notify.send({title:'Changelog Error',message:e.message,type:'error',isSticky:true});
   }
 }
 
-// Patch showToast to also add to notification center
-const _origShowToast = showToast;
-
-// Init notification button in topbar
-document.addEventListener('DOMContentLoaded', () => {
-  const panel = document.createElement('div');
-  panel.id = 'notif-panel';
-  panel.innerHTML = `
-    <div class="notif-header">
-      <h4>🔔 Notifications</h4>
-      <button class="notif-clear" onclick="_notifs.length=0;_renderNotifs()">Clear all</button>
-    </div>
-    <div class="notif-list" id="notif-list-inner">
-      <div class="notif-empty">🔔 No notifications yet</div>
-    </div>`;
-  document.body.appendChild(panel);
-
-  // Close on outside click
-  document.addEventListener('click', e => {
-    if (_notifOpen && !panel.contains(e.target) && e.target.id !== 'notif-btn')
-      toggleNotifPanel();
-  });
-});
+function validateField(el,rules){if(!el)return true;var val=el.value.trim();var wrap=el.closest('.field-wrap')||el.parentElement;var eEl=wrap&&wrap.querySelector('.field-error');if(!eEl&&wrap){eEl=document.createElement('div');eEl.className='field-error';eEl.style.cssText='color:var(--red);font-size:11px;font-weight:600;margin-top:4px;display:none';wrap.appendChild(eEl);}var msg='';if(rules.required&&!val)msg=rules.required===true?'This field is required':rules.required;else if(rules.minLen&&val.length<rules.minLen)msg='Min '+rules.minLen+' chars';if(msg){if(eEl){eEl.textContent=msg;eEl.style.display='block';}el.style.borderColor='var(--red)';return false;}if(eEl)eEl.style.display='none';el.style.borderColor='';return true;}
+function validateForm(fields){return fields.every(function(pair){return pair[0]?validateField(pair[0],pair[1]):true;});}
+function renderEmptyState(cont,opts){if(!cont)return;cont.innerHTML='<div style="text-align:center;padding:60px 24px"><div style="font-size:52px;opacity:.6;margin-bottom:16px">'+(opts.icon||'📋')+'</div><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">'+(opts.title||'Nothing here')+'</div><div style="font-size:13px;color:var(--text-muted);margin-bottom:'+(opts.action?'20px':'0')+';max-width:280px;margin-left:auto;margin-right:auto">'+(opts.subtitle||'')+'</div>'+(opts.action?'<button class="btn btn-primary" onclick="'+(opts.actionFn||'')+'">'+(opts.action)+'</button>':'')+'</div>';}
+function highlightMatch(text,term){if(!term||!text)return esc(text||'');var safe=term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return String(text).replace(new RegExp('('+safe+')','gi'),'<mark style="background:#FEF08A;color:var(--text);border-radius:2px;padding:0 2px">$1</mark>');}
+function nameToColor(name){var colors=['#1A5FCC','#16A34A','#D97706','#7C3AED','#DC2626','#0D7377','#C2410C','#0369A1'];var hash=0;for(var i=0;i<(name||'?').length;i++)hash=((name||'?').charCodeAt(i)+((hash<<5)-hash));return colors[Math.abs(hash)%colors.length];}
 
 
-// ── ONBOARDING TOOLTIPS ───────────────────────────────────
-const COACH_MARKS = {
-  'add-btn':       { title:'Add Project',  text:'Click here to add a new project to this category.', pos:'bottom' },
-  'global-search': { title:'Search',       text:'Search across all projects by name, owner, or status.', pos:'bottom' },
-  'rag-section':   { title:'RAG Status',   text:'Red=Critical, Amber=At Risk, Green=On Track.', pos:'top' },
-  'sb-risks':      { title:'Risks',        text:'Track and respond to project risks here.', pos:'right' },
-  'dark-toggle':   { title:'Dark Mode',    text:'Toggle between light and dark theme.', pos:'top' },
-};
 
-function showCoachMark(elId) {
-  const el = document.getElementById(elId);
-  const cfg = COACH_MARKS[elId];
-  if (!el || !cfg) return;
-  const shown = JSON.parse(localStorage.getItem('pmo_coach')||'{}');
-  if (shown[elId]) return;
+(function(){var btn=document.createElement('button');btn.id='dark-toggle';btn.title='Toggle dark mode';btn.style.cssText='position:fixed;bottom:28px;left:28px;z-index:8000;width:40px;height:40px;border-radius:50%;background:var(--white);border:1px solid var(--border);box-shadow:0 4px 12px rgba(0,0,0,.12);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s ease';function apply(dark){document.documentElement.setAttribute('data-theme',dark?'dark':'light');btn.textContent=dark?'☀️':'🌙';localStorage.setItem('pmo_theme',dark?'dark':'light');}document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(btn);var saved=localStorage.getItem('pmo_theme');var pd=window.matchMedia('(prefers-color-scheme:dark)').matches;apply(saved?saved==='dark':pd);});btn.addEventListener('click',function(){apply(document.documentElement.getAttribute('data-theme')!=='dark');});})();
 
-  const rect = el.getBoundingClientRect();
-  const mark = document.createElement('div');
-  mark.className = 'coach-mark ' + (cfg.pos||'bottom');
-  mark.innerHTML = `<span class="coach-close" onclick="dismissCoach('${elId}',this.parentElement)">✕</span><strong>${cfg.title}</strong>${cfg.text}`;
-  mark.style.top  = (rect.bottom + window.scrollY + 8) + 'px';
-  mark.style.left = (rect.left  + window.scrollX) + 'px';
-  document.body.appendChild(mark);
-}
-
-function dismissCoach(id, el) {
-  el && el.remove();
-  const shown = JSON.parse(localStorage.getItem('pmo_coach')||'{}');
-  shown[id] = true;
-  localStorage.setItem('pmo_coach', JSON.stringify(shown));
-}
-
-function runOnboarding() {
-  const shown = JSON.parse(localStorage.getItem('pmo_coach')||'{}');
-  if (Object.keys(shown).length > 3) return; // already seen most
-  setTimeout(() => {
-    Object.keys(COACH_MARKS).forEach((id, i) =>
-      setTimeout(() => showCoachMark(id), i * 800)
-    );
-  }, 1500);
-}
-
-
-// ── MOBILE SWIPE GESTURES ────────────────────────────────
-function enableSwipeActions(containerSelector, onSwipeLeft, onSwipeRight) {
-  document.addEventListener('touchstart', e => {
-    const card = e.target.closest(containerSelector);
-    if (!card) return;
-    card._touchStartX = e.touches[0].clientX;
-    card._touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  document.addEventListener('touchend', e => {
-    const card = e.target.closest(containerSelector);
-    if (!card || card._touchStartX === undefined) return;
-    const dx = e.changedTouches[0].clientX - card._touchStartX;
-    const dy = e.changedTouches[0].clientY - card._touchStartY;
-    if (Math.abs(dx) < Math.abs(dy) || Math.abs(dx) < 50) return;
-    if (dx < -50 && onSwipeLeft)  onSwipeLeft(card);
-    if (dx >  50 && onSwipeRight) onSwipeRight(card);
-    delete card._touchStartX;
-  }, { passive: true });
-}
-
-
-// Enable swipe on project cards
-document.addEventListener('DOMContentLoaded', () => {
-  enableSwipeActions('.project-card',
-    card => { /* swipe left = quick edit */ const name = card.dataset.name; if(name && typeof openEditModal==='function') openEditModal(name); },
-    card => { /* swipe right = mark progress */ showToast('Swipe right to update progress — coming soon', 'info'); }
-  );
-});
-
-(function() {
-  function showHint(msg) {
-    var el = document.getElementById('kb-hint');
-    if (!el) return;
-    el.innerHTML = msg; el.style.display = 'block';
-    clearTimeout(el._t);
-    el._t = setTimeout(function() { el.style.display = 'none'; }, 2000);
-  }
-  document.addEventListener('keydown', function(e) {
-    var tag = (e.target.tagName||'').toLowerCase();
-    var inInput = tag==='input'||tag==='textarea'||tag==='select';
-    if (inInput) {
-      if ((e.ctrlKey||e.metaKey) && e.key==='s') {
-        e.preventDefault();
-        var sb=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');
-        if (sb) { sb.click(); showHint('<kbd>Ctrl+S</kbd> Saving...'); }
-      }
-      return;
-    }
-    var anyModal = document.querySelector('.adv-modal.open')||document.querySelector('.modal-overlay.open');
-    if (anyModal && e.key!=='Escape' && !(e.ctrlKey&&e.key==='s')) return;
-    if (e.key==='/') {
-      e.preventDefault();
-      var s=document.getElementById('kb-search-input');
-      if (s) { s.focus(); s.select(); showHint('<kbd>/</kbd> Search focused'); }
-    } else if ((e.key==='r'||e.key==='R') && !e.ctrlKey && !e.metaKey) {
-      loadData(true);
-      showHint('<kbd>R</kbd> Refreshing...');
-    } else if (e.key==='n'||e.key==='N') {
-      openAddProjectModal();
-      showHint('<kbd>N</kbd> New project');
-    } else if (e.key==='c'||e.key==='C') {
-      if (typeof switchTab==='function') { switchTab('changelog'); showHint('<kbd>C</kbd> Changelog'); }
-    } else if (e.key==='d'||e.key==='D') {
-      var btn=document.getElementById('dark-toggle');
-      if (btn) { btn.click(); showHint('<kbd>D</kbd> Dark mode toggled'); }
-    } else if (e.key==='Escape') {
-      var ov=document.querySelector('.modal-overlay.open'); if (ov) { ov.classList.remove('open'); return; }
-      var adv=document.querySelector('.adv-modal.open'); if (adv) { adv.classList.remove('open'); return; }
-      var pv=document.getElementById('proj-view'); var bb=document.querySelector('.back-btn');
-      if (pv&&pv.classList.contains('active')&&bb) { bb.click(); showHint('<kbd>Esc</kbd> Back'); }
-    } else if (e.key==='?') {
-      showHint('<kbd>/</kbd> Search &nbsp;|&nbsp; <kbd>N</kbd> New project &nbsp;|&nbsp; <kbd>C</kbd> Changelog &nbsp;|&nbsp; <kbd>R</kbd> Refresh &nbsp;|&nbsp; <kbd>D</kbd> Dark mode &nbsp;|&nbsp; <kbd>Esc</kbd> Close &nbsp;|&nbsp; <kbd>Ctrl+S</kbd> Save &nbsp;|&nbsp; <kbd>?</kbd> Help');
-    } else if ((e.ctrlKey||e.metaKey) && e.key==='s') {
-      e.preventDefault();
-      var sb2=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');
-      if (sb2) { sb2.click(); showHint('<kbd>Ctrl+S</kbd> Saving...'); }
-      else { var pv2=document.getElementById('proj-view'); if(pv2&&pv2.classList.contains('active')) { saveProject(); showHint('<kbd>Ctrl+S</kbd> Saving...'); } }
-    }
-  });
-})();
+(function(){var overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;background:rgba(15,30,53,.5);backdrop-filter:blur(4px);z-index:99998;display:none;align-items:center;justify-content:center';overlay.innerHTML='<div style="background:var(--white);border-radius:16px;padding:28px 28px 24px;max-width:400px;width:90%;box-shadow:0 32px 80px rgba(15,30,53,.24);text-align:center"><div id="cfm-icon" style="font-size:36px;margin-bottom:12px"></div><div id="cfm-title" style="font-size:17px;font-weight:700;margin-bottom:8px"></div><div id="cfm-msg" style="font-size:13px;color:var(--text-muted);margin-bottom:24px"></div><div style="display:flex;gap:10px;justify-content:center"><button class="btn btn-secondary" id="cfm-cancel">Cancel</button><button class="btn btn-danger" id="cfm-ok">Delete</button></div></div>';document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(overlay);});var _res=null;window.showConfirm=function(opts){return new Promise(function(resolve){_res=resolve;document.getElementById('cfm-icon').textContent=opts.icon||'🗑️';document.getElementById('cfm-title').textContent=opts.title||'Are you sure?';document.getElementById('cfm-msg').textContent=opts.msg||'';var ok=document.getElementById('cfm-ok');ok.textContent=opts.okText||'Delete';ok.className='btn '+(opts.danger===false?'btn-primary':'btn-danger');overlay.style.display='flex';});};document.addEventListener('click',function(e){if(e.target.id==='cfm-cancel'||e.target===overlay){overlay.style.display='none';if(_res){_res(false);_res=null;}}if(e.target.id==='cfm-ok'){overlay.style.display='none';if(_res){_res(true);_res=null;}}});document.addEventListener('keydown',function(e){if(overlay.style.display!=='flex')return;if(e.key==='Escape'){overlay.style.display='none';if(_res){_res(false);_res=null;}}if(e.key==='Enter'){overlay.style.display='none';if(_res){_res(true);_res=null;}}});})();
+(function(){function showHint(msg){var el=document.getElementById('kb-hint');if(!el)return;el.innerHTML=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},2000);}document.addEventListener('keydown',function(e){var tag=(e.target.tagName||'').toLowerCase();var inInput=tag==='input'||tag==='textarea'||tag==='select';if(inInput){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb){sb.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}}return;}var anyModal=document.querySelector('.adv-modal.open')||document.querySelector('.modal-overlay.open');if(anyModal&&e.key!=='Escape'&&!(e.ctrlKey&&e.key==='s'))return;if(e.key==='/'){e.preventDefault();var s=document.getElementById('kb-search-input');if(s){s.focus();s.select();showHint('<kbd>/</kbd> Search');}}else if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey){loadData(true);showHint('<kbd>R</kbd> Refreshing...');}else if(e.key==='n'||e.key==='N'){openAddProjectModal();showHint('<kbd>N</kbd> New project');}else if(e.key==='c'||e.key==='C'){if(typeof switchTab==='function'){switchTab('changelog');showHint('<kbd>C</kbd> Changelog');}}else if(e.key==='d'||e.key==='D'){var btn=document.getElementById('dark-toggle');if(btn){btn.click();showHint('<kbd>D</kbd> Dark mode');}}else if(e.key==='Escape'){var ov=document.querySelector('.modal-overlay.open');if(ov){ov.classList.remove('open');return;}var adv=document.querySelector('.adv-modal.open');if(adv){adv.classList.remove('open');return;}var pv=document.getElementById('proj-view');var bb=document.querySelector('.back-btn');if(pv&&pv.classList.contains('active')&&bb){bb.click();showHint('<kbd>Esc</kbd> Back');}}else if(e.key==='?'){showHint('<kbd>/</kbd> Search | <kbd>N</kbd> New | <kbd>R</kbd> Refresh | <kbd>C</kbd> Changelog | <kbd>D</kbd> Dark | <kbd>Ctrl+S</kbd> Save');}else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb2=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb2){sb2.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}else{var pv2=document.getElementById('proj-view');if(pv2&&pv2.classList.contains('active')){saveProject();showHint('<kbd>Ctrl+S</kbd> Saving...');}}}});})();
 </script>
+<div id="kb-hint" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,30,53,.92);color:#fff;border-radius:10px;padding:10px 18px;font-size:12px;display:none;z-index:99998;backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap"></div>
 </body>
 </html>
