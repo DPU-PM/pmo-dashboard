@@ -3167,17 +3167,17 @@ function renderTaskRow(t, ph, ti) {
 
   return `<tr id="task-row-${esc(ph)}-${ti}">
     <td><input class="task-inline-input" style="min-width:120px" value="${esc(t.taskName||'')}"
-      onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','taskName',this.value)"
+      oninput="updateTask('${esc(ph)}','${esc(t.taskName||'')}','taskName',this.value,${ti})"
       placeholder="Task name" /></td>
     <td><input class="task-inline-input" style="max-width:90px" value="${esc(t.responsible||'')}"
-      onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','responsible',this.value)"
+      oninput="updateTask('${esc(ph)}','${esc(t.taskName||'')}','responsible',this.value,${ti})"
       placeholder="Owner" /></td>
     <td><input class="task-inline-input" style="max-width:48px;text-align:center" type="number"
       min="0" max="100" value="${t.progress||0}"
-      onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','progress',this.value);updateProgressDisplay()"
+      oninput="updateTask('${esc(ph)}','${esc(t.taskName||'')}','progress',this.value);updateProgressDisplay()"
       placeholder="%" /></td>
     <td><input class="task-inline-input" type="date" value="${t.milestoneDate||''}"
-      onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','milestoneDate',this.value)" /></td>
+      onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','milestoneDate',this.value,${ti})" /></td>
     <td>
       <select class="task-inline-select" onchange="updateTask('${esc(ph)}','${esc(t.taskName||'')}','rag',this.value)">
         <option value="Green" ${t.rag==='Green'?'selected':''}>🟢</option>
@@ -3252,8 +3252,10 @@ function addTask(phaseName) {
   }, 100);
 }
 
-function updateTask(phase, oldName, field, value) {
-  const idx = currentTasks.findIndex(t => t.phase === phase && t.taskName === oldName);
+function updateTask(phase, oldName, field, value, rowIdx) {
+  const idx_ = currentTasks.findIndex(t => t.phase === phase && t.taskName === oldName);
+  let idx = idx_;
+  if (idx === -1 && rowIdx !== undefined) { const pts = currentTasks.filter(t => (t.phase||'General') === (phase||'General') && t.taskType !== 'project'); if (pts[rowIdx]) idx = currentTasks.indexOf(pts[rowIdx]); }
   if (idx > -1) {
     currentTasks[idx] = { ...currentTasks[idx], [field]: value };
   }
@@ -3683,6 +3685,7 @@ async function openProjectView(sheetKey, projectName) {
 }
 
 function closeProjectView() {
+  window.scrollTo({top:0,behavior:"smooth"});
   ganttInstance = null; currentViewMode = 'Month';
   document.getElementById('proj-view').classList.remove('active');
   document.getElementById('tab-projects').style.display = '';
@@ -3748,7 +3751,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   if (done)   chips += `<span class="summary-chip chip-done">✅ ${done} Completed</span>`;
   if (inprog) chips += `<span class="summary-chip chip-prog">🔵 ${inprog} In Progress</span>`;
   if (todo)   chips += `<span class="summary-chip chip-todo">⬜ ${todo} Not Started</span>`;
-  if (late)   chips += `<span class="summary-chip chip-late">⚠️ ${late} Overdue</span>`;
+  if (late)   chips += `<span class="summary-chip chip-late" style="cursor:pointer;text-decoration:underline dotted" title="Click to jump to overdue tasks" onclick="_scrollToOverdueTasks()">⚠️ ${late} Overdue</span>`;
   document.getElementById('pv-summary-chips').innerHTML = chips;
 
   // Comment banner
@@ -4156,7 +4159,7 @@ function renderResourceWorkload() {
       // Show up to 5 task chips
       const chips = data.tasks.slice(0,5).map(t => {
         const cls = t.rag==='Red'?'red':t.rag==='Amber'?'amber':'';
-        return `<span class="res-task-chip ${cls}" title="${esc(t.projectName)}">${esc(t.taskName.length>20?t.taskName.substring(0,19)+'…':t.taskName)}</span>`;
+        return `<span class="res-task-chip ${cls}" style="cursor:pointer" title="${esc(t.projectName)}" onclick="openProjectView('','${esc(t.projectName)}');setTimeout(function(){_scrollToTask('${esc(t.taskName)}');},600)">${esc(t.taskName.length>20?t.taskName.substring(0,19)+'…':t.taskName)}</span>`;
       }).join('') + (data.tasks.length>5?`<span class="res-task-chip">+${data.tasks.length-5} more</span>`:'');
 
       return `<div class="resource-row">
@@ -4224,10 +4227,10 @@ function renderMilestoneSlippage(containerId, projects) {
           const slipCls = s.daysSlip > 14 ? 'major' : s.daysSlip > 0 ? 'minor' : 'on-time';
           const slipLabel = s.daysSlip > 0 ? `+${s.daysSlip}d late` : s.daysSlip === 0 ? 'Due today' : `${Math.abs(s.daysSlip)}d left`;
           const pct = s.progress;
-          return `<tr>
+          return `<tr style="cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(26,95,204,.07)'" onmouseout="this.style.background=''" onclick="openProjectView('','${esc(s.projectName)}');setTimeout(function(){_scrollToTask('${esc(s.taskName)}');},600)" title="Click to view this task">
             <td>
               <div class="slip-project">${esc(s.projectName)}</div>
-              <div class="slip-task">${esc(s.taskName)}</div>
+              <div class="slip-task">${esc(s.taskName)} →</div>
             </td>
             <td style="font-size:12px;color:var(--text-muted)">${esc(s.dueDate)}</td>
             <td><span class="slip-days ${slipCls}">${slipLabel}</span></td>
@@ -4417,7 +4420,7 @@ function renderSteeringCommittee() {
         </div>
       </div>
       ${p.comment?`<div class="ep-comment">💬 ${esc(p.comment)}</div>`:''}
-      ${tasksDue.length?`<div class="ep-meta">⚠️ ${tasksDue.length} overdue task${tasksDue.length!==1?'s':''}</div>`:''}
+      ${tasksDue.length?`<div class="ep-meta" style="cursor:pointer" onclick="openProjectView('${esc(p.sheetKey||p.sheetName||'')}','${esc(p.projectName)}');setTimeout(_scrollToOverdueTasks,600)" title="View overdue tasks">⚠️ ${tasksDue.length} overdue task${tasksDue.length!==1?'s':''} — view →</div>`:''}
     </div>`;
   }).join('');
 }
@@ -5059,7 +5062,7 @@ function nameToColor(name){var colors=['#1A5FCC','#16A34A','#D97706','#7C3AED','
 (function(){var btn=document.createElement('button');btn.id='dark-toggle';btn.title='Toggle dark mode';btn.style.cssText='position:fixed;bottom:28px;left:28px;z-index:8000;width:40px;height:40px;border-radius:50%;background:var(--white);border:1px solid var(--border);box-shadow:0 4px 12px rgba(0,0,0,.12);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s ease';function apply(dark){document.documentElement.setAttribute('data-theme',dark?'dark':'light');btn.textContent=dark?'☀️':'🌙';localStorage.setItem('pmo_theme',dark?'dark':'light');}document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(btn);var saved=localStorage.getItem('pmo_theme');var pd=window.matchMedia('(prefers-color-scheme:dark)').matches;apply(saved?saved==='dark':pd);});btn.addEventListener('click',function(){apply(document.documentElement.getAttribute('data-theme')!=='dark');});})();
 
 (function(){var overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;background:rgba(15,30,53,.5);backdrop-filter:blur(4px);z-index:99998;display:none;align-items:center;justify-content:center';overlay.innerHTML='<div style="background:var(--white);border-radius:16px;padding:28px 28px 24px;max-width:400px;width:90%;box-shadow:0 32px 80px rgba(15,30,53,.24);text-align:center"><div id="cfm-icon" style="font-size:36px;margin-bottom:12px"></div><div id="cfm-title" style="font-size:17px;font-weight:700;margin-bottom:8px"></div><div id="cfm-msg" style="font-size:13px;color:var(--text-muted);margin-bottom:24px"></div><div style="display:flex;gap:10px;justify-content:center"><button class="btn btn-secondary" id="cfm-cancel">Cancel</button><button class="btn btn-danger" id="cfm-ok">Delete</button></div></div>';document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(overlay);});var _res=null;window.showConfirm=function(opts){return new Promise(function(resolve){_res=resolve;document.getElementById('cfm-icon').textContent=opts.icon||'🗑️';document.getElementById('cfm-title').textContent=opts.title||'Are you sure?';document.getElementById('cfm-msg').textContent=opts.msg||'';var ok=document.getElementById('cfm-ok');ok.textContent=opts.okText||'Delete';ok.className='btn '+(opts.danger===false?'btn-primary':'btn-danger');overlay.style.display='flex';});};document.addEventListener('click',function(e){if(e.target.id==='cfm-cancel'||e.target===overlay){overlay.style.display='none';if(_res){_res(false);_res=null;}}if(e.target.id==='cfm-ok'){overlay.style.display='none';if(_res){_res(true);_res=null;}}});document.addEventListener('keydown',function(e){if(overlay.style.display!=='flex')return;if(e.key==='Escape'){overlay.style.display='none';if(_res){_res(false);_res=null;}}if(e.key==='Enter'){overlay.style.display='none';if(_res){_res(true);_res=null;}}});})();
-(function(){function showHint(msg){var el=document.getElementById('kb-hint');if(!el)return;el.innerHTML=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},2000);}document.addEventListener('keydown',function(e){var tag=(e.target.tagName||'').toLowerCase();var inInput=tag==='input'||tag==='textarea'||tag==='select';if(inInput){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb){sb.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}}return;}var anyModal=document.querySelector('.adv-modal.open')||document.querySelector('.modal-overlay.open');if(anyModal&&e.key!=='Escape'&&!(e.ctrlKey&&e.key==='s'))return;if(e.key==='/'){e.preventDefault();var s=document.getElementById('kb-search-input');if(s){s.focus();s.select();showHint('<kbd>/</kbd> Search');}}else if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey){loadData(true);showHint('<kbd>R</kbd> Refreshing...');}else if(e.key==='n'||e.key==='N'){openAddProjectModal();showHint('<kbd>N</kbd> New project');}else if(e.key==='c'||e.key==='C'){if(typeof switchTab==='function'){switchTab('changelog');showHint('<kbd>C</kbd> Changelog');}}else if(e.key==='d'||e.key==='D'){var btn=document.getElementById('dark-toggle');if(btn){btn.click();showHint('<kbd>D</kbd> Dark mode');}}else if(e.key==='Escape'){var ov=document.querySelector('.modal-overlay.open');if(ov){ov.classList.remove('open');return;}var adv=document.querySelector('.adv-modal.open');if(adv){adv.classList.remove('open');return;}var pv=document.getElementById('proj-view');var bb=document.querySelector('.back-btn');if(pv&&pv.classList.contains('active')&&bb){bb.click();showHint('<kbd>Esc</kbd> Back');}}else if(e.key==='?'){showHint('<kbd>/</kbd> Search | <kbd>N</kbd> New | <kbd>R</kbd> Refresh | <kbd>C</kbd> Changelog | <kbd>D</kbd> Dark | <kbd>Ctrl+S</kbd> Save');}else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb2=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb2){sb2.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}else{var pv2=document.getElementById('proj-view');if(pv2&&pv2.classList.contains('active')){saveProject();showHint('<kbd>Ctrl+S</kbd> Saving...');}}}});})();
+(function(){function showHint(msg){var el=document.getElementById('kb-hint');if(!el)return;el.innerHTML=msg;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(function(){el.style.display='none';},2000);}document.addEventListener('keydown',function(e){var tag=(e.target.tagName||'').toLowerCase();var inInput=tag==='input'||tag==='textarea'||tag==='select';if(inInput){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb){sb.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}}return;}var anyModal=document.querySelector('.adv-modal.open')||document.querySelector('.modal-overlay.open');if(anyModal&&e.key!=='Escape'&&!(e.ctrlKey&&e.key==='s'))return;if(e.key==='Escape'){var _pv=document.getElementById('proj-view');if(_pv&&_pv.classList.contains('active')&&!anyModal){closeProjectView();return;}}if(e.key==='/'){e.preventDefault();var s=document.getElementById('kb-search-input');if(s){s.focus();s.select();showHint('<kbd>/</kbd> Search');}}else if((e.key==='r'||e.key==='R')&&!e.ctrlKey&&!e.metaKey){loadData(true);showHint('<kbd>R</kbd> Refreshing...');}else if(e.key==='n'||e.key==='N'){openAddProjectModal();showHint('<kbd>N</kbd> New project');}else if(e.key==='c'||e.key==='C'){if(typeof switchTab==='function'){switchTab('changelog');showHint('<kbd>C</kbd> Changelog');}}else if(e.key==='d'||e.key==='D'){var btn=document.getElementById('dark-toggle');if(btn){btn.click();showHint('<kbd>D</kbd> Dark mode');}}else if(e.key==='Escape'){var ov=document.querySelector('.modal-overlay.open');if(ov){ov.classList.remove('open');return;}var adv=document.querySelector('.adv-modal.open');if(adv){adv.classList.remove('open');return;}var pv=document.getElementById('proj-view');var bb=document.querySelector('.back-btn');if(pv&&pv.classList.contains('active')&&bb){bb.click();showHint('<kbd>Esc</kbd> Back');}}else if(e.key==='?'){showHint('<kbd>/</kbd> Search | <kbd>N</kbd> New | <kbd>R</kbd> Refresh | <kbd>C</kbd> Changelog | <kbd>D</kbd> Dark | <kbd>Ctrl+S</kbd> Save');}else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();var sb2=document.querySelector('.adv-modal.open .btn-primary')||document.querySelector('.modal-overlay.open .btn-primary');if(sb2){sb2.click();showHint('<kbd>Ctrl+S</kbd> Saving...');}else{var pv2=document.getElementById('proj-view');if(pv2&&pv2.classList.contains('active')){saveProject();showHint('<kbd>Ctrl+S</kbd> Saving...');}}}});})();
 </script>
 <div id="kb-hint" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,30,53,.92);color:#fff;border-radius:10px;padding:10px 18px;font-size:12px;display:none;z-index:99998;backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap"></div>
 </body>

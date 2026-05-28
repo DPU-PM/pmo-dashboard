@@ -1927,6 +1927,7 @@ function openProjectView(sheetKey, projectName) {
 }
 
 function closeProjectView() {
+  window.scrollTo({top:0,behavior:"smooth"});
   ganttInstance = null; currentViewMode = 'Month';
   document.getElementById('proj-view').classList.remove('active');
   document.getElementById('hero-section').style.display = '';
@@ -1975,7 +1976,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   if (done)   chips += `<span class="summary-chip chip-done">✅ ${done} Completed</span>`;
   if (inprog) chips += `<span class="summary-chip chip-prog">🔵 ${inprog} In Progress</span>`;
   if (todo)   chips += `<span class="summary-chip chip-todo">⬜ ${todo} Not Started</span>`;
-  if (late)   chips += `<span class="summary-chip chip-late">⚠️ ${late} Overdue</span>`;
+  if (late)   chips += `<span class="summary-chip chip-late" style="cursor:pointer;text-decoration:underline dotted" title="Click to jump to overdue tasks" onclick="_scrollToOverdueTasks()">⚠️ ${late} Overdue</span>`;
   if (proj.comment) chips += `<div style="width:100%;background:#FFFBEB;border:1px solid #FEF08A;border-radius:6px;padding:8px 14px;font-size:12px;color:#854D0E;margin-top:4px">💬 ${esc(proj.comment)}</div>`;
   document.getElementById('pv-summary-chips').innerHTML = chips;
 }

@@ -2508,13 +2508,13 @@ function taskRow(t, ph) {
   ].join('');
   return `<tr>
     <td><input class="task-inline-input" value="${esc(t.taskName||'')}" style="min-width:110px"
-      onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','taskName',this.value)" placeholder="Task name"/></td>
+      oninput="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','taskName',this.value,${ti})" placeholder="Task name"/></td>
     <td><input class="task-inline-input" value="${esc(t.responsible||'')}" style="max-width:90px"
-      onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','responsible',this.value)" placeholder="Owner"/></td>
+      oninput="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','responsible',this.value,${ti})" placeholder="Owner"/></td>
     <td><input class="task-inline-input" type="number" min="0" max="100" value="${t.progress||0}" style="max-width:48px;text-align:center"
-      onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','progress',this.value);updateProgressDisplay()" /></td>
+      oninput="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','progress',this.value);updateProgressDisplay()" /></td>
     <td><input class="task-inline-input" type="date" value="${t.milestoneDate||''}"
-      onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','milestoneDate',this.value)" /></td>
+      onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','milestoneDate',this.value,${ti})" /></td>
     <td><select class="task-inline-select" onchange="updateTaskField('${esc(ph)}','${esc(t.taskName||'')}','rag',this.value)">
       <option value="Green" ${t.rag==='Green'?'selected':''}>🟢</option>
       <option value="Amber" ${t.rag==='Amber'?'selected':''}>🟡</option>
@@ -2565,8 +2565,10 @@ function addTask(phase) {
   }, 80);
 }
 
-function updateTaskField(phase, oldName, field, value) {
-  const idx = currentTasks.findIndex(t => t.phase === phase && t.taskName === oldName);
+function updateTaskField(phase, oldName, field, value, rowIdx) {
+  const idx_ = currentTasks.findIndex(t => t.phase === phase && t.taskName === oldName);
+  let idx = idx_;
+  if (idx === -1 && rowIdx !== undefined) { const pts = currentTasks.filter(t => (t.phase||'General') === (phase||'General') && t.taskType !== 'project'); if (pts[rowIdx]) idx = currentTasks.indexOf(pts[rowIdx]); }
   if (idx > -1) currentTasks[idx] = {...currentTasks[idx], [field]: value};
   if (field === 'progress') updateProgressDisplay();
 }
@@ -2737,6 +2739,7 @@ async function openProjectView(sheetKey, projectName) {
 }
 
 function closeProjectView() {
+  window.scrollTo({top:0,behavior:"smooth"});
   ganttInstance = null; currentViewMode = 'Month';
   document.getElementById('proj-view').classList.remove('active');
   const projListEl2 = document.getElementById('projects-wrap') || document.getElementById('tab-projects');
@@ -2803,7 +2806,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   if (done)   chips += `<span class="summary-chip chip-done">✅ ${done} Completed</span>`;
   if (inprog) chips += `<span class="summary-chip chip-prog">🔵 ${inprog} In Progress</span>`;
   if (todo)   chips += `<span class="summary-chip chip-todo">⬜ ${todo} Not Started</span>`;
-  if (late)   chips += `<span class="summary-chip chip-late">⚠️ ${late} Overdue</span>`;
+  if (late)   chips += `<span class="summary-chip chip-late" style="cursor:pointer;text-decoration:underline dotted" title="Click to jump to overdue tasks" onclick="_scrollToOverdueTasks()">⚠️ ${late} Overdue</span>`;
   (document.getElementById('pv-summary-chips')||{innerHTML:''}).innerHTML = chips;
 
   // Comment banner
