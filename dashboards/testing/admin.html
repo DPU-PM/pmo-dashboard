@@ -5546,7 +5546,7 @@ async function loadComments(projectId, projectName, containerId) {
   var notes = [];
   try {
     notes = projectId
-      ? await sbFetch('notes?project_id=eq.'+projectId+'&note_type=eq.comment&select=*&order=created_at.desc&limit=50')
+      ? await sbFetch('notes?project_id=eq.'+projectId+'&note_type=eq.info&select=*&order=created_at.desc&limit=50')
       : [];
   } catch(e) { notes = []; }
   _renderComments(notes, el);
@@ -5569,10 +5569,10 @@ function _renderComments(notes, el) {
       '<div style="width:32px;height:32px;border-radius:50%;background:'+avatar+';color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+ini+'</div>' +
       '<div style="flex:1">' +
         '<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:4px">' +
-          '<span style="font-size:13px;font-weight:700;color:var(--text)">'+esc(n.created_by||'Admin')+'</span>' +
+          '<span style="font-size:13px;font-weight:700;color:var(--text)">'+esc(n.author||'Admin')+'</span>' +
           '<span style="font-size:11px;color:var(--text-muted)">'+ago+'</span>' +
         '</div>' +
-        '<div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap">'+esc(n.note_text||n.content||'')+'</div>' +
+        '<div style="font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap">'+esc(n.content||'')+'</div>' +
       '</div>' +
     '</div>';
   }).join('') : '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px">No comments yet — be the first to add one</div>';
@@ -5586,7 +5586,7 @@ async function _submitComment() {
   inp.disabled = true;
   try {
     var adminUser = localStorage.getItem('pmo_admin_user') || 'Admin';
-    var payload = { project_id: _commentProjectId, project_name: _commentProjectName, note_type: 'comment', note_text: text, created_by: adminUser };
+    var payload = { project_id: _commentProjectId, note_type: 'info', content: text, author: adminUser };
     await sbFetch('notes', { method:'POST', body:JSON.stringify(payload) });
     inp.value = '';
     await loadComments(_commentProjectId, _commentProjectName, 'pv-comments');
@@ -5621,7 +5621,7 @@ async function loadAuditTimeline(projectId, projectName, containerId) {
       projectId ? sbFetch('rag_history?project_id=eq.'+projectId+'&select=*&order=changed_at.asc&limit=20') : Promise.resolve([])
     ]);
     (cl||[]).forEach(function(r){items.push({ts:r.changed_at||r.created_at,type:'change',icon:'📝',label:(r.action||'Change')+': '+esc(r.field_changed||''),by:r.changed_by||'Admin',detail:r.old_value&&r.new_value?esc(r.old_value)+' → '+esc(r.new_value):'',color:'var(--blue)'});});
-    (notes||[]).forEach(function(r){var nt=r.note_type||'note';var icons={comment:'💬',action:'✅',decision:'🎯',risk:'⚠️'};items.push({ts:r.created_at,type:nt,icon:icons[nt]||'📌',label:(nt.charAt(0).toUpperCase()+nt.slice(1))+': '+esc((r.note_text||r.content||'').slice(0,80)),by:r.created_by||'Admin',detail:'',color:nt==='risk'?'var(--red)':nt==='comment'?'var(--green)':'var(--amber)'});});
+    (notes||[]).forEach(function(r){var nt=r.note_type||'note';var icons={comment:'💬',action:'✅',decision:'🎯',risk:'⚠️'};items.push({ts:r.created_at,type:nt,icon:icons[nt]||'📌',label:(nt.charAt(0).toUpperCase()+nt.slice(1))+': '+esc((r.content||'').slice(0,80)),by:r.author||'Admin',detail:'',color:nt==='risk'?'var(--red)':nt==='comment'?'var(--green)':'var(--amber)'});});
     (rag||[]).forEach(function(r){var colors={Red:'var(--red)',Amber:'var(--amber)',Green:'var(--green)'};items.push({ts:r.changed_at,type:'rag',icon:'🔴',label:'RAG changed to '+esc(r.new_rag||''),by:r.changed_by||'System',detail:r.old_rag?'from '+esc(r.old_rag):'',color:colors[r.new_rag]||'var(--text-muted)'});});
   } catch(e) { el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted)">Could not load audit data</div>'; return; }
   items.sort(function(a,b){return new Date(b.ts)-new Date(a.ts);});
@@ -5654,7 +5654,7 @@ async function loadApprovals(projectId, projectName, containerId) {
   var approvals = [];
   try {
     approvals = projectId
-      ? (await sbFetch('notes?project_id=eq.'+projectId+'&note_type=eq.approval&select=*&order=created_at.desc&limit=20') || [])
+      ? (await sbFetch('notes?project_id=eq.'+projectId+'&note_type=eq.action&select=*&order=created_at.desc&limit=20') || [])
       : [];
   } catch(e) { approvals = []; }
   var adminUser = localStorage.getItem('pmo_admin_user') || 'Admin';
@@ -5667,11 +5667,11 @@ async function loadApprovals(projectId, projectName, containerId) {
   };
 
   var listHtml = approvals.length ? approvals.map(function(a) {
-    var data = {}; try { data = JSON.parse(a.note_text||'{}'); } catch(e) {}
+    var data = {}; try { data = JSON.parse(a.content||'{}'); } catch(e) {}
     return '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg)">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
         '<div><div style="font-size:13px;font-weight:700;color:var(--text)">'+esc(data.title||'Approval Request')+'</div>' +
-          '<div style="font-size:11px;color:var(--text-muted)">Requested by '+esc(a.created_by||'Admin')+' · '+_timeAgoShort(a.created_at)+'</div></div>' +
+          '<div style="font-size:11px;color:var(--text-muted)">Requested by '+esc(a.author||'Admin')+' · '+_timeAgoShort(a.created_at)+'</div></div>' +
         statusBadge(data.status) +
       '</div>' +
       (data.description?'<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">'+esc(data.description)+'</div>':'') +
@@ -5701,7 +5701,7 @@ async function _submitApproval(projectId, projectName) {
   var desc  = (document.getElementById('appr-desc')||{}).value || '';
   var adminUser = localStorage.getItem('pmo_admin_user') || 'Admin';
   try {
-    await sbFetch('notes', { method:'POST', body: JSON.stringify({ project_id: projectId, project_name: projectName, note_type:'approval', note_text: JSON.stringify({ title:title, description:desc, status:'pending' }), created_by: adminUser }) });
+    await sbFetch('notes', { method:'POST', body: JSON.stringify({ project_id: projectId, note_type:'action', content: JSON.stringify({ _type:'approval', title:title, description:desc, status:'pending' }), author: adminUser }) });
     await loadApprovals(projectId, projectName, 'pv-approvals');
     if(typeof notify!=='undefined') notify.send({title:'Request submitted',message:title,type:'success'});
   } catch(e) { if(typeof notify!=='undefined') notify.send({title:'Error',message:e.message,type:'error'}); }
@@ -5711,9 +5711,9 @@ async function _approvalAction(noteId, newStatus, projectId, projectName) {
   try {
     var note = (await sbFetch('notes?id=eq.'+noteId+'&select=*') || [])[0];
     if (!note) return;
-    var data = {}; try { data = JSON.parse(note.note_text||'{}'); } catch(e) {}
+    var data = {}; try { data = JSON.parse(note.content||'{}'); } catch(e) {}
     data.status = newStatus;
-    await sbFetch('notes?id=eq.'+noteId, { method:'PATCH', body: JSON.stringify({ note_text: JSON.stringify(data) }) });
+    await sbFetch('notes?id=eq.'+noteId, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(data) }) });
     await loadApprovals(projectId, projectName, 'pv-approvals');
     if(typeof notify!=='undefined') notify.send({title:'Request '+newStatus,type:newStatus==='approved'?'success':'warning'});
   } catch(e) { if(typeof notify!=='undefined') notify.send({title:'Error',message:e.message,type:'error'}); }
