@@ -1333,6 +1333,7 @@ kbd {
   </div>
   <div class="topbar-right">
     <span class="last-updated" id="last-updated"></span>
+    <div style="position:relative;display:inline-flex;align-items:center;margin-right:8px" title="Pending approval requests" id="appr-bell-wrap"><span style="font-size:18px;cursor:default">🔔</span><span id="appr-pending-badge" style="display:none;position:absolute;top:-4px;right:-6px;background:#DC2626;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;font-weight:700;align-items:center;justify-content:center;line-height:16px;text-align:center;padding:0 3px;box-sizing:border-box">0</span></div>
     <div class="user-dropdown-wrap">
       <div class="user-chip" onclick="toggleUserDropdown()" id="user-chip">
         <div class="user-av" id="u-av">?</div>
@@ -1501,6 +1502,15 @@ kbd {
         <span id="pv-phase-count" style="font-size:12px;color:var(--text-muted)"></span>
       </div>
       <div class="timeline-body" id="pv-timeline"></div>
+    </div>
+  </div>
+
+    <!-- APPROVALS SECTION -->
+    <div class="chart-card" style="margin-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+        <h3 style="margin:0;font-size:14px;font-weight:700">✅ Approval Requests</h3>
+      </div>
+      <div style="padding:16px"><div id="pv-approvals"></div></div>
     </div>
   </div>
 
@@ -4042,6 +4052,192 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+
+// ═══════════════════════════════════════════════════════════════
+// APPROVAL REQUESTS — Team Dashboard
+// ═══════════════════════════════════════════════════════════════
+
+// Poll for pending approvals and show badge
+async function _checkApprovalBadge() {
+  try {
+    var all = getAllProjects();
+    var myProjects = all.filter(function(p) {
+      return currentUser && p.responsible &&
+        p.responsible.toLowerCase().trim() === currentUser.name.toLowerCase().trim();
+    });
+    if (!myProjects.length) return;
+    var total = 0;
+    for (var i = 0; i < myProjects.length; i++) {
+      var p = myProjects[i];
+      if (!p.id) continue;
+      var items = await sbFetch(
+        'notes?project_id=eq.' + p.id +
+        '&note_type=eq.action&select=id,content'
+      ) || [];
+      items.forEach(function(n) {
+        try {
+          var d = JSON.parse(n.content || '{}');
+          if (d._type === 'approval' && d.status === 'pending') total++;
+        } catch(e) {}
+      });
+    }
+    var badge = document.getElementById('appr-pending-badge');
+    if (badge) {
+      badge.textContent = total;
+      badge.style.display = total > 0 ? 'inline-flex' : 'none';
+    }
+  } catch(e) {}
+}
+
+// Load approvals in project view (team — can create, can approve if responsible)
+async function loadApprovalsTeam(projectId, projectName, containerId) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:14px;color:var(--text-muted);font-size:12px">Loading...</div>';
+
+  var approvals = [];
+  try {
+    approvals = projectId
+      ? (await sbFetch(
+          'notes?project_id=eq.' + projectId +
+          '&note_type=eq.action&select=*&order=created_at.desc&limit=30'
+        ) || []).filter(function(n) {
+          try { var d = JSON.parse(n.content||'{}'); return d._type === 'approval'; }
+          catch(e) { return false; }
+        })
+      : [];
+  } catch(e) { approvals = []; }
+
+  var isResponsible = false;
+  try {
+    var all = getAllProjects();
+    var proj = all.find(function(p) { return p.projectName === projectName; });
+    isResponsible = proj && currentUser &&
+      (proj.responsible||'').toLowerCase().trim() === currentUser.name.toLowerCase().trim();
+  } catch(e) {}
+
+  var statusBadge = function(s) {
+    var styles = {
+      pending:  'background:#FEF3C7;color:#92400E',
+      approved: 'background:#DCFCE7;color:#166534',
+      rejected: 'background:#FEE2E2;color:#991B1B'
+    };
+    return '<span style="' + (styles[s]||styles.pending) + ';padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase">' + esc(s||'pending') + '</span>';
+  };
+
+  var listHtml = approvals.length ? approvals.map(function(a) {
+    var data = {}; try { data = JSON.parse(a.content||'{}'); } catch(e) {}
+    var canAct = isResponsible && data.status === 'pending';
+    return '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--bg)">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text)">' + esc(data.title||'Request') + '</div>' +
+          '<div style="font-size:11px;color:var(--text-muted)">By ' + esc(a.author||'Team') + ' · ' + _timeAgoShort(a.created_at) + '</div>' +
+        '</div>' +
+        statusBadge(data.status) +
+      '</div>' +
+      (data.description ? '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">' + esc(data.description) + '</div>' : '') +
+      (data.rejectionReason ? '<div style="font-size:12px;color:var(--red);margin-bottom:8px;padding:8px;background:rgba(220,38,38,.07);border-radius:6px">❌ Reason: ' + esc(data.rejectionReason) + '</div>' : '') +
+      (canAct ?
+        '<div style="display:flex;gap:8px;margin-top:8px">' +
+          '<button class="btn btn-sm" style="background:var(--green);color:#fff;font-size:11px" onclick="_teamApprovalAction(\'' + a.id + '\',\'approved\',\'' + esc(projectId||'') + '\',\'' + esc(projectName) + '\',\'\')">✅ Approve</button>' +
+          '<button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:11px" onclick="_teamRejectPrompt(\'' + a.id + '\',\'' + esc(projectId||'') + '\',\'' + esc(projectName) + '\')">❌ Reject</button>' +
+        '</div>'
+      : '') +
+    '</div>';
+  }).join('') : '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">No approval requests yet</div>';
+
+  // Create form — anyone logged in can submit
+  var formHtml =
+    '<details style="margin-bottom:12px" id="appr-form-details">' +
+      '<summary style="cursor:pointer;font-size:13px;font-weight:700;color:var(--blue);padding:8px 0;list-style:none">＋ New Approval Request</summary>' +
+      '<div style="padding:12px;border:1px solid var(--border);border-radius:8px;margin-top:8px;background:var(--white)">' +
+        '<input id="team-appr-title" placeholder="Title *" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;font-family:inherit;margin-bottom:8px;background:var(--white);color:var(--text);box-sizing:border-box"/>' +
+        '<textarea id="team-appr-desc" placeholder="Description (optional)" rows="2" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;font-family:inherit;resize:vertical;margin-bottom:8px;background:var(--white);color:var(--text);box-sizing:border-box"></textarea>' +
+        '<button class="btn btn-primary btn-sm" onclick="_teamSubmitApproval(\'' + esc(projectId||'') + '\',\'' + esc(projectName) + '\')">Submit Request</button>' +
+      '</div>' +
+    '</details>';
+
+  el.innerHTML = formHtml + listHtml;
+}
+
+async function _teamSubmitApproval(projectId, projectName) {
+  var titleEl = document.getElementById('team-appr-title');
+  var descEl  = document.getElementById('team-appr-desc');
+  var title = titleEl ? titleEl.value.trim() : '';
+  if (!title) { if(typeof notify!=='undefined') notify.send({title:'Title required',type:'warning'}); return; }
+  var desc = descEl ? descEl.value.trim() : '';
+  var author = currentUser ? currentUser.name : 'Team Member';
+  try {
+    await sbFetch('notes', { method:'POST', body: JSON.stringify({
+      project_id: projectId || null,
+      note_type: 'action',
+      content: JSON.stringify({ _type:'approval', title:title, description:desc, status:'pending', submittedBy:author }),
+      author: author
+    })});
+    if(typeof notify!=='undefined') notify.send({title:'Request submitted',message:title,type:'success'});
+    var details = document.getElementById('appr-form-details');
+    if (details) details.removeAttribute('open');
+    await loadApprovalsTeam(projectId, projectName, 'pv-approvals');
+    _checkApprovalBadge();
+  } catch(e) {
+    if(typeof notify!=='undefined') notify.send({title:'Error',message:e.message,type:'error'});
+  }
+}
+
+async function _teamApprovalAction(noteId, newStatus, projectId, projectName, reason) {
+  try {
+    var notes = await sbFetch('notes?id=eq.' + noteId + '&select=*') || [];
+    var note = notes[0]; if (!note) return;
+    var data = {}; try { data = JSON.parse(note.content||'{}'); } catch(e) {}
+    data.status = newStatus;
+    data.actedBy = currentUser ? currentUser.name : 'Team';
+    data.actedAt = new Date().toISOString();
+    if (reason) data.rejectionReason = reason;
+    await sbFetch('notes?id=eq.' + noteId, {
+      method: 'PATCH',
+      body: JSON.stringify({ content: JSON.stringify(data) })
+    });
+    // Post rejection comment
+    if (newStatus === 'rejected' && projectId) {
+      var commentText = '❌ Approval request "' + (data.title||'Request') + '" was rejected' +
+        (reason ? ': ' + reason : '') + ' — by ' + (currentUser ? currentUser.name : 'Team');
+      await sbFetch('notes', { method:'POST', body: JSON.stringify({
+        project_id: projectId,
+        note_type: 'info',
+        content: commentText,
+        author: currentUser ? currentUser.name : 'Team'
+      })});
+    }
+    if(typeof notify!=='undefined') notify.send({title:'Request '+newStatus, type:newStatus==='approved'?'success':'warning'});
+    await loadApprovalsTeam(projectId, projectName, 'pv-approvals');
+    _checkApprovalBadge();
+  } catch(e) {
+    if(typeof notify!=='undefined') notify.send({title:'Error',message:e.message,type:'error'});
+  }
+}
+
+function _teamRejectPrompt(noteId, projectId, projectName) {
+  var reason = prompt('Reason for rejection (optional):') || '';
+  _teamApprovalAction(noteId, 'rejected', projectId, projectName, reason);
+}
+
+// Wire into openProjectView — extend it after it runs
+var _origTeamOpenProjectView = openProjectView;
+openProjectView = async function(sheetKey, projectName) {
+  await _origTeamOpenProjectView(sheetKey, projectName);
+  setTimeout(async function() {
+    var apprEl = document.getElementById('pv-approvals');
+    if (!apprEl) return;
+    var pid = null;
+    try {
+      var all = getAllProjects();
+      var pobj = all.find(function(p){ return p.projectName === projectName; });
+      if (pobj) pid = pobj.id || null;
+    } catch(e) {}
+    await loadApprovalsTeam(pid, projectName, 'pv-approvals');
+  }, 400);
+};
 </script>
 </body>
 </html>
