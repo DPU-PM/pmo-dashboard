@@ -1711,7 +1711,7 @@ input:focus, textarea:focus, select:focus {
       <div class="avatar">PM</div>
       <span>Admin</span>
     </div>
-    <button onclick="startTour()" title="Guided tour" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:#8BAAC4;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:6px">🎯 Tour</button><button onclick="_openCmdK()" title="Command palette (Ctrl+K)" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:#8BAAC4;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:6px">⌘K</button><button class="logout-btn" onclick="doAdminLogout()">Sign out</button>
+    <div style="position:relative;display:inline-flex;align-items:center;margin-right:6px" title="Pending approvals"><span style="font-size:18px;cursor:pointer" onclick="switchTab('projects')">🔔</span><span id="appr-pending-badge" style="display:none;position:absolute;top:-4px;right:-6px;background:#DC2626;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;font-weight:700;align-items:center;justify-content:center;line-height:16px;text-align:center;padding:0 3px;box-sizing:border-box">0</span></div><button onclick="startTour()" title="Guided tour" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:#8BAAC4;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:6px">🎯 Tour</button><button onclick="_openCmdK()" title="Command palette (Ctrl+K)" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:#8BAAC4;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:6px">⌘K</button><button class="logout-btn" onclick="doAdminLogout()">Sign out</button>
   </div>
 </div>
 
@@ -2906,6 +2906,7 @@ function loadDemoData() {
 function renderAll() {
   renderKPIs();
   if (typeof renderSavedViews === 'function') renderSavedViews();
+  if (typeof _checkAdminApprovalBadge === 'function') _checkAdminApprovalBadge();
   if (typeof _applyKpiVisibility === 'function') _applyKpiVisibility();
   renderProjects();
   updateSidebar();
@@ -5714,7 +5715,20 @@ async function _approvalAction(noteId, newStatus, projectId, projectName) {
     var data = {}; try { data = JSON.parse(note.content||'{}'); } catch(e) {}
     data.status = newStatus;
     await sbFetch('notes?id=eq.'+noteId, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(data) }) });
+    // Post rejection comment so team can see reason
+    if (newStatus === 'rejected' && projectId) {
+      var reason = prompt('Reason for rejection (optional):') || '';
+      if (reason) data.rejectionReason = reason;
+      await sbFetch('notes?id=eq.'+noteId, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(data) }) });
+      var commentText = '\u274C Approval request "' + (data.title||'Request') + '" was rejected' +
+        (reason ? ': ' + reason : '') + ' \u2014 by Admin';
+      await sbFetch('notes', { method:'POST', body: JSON.stringify({
+        project_id: projectId, note_type: 'info',
+        content: commentText, author: 'Admin'
+      })});
+    }
     await loadApprovals(projectId, projectName, 'pv-approvals');
+    if (typeof loadComments === 'function') loadComments(projectId, projectName, 'pv-comments');
     if(typeof notify!=='undefined') notify.send({title:'Request '+newStatus,type:newStatus==='approved'?'success':'warning'});
   } catch(e) { if(typeof notify!=='undefined') notify.send({title:'Error',message:e.message,type:'error'}); }
 }
@@ -5871,6 +5885,18 @@ openProjectView = async function(sheetKey, projectName) {
     if (apprEl) loadApprovals(pid, projectName, 'pv-approvals');
   }, 400);
 };
+
+async function _checkAdminApprovalBadge() {
+  try {
+    var items = await sbFetch('notes?note_type=eq.action&select=id,content&limit=200') || [];
+    var pending = items.filter(function(n) {
+      try { var d = JSON.parse(n.content||'{}'); return d._type==='approval' && d.status==='pending'; }
+      catch(e) { return false; }
+    }).length;
+    var badge = document.getElementById('appr-pending-badge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline-flex' : 'none'; }
+  } catch(e) {}
+}
 </script>
 <div id="kb-hint" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,30,53,.92);color:#fff;border-radius:10px;padding:10px 18px;font-size:12px;display:none;z-index:99998;backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap"></div>
 </body>
