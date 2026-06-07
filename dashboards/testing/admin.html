@@ -1670,6 +1670,92 @@ input:focus, textarea:focus, select:focus {
 [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea { background:#0D1829 !important;color:var(--text) !important; }
 #dark-toggle:hover { transform:scale(1.1) !important; }
 
+
+  /* ── BUDGET TAB ─────────────────────────────────────────── */
+  .budget-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:24px; }
+  .budget-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+  .budget-card .bc-name { font-size:13px; font-weight:700; color:var(--text); margin-bottom:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .budget-card .bc-row { display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:5px; }
+  .budget-card .bc-row span:last-child { font-weight:600; color:var(--text); }
+  .budget-bar-wrap { background:#F1F5F9; border-radius:99px; height:8px; margin:10px 0 6px; overflow:hidden; }
+  .budget-bar-fill { height:100%; border-radius:99px; transition:width .4s; }
+  .budget-bar-fill.under { background:var(--green); }
+  .budget-bar-fill.warn  { background:var(--amber); }
+  .budget-bar-fill.over  { background:var(--red); }
+  .budget-pct-label { font-size:11px; font-weight:700; }
+  .budget-pct-label.under { color:var(--green); }
+  .budget-pct-label.warn  { color:var(--amber); }
+  .budget-pct-label.over  { color:var(--red); }
+  .budget-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .budget-kpi { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; box-shadow:var(--shadow); }
+  .budget-kpi .bk-label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .budget-kpi .bk-value { font-size:22px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--navy); }
+  .budget-kpi .bk-sub   { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .budget-edit-inline { display:flex; gap:6px; align-items:center; }
+  .budget-edit-inline input { width:110px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; }
+  .no-budget-banner { background:var(--amber-bg); border:1px solid #FDE68A; border-radius:var(--radius); padding:14px 18px; font-size:13px; color:#92400E; margin-bottom:20px; }
+
+  /* ── ISSUES TAB ─────────────────────────────────────────── */
+  .issues-table { width:100%; border-collapse:collapse; }
+  .issues-table th { background:#F8FAFC; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); padding:10px 12px; text-align:left; border-bottom:2px solid var(--border); }
+  .issues-table td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+  .issues-table tr:hover td { background:#F8FAFC; }
+  .priority-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:700; }
+  .priority-badge.critical { background:#FEE2E2; color:#DC2626; }
+  .priority-badge.high     { background:#FED7AA; color:#C2410C; }
+  .priority-badge.medium   { background:#FEF3C7; color:#D97706; }
+  .priority-badge.low      { background:#DCFCE7; color:#16A34A; }
+  .issue-status-badge { display:inline-flex; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:600; }
+  .issue-status-badge.open        { background:#DBEAFE; color:#1D4ED8; }
+  .issue-status-badge.in-progress { background:#FEF3C7; color:#D97706; }
+  .issue-status-badge.closed      { background:#DCFCE7; color:#16A34A; }
+  .issue-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9100; display:flex; align-items:center; justify-content:center; }
+  .issue-modal { background:var(--white); border-radius:var(--radius-lg); width:100%; max-width:540px; box-shadow:var(--shadow-lg); overflow:hidden; }
+  .issue-modal-header { background:var(--navy); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .issue-modal-header h3 { font-size:15px; font-weight:600; }
+  .issue-modal-body { padding:20px; }
+  .issue-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+
+  /* ── LESSONS TAB ─────────────────────────────────────────── */
+  .lessons-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+  .lesson-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+  .lesson-card .lc-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .lesson-cat-badge { display:inline-flex; padding:2px 8px; border-radius:99px; font-size:11px; font-weight:700; }
+  .lesson-cat-badge.process   { background:#DBEAFE; color:#1D4ED8; }
+  .lesson-cat-badge.technical { background:#F3E8FF; color:#7C3AED; }
+  .lesson-cat-badge.people    { background:#DCFCE7; color:#16A34A; }
+  .lesson-cat-badge.comms     { background:#FEF3C7; color:#D97706; }
+  .lesson-card .lc-project { font-size:11px; color:var(--text-muted); margin-bottom:8px; }
+  .lesson-card .lc-section { font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; margin-top:10px; }
+  .lesson-card .lc-text { font-size:13px; color:var(--text); line-height:1.5; }
+  .lesson-card .lc-footer { margin-top:12px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); }
+  .lesson-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9200; display:flex; align-items:center; justify-content:center; }
+  .lesson-modal { background:var(--white); border-radius:var(--radius-lg); width:100%; max-width:560px; box-shadow:var(--shadow-lg); overflow:hidden; }
+  .lesson-modal-header { background:var(--navy); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+
+  /* ── RACI MATRIX ─────────────────────────────────────────── */
+  .raci-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:20px; overflow:hidden; }
+  .raci-card-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .raci-card-header h3 { font-size:14px; font-weight:700; }
+  .raci-table-wrap { overflow-x:auto; }
+  .raci-table { width:100%; border-collapse:collapse; min-width:400px; }
+  .raci-table th { background:#F8FAFC; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); padding:9px 12px; text-align:left; border-bottom:2px solid var(--border); }
+  .raci-table td { padding:9px 12px; border-bottom:1px solid var(--border); font-size:12px; vertical-align:middle; }
+  .raci-table tr:hover td { background:#F8FAFC; }
+  .raci-cell { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:6px; font-size:11px; font-weight:800; cursor:pointer; user-select:none; transition:all .15s; }
+  .raci-cell.R { background:#DBEAFE; color:#1D4ED8; }
+  .raci-cell.A { background:#FEE2E2; color:#DC2626; }
+  .raci-cell.C { background:#FEF3C7; color:#D97706; }
+  .raci-cell.I { background:#DCFCE7; color:#16A34A; }
+  .raci-cell.none { background:#F1F5F9; color:#CBD5E1; }
+  .raci-legend { display:flex; gap:12px; padding:10px 18px; flex-wrap:wrap; border-top:1px solid var(--border); }
+  .raci-legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-muted); }
+
+  /* ── GANTT DEPENDENCY ARROWS ─────────────────────────────── */
+  .gantt-dep-svg { position:absolute; top:0; left:0; pointer-events:none; z-index:3; overflow:visible; }
+
+  /* ── OVERDUE BADGE ───────────────────────────────────────── */
+  .overdue-chip-inline { display:inline-flex; align-items:center; gap:3px; background:#FEE2E2; color:#DC2626; font-size:10px; font-weight:700; padding:2px 7px; border-radius:99px; margin-left:6px; }
 </style>
 </head>
 <body>
@@ -1748,6 +1834,17 @@ input:focus, textarea:focus, select:focus {
       </div>
       <div class="sidebar-item" onclick="switchTab('milestones')">
         <span class="icon">📅</span> Milestones
+      </div>
+      <div class="sidebar-item" onclick="switchTab('budget')">
+        <span class="icon">💰</span> Budget
+        <span class="sidebar-badge amber" id="sb-overbudget" style="display:none">!</span>
+      </div>
+      <div class="sidebar-item" onclick="switchTab('issues')">
+        <span class="icon">🐛</span> Issues
+        <span class="sidebar-badge amber" id="sb-issues">0</span>
+      </div>
+      <div class="sidebar-item" onclick="switchTab('lessons')">
+        <span class="icon">🎓</span> Lessons Learned
       </div>
     </div>
     <div class="sidebar-section" style="margin-top:16px">
@@ -1965,6 +2062,24 @@ input:focus, textarea:focus, select:focus {
       <div style="padding:16px"><div id="pv-audit"></div></div>
     </div>
 
+    <!-- RACI MATRIX IN PROJECT VIEW -->
+    <div class="raci-card" id="pv-raci-card" style="margin-top:16px">
+      <div class="raci-card-header">
+        <h3>👥 RACI Matrix</h3>
+        <button class="btn btn-secondary btn-sm" onclick="addRaciRow()">＋ Add Row</button>
+      </div>
+      <div class="raci-table-wrap">
+        <div id="pv-raci"></div>
+      </div>
+      <div class="raci-legend">
+        <div class="raci-legend-item"><span class="raci-cell R">R</span> Responsible</div>
+        <div class="raci-legend-item"><span class="raci-cell A">A</span> Accountable</div>
+        <div class="raci-legend-item"><span class="raci-cell C">C</span> Consulted</div>
+        <div class="raci-legend-item"><span class="raci-cell I">I</span> Informed</div>
+      </div>
+    </div>
+
+
   </div>
 
     <!-- TEAM MEMBERS TAB -->
@@ -2137,7 +2252,95 @@ input:focus, textarea:focus, select:focus {
     </div>
 
 
-  </div><!-- /main -->
+  
+    <!-- BUDGET TAB -->
+    <div class="tab-pane" id="tab-budget">
+      <div class="page-header">
+        <div>
+          <h1>💰 Budget Tracker</h1>
+          <p>Planned vs actual spend across all projects — click any card to edit budget</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="renderBudgetTab()">🔄 Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="exportBudgetCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="budget-kpi-row" id="budget-kpi-row">
+        <div class="budget-kpi"><div class="bk-label">Total Planned</div><div class="bk-value" id="bk-planned">—</div><div class="bk-sub">Portfolio budget</div></div>
+        <div class="budget-kpi"><div class="bk-label">Total Actual</div><div class="bk-value" id="bk-actual">—</div><div class="bk-sub">Spent to date</div></div>
+        <div class="budget-kpi"><div class="bk-label">Remaining</div><div class="bk-value" id="bk-remaining">—</div><div class="bk-sub">Available</div></div>
+        <div class="budget-kpi"><div class="bk-label">Over Budget</div><div class="bk-value" id="bk-overcount" style="color:var(--red)">0</div><div class="bk-sub">Projects</div></div>
+      </div>
+      <div id="budget-grid" class="budget-grid"></div>
+    </div>
+
+    <!-- ISSUES TAB -->
+    <div class="tab-pane" id="tab-issues">
+      <div class="page-header">
+        <div>
+          <h1>🐛 Issue Log <span class="risk-count-badge" id="issues-badge">0</span></h1>
+          <p>Track and resolve issues across all projects</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="renderIssuesTab()">🔄 Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="openIssueModal()">＋ Log Issue</button>
+        </div>
+      </div>
+      <div class="issue-filter-bar">
+        <input type="text" id="issue-search" placeholder="🔍 Search issues…" oninput="renderIssuesTab()" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;width:220px;font-family:inherit">
+        <select id="issue-filter-priority" onchange="renderIssuesTab()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+          <option value="">All Priorities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="issue-filter-status" onchange="renderIssuesTab()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+          <option value="">All Statuses</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="issues-table">
+          <thead>
+            <tr>
+              <th>Issue</th><th>Project</th><th>Owner</th><th>Priority</th><th>Status</th><th>Due Date</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="issues-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:#94A3B8">Loading issues…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LESSONS LEARNED TAB -->
+    <div class="tab-pane" id="tab-lessons">
+      <div class="page-header">
+        <div>
+          <h1>🎓 Lessons Learned</h1>
+          <p>Capture what worked, what didn't, and recommendations for future projects</p>
+        </div>
+        <div class="header-actions">
+          <select id="lessons-filter-cat" onchange="renderLessonsTab()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+            <option value="">All Categories</option>
+            <option value="Process">Process</option>
+            <option value="Technical">Technical</option>
+            <option value="People">People</option>
+            <option value="Comms">Comms</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="renderLessonsTab()">🔄 Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="openLessonModal()">＋ Add Lesson</button>
+        </div>
+      </div>
+      <div id="lessons-grid" class="lessons-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:#94A3B8">Loading lessons…</div>
+      </div>
+    </div>
+
+</div><!-- /main -->
 </div><!-- /layout -->
 
 </div><!-- /adminApp -->
@@ -2992,7 +3195,7 @@ function renderProjects(searchVal) {
         onclick="openProjectView('${esc(key)}','${esc(p.projectName)}')">${esc(p.projectName)}</span></td>
       <td>${typeTag(p.sheetName)}</td>
       <td>${statusBadge(p.status)}</td>
-      <td><span class="task-chip">📋 ${taskCount} tasks</span></td>
+      <td><span class="task-chip">📋 ${taskCount} tasks</span>${(function(){var od=(p.tasks||[]).filter(function(t){return t.milestoneDate&&t.taskType!=='project'&&new Date(t.milestoneDate+'T00:00:00')<new Date()&&(t.progress||0)<100;}).length;return od>0?'<span class="overdue-chip-inline">⚠ '+od+' overdue</span>':'';}())}</td>
       <td>
         <div class="prog-wrap">
           <div class="prog-bar"><div class="prog-fill ${pct>=100?'done':pct<30?'warn':''}" style="width:${pct}%"></div></div>
@@ -3108,6 +3311,9 @@ function switchTab(name) {
   if (name === 'workload')   renderResourceWorkload();
   if (name === 'milestones') renderMilestoneSlippage('milestones-body', allProjectsData);
   if (name === 'analytics')  renderAnalytics();
+  if (name === 'budget')     renderBudgetTab();
+  if (name === 'issues')     renderIssuesTab();
+  if (name === 'lessons')    renderLessonsTab();
 }
 
 function filterType(type, el) {
@@ -4896,7 +5102,41 @@ function renderGantt(taskList) {
   while(cur<=maxD){var mo=cur.getMonth();var cnt=0;var tmp=new Date(cur);while(tmp<=maxD&&tmp.getMonth()===mo){cnt++;tmp.setDate(tmp.getDate()+1);}months.push({l:cur.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}),d:cnt});cur.setMonth(mo+1);cur.setDate(1);}
   var hdr='<div style="display:flex;margin-bottom:4px;padding-left:180px">'+months.map(function(m){return'<div style="width:'+m.d*DW+'px;font-size:10px;font-weight:700;color:#94A3B8;text-transform:uppercase;text-align:center;border-left:1px solid #F1F5F9;padding:6px 0 4px">'+m.l+'</div>';}).join('')+'</div>';
   if(re)re.textContent=f(minD)+' - '+f(maxD);
-  c.innerHTML='<div style="padding:0 20px 20px;overflow-x:auto">'+hdr+rows+'</div>';
+  // Build task index for dependency arrows
+  var taskPositions = {};
+  var rowH = 38; // row height: 32px bar + 6px gap
+  var rowOffset = 28; // header height
+  var taskArr = [];
+  phN.forEach(function(pn){
+    if(phN.length>1) rowOffset += 20; // phase label row
+    ph[pn].forEach(function(t){
+      var ed=new Date(t.milestoneDate+'T00:00:00');
+      var sd=new Date(ed); sd.setDate(sd.getDate()-7);
+      if(sd<minD)sd=new Date(minD);
+      var sO=Math.round((sd-minD)/86400000);
+      var eO=Math.round((ed-minD)/86400000);
+      var bW=Math.max(DW,(eO-sO+1)*DW); var bL=sO*DW;
+      taskPositions[t.taskName]={ x1: 180+bL+bW, x2: 180+bL, y: rowOffset + taskArr.length*rowH + 16 };
+      taskArr.push(t);
+    });
+  });
+  // Build SVG arrows for depends_on
+  var arrows='';
+  taskArr.forEach(function(t){
+    if(!t.depends_on) return;
+    var deps=(t.depends_on+'').split(',').map(function(d){return d.trim();});
+    deps.forEach(function(dep){
+      var from=taskPositions[dep]; var to=taskPositions[t.taskName];
+      if(!from||!to) return;
+      var x1=from.x1, y1=from.y, x2=to.x2-4, y2=to.y;
+      var mx=(x1+x2)/2;
+      var path='M'+x1+','+y1+' C'+mx+','+y1+' '+mx+','+y2+' '+x2+','+y2;
+      arrows+='<path d="'+path+'" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#dep-arrow)"/>';
+    });
+  });
+  var svgW=tD*DW+200; var svgH=taskArr.length*rowH+rowOffset+20;
+  var svgOverlay=arrows?'<svg class="gantt-dep-svg" width="'+svgW+'" height="'+svgH+'" xmlns="http://www.w3.org/2000/svg"><defs><marker id="dep-arrow" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94A3B8"/></marker></defs>'+arrows+'</svg>':'';
+  c.innerHTML='<div style="padding:0 20px 20px;overflow-x:auto;position:relative">'+svgOverlay+hdr+rows+'</div>';
 }
 
 
@@ -5945,6 +6185,7 @@ openProjectView = async function(sheetKey, projectName) {
     } catch(e) {}
     if (projEl) loadComments(pid, projectName, 'pv-comments');
     if (auditEl) loadAuditTimeline(pid, projectName, 'pv-audit');
+    if (pid) renderRaciMatrix(pid, projectName);
     if (apprEl) loadApprovals(pid, projectName, 'pv-approvals');
   }, 400);
 };
@@ -6120,6 +6361,506 @@ function setRagFilter(rag, el) {
   if (el) el.classList.add('active');
   renderProjects();
 }
+
+
+// ═══════════════════════════════════════════════════════════
+// BUDGET TRACKER
+// ═══════════════════════════════════════════════════════════
+function _fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return '$' + (n/1000).toFixed(1) + 'K';
+  return '$' + Number(n).toLocaleString();
+}
+
+async function renderBudgetTab() {
+  const grid = document.getElementById('budget-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading budget data…</div>';
+  const projects = getAllProjects();
+  if (!projects.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">💰</div><h3>No projects found</h3><p>Add projects first</p></div>';
+    return;
+  }
+  let totalPlanned = 0, totalActual = 0, overCount = 0;
+  const cards = projects.map(p => {
+    const planned = parseFloat(p.budget_planned) || 0;
+    const actual  = parseFloat(p.budget_actual)  || 0;
+    if (planned > 0) totalPlanned += planned;
+    if (actual  > 0) totalActual  += actual;
+    const pct = planned > 0 ? Math.round((actual / planned) * 100) : 0;
+    const cls = pct > 100 ? 'over' : pct > 80 ? 'warn' : 'under';
+    if (cls === 'over' && planned > 0) overCount++;
+    const key = p.sheetKey || sheetNameToKey(p.sheetName);
+    return `<div class="budget-card">
+      <div class="bc-name" title="${esc(p.projectName)}">${esc(p.projectName)}</div>
+      <div class="bc-row"><span>Planned</span><span>${_fmtMoney(planned||null)}</span></div>
+      <div class="bc-row"><span>Actual</span><span>${_fmtMoney(actual||null)}</span></div>
+      ${planned > 0 ? `
+      <div class="budget-bar-wrap"><div class="budget-bar-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="budget-pct-label ${cls}">${pct}% used</span>
+        ${cls==='over'?'<span style="font-size:10px;font-weight:700;color:var(--red)">⚠ OVER BUDGET</span>':''}
+      </div>` : '<div class="no-budget-banner" style="margin-top:8px;padding:8px 12px;font-size:12px">No budget set — click Edit to add</div>'}
+      <div class="budget-edit-inline" style="margin-top:12px">
+        <input type="number" placeholder="Planned $" id="bp-${esc(key)}-${esc(p.projectName)}" value="${planned||''}" style="width:100px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+        <input type="number" placeholder="Actual $"  id="ba-${esc(key)}-${esc(p.projectName)}" value="${actual||''}"  style="width:100px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+        <button class="btn btn-secondary btn-sm" onclick="saveBudget('${esc(key)}','${esc(p.projectName)}')">💾</button>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = cards.join('');
+  // KPI row
+  const remaining = totalPlanned - totalActual;
+  document.getElementById('bk-planned').textContent   = _fmtMoney(totalPlanned);
+  document.getElementById('bk-actual').textContent    = _fmtMoney(totalActual);
+  document.getElementById('bk-remaining').textContent = _fmtMoney(remaining);
+  document.getElementById('bk-overcount').textContent = overCount;
+  // Sidebar badge
+  const sb = document.getElementById('sb-overbudget');
+  if (sb) { sb.style.display = overCount > 0 ? '' : 'none'; }
+}
+
+async function saveBudget(key, projectName) {
+  const pId = `bp-${key}-${projectName}`;
+  const aId = `ba-${key}-${projectName}`;
+  const planned = parseFloat(document.getElementById(pId)?.value) || 0;
+  const actual  = parseFloat(document.getElementById(aId)?.value) || 0;
+  try {
+    const all = getAllProjects();
+    const p   = all.find(x => x.projectName === projectName);
+    if (!p || !p.id) { showToast('Project not found','error'); return; }
+    await sbFetch(`projects?id=eq.${p.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ budget_planned: planned, budget_actual: actual })
+    });
+    // Update local cache
+    p.budget_planned = planned; p.budget_actual = actual;
+    showToast('Budget saved ✓','success');
+    renderBudgetTab();
+  } catch(e) { showToast('Save failed: ' + e.message, 'error'); }
+}
+
+function exportBudgetCSV() {
+  const projects = getAllProjects();
+  const rows = [['Project','Category','Planned','Actual','Used %','Status']];
+  projects.forEach(p => {
+    const pl = parseFloat(p.budget_planned)||0;
+    const ac = parseFloat(p.budget_actual)||0;
+    const pct = pl > 0 ? Math.round((ac/pl)*100) : 0;
+    const st = pct > 100 ? 'Over Budget' : pct > 80 ? 'At Risk' : 'On Track';
+    rows.push([p.projectName, p.sheetName||'', pl, ac, pct+'%', st]);
+  });
+  const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('
+');
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'budget_' + new Date().toISOString().slice(0,10) + '.csv'; a.click();
+  showToast('Budget CSV exported ✓','success');
+}
+
+// ═══════════════════════════════════════════════════════════
+// ISSUE LOG
+// ═══════════════════════════════════════════════════════════
+var _issuesCache = [];
+var _editingIssueId = null;
+
+async function renderIssuesTab() {
+  const tbody = document.getElementById('issues-tbody');
+  if (!tbody) return;
+  try {
+    const data = await sbFetch('notes?note_type=eq.risk&order=created_at.desc&limit=200');
+    _issuesCache = (data || []).filter(n => {
+      try { const c = typeof n.content === 'string' ? JSON.parse(n.content) : n.content; return c && c._type === 'issue'; } catch(e) { return false; }
+    });
+  } catch(e) { _issuesCache = []; }
+
+  const search   = (document.getElementById('issue-search')?.value||'').toLowerCase();
+  const priF     = document.getElementById('issue-filter-priority')?.value||'';
+  const statusF  = document.getElementById('issue-filter-status')?.value||'';
+
+  let items = _issuesCache.map(n => {
+    try { return { id: n.id, ...JSON.parse(typeof n.content==='string'?n.content:JSON.stringify(n.content)), created_at: n.created_at, author: n.author }; }
+    catch(e) { return null; }
+  }).filter(Boolean);
+
+  if (search)  items = items.filter(i => (i.title||'').toLowerCase().includes(search) || (i.project||'').toLowerCase().includes(search) || (i.owner||'').toLowerCase().includes(search));
+  if (priF)    items = items.filter(i => i.priority === priF);
+  if (statusF) items = items.filter(i => i.status === statusF);
+
+  const badge = document.getElementById('issues-badge');
+  const sbBadge = document.getElementById('sb-issues');
+  const openCount = items.filter(i => i.status !== 'Closed').length;
+  if (badge)   badge.textContent = items.length;
+  if (sbBadge) sbBadge.textContent = openCount;
+
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🐛</div><h3>No issues found</h3><p>Log your first issue above</p></div></td></tr>';
+    return;
+  }
+
+  const priCls = { Critical:'critical', High:'high', Medium:'medium', Low:'low' };
+  const stCls  = { 'Open':'open', 'In Progress':'in-progress', 'Closed':'closed' };
+
+  tbody.innerHTML = items.map(i => `<tr>
+    <td style="font-weight:600;max-width:200px">${esc(i.title||'Untitled')}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${esc(i.project||'—')}</td>
+    <td style="font-size:12px">${esc(i.owner||'—')}</td>
+    <td><span class="priority-badge ${priCls[i.priority]||'medium'}">${esc(i.priority||'Medium')}</span></td>
+    <td><span class="issue-status-badge ${stCls[i.status]||'open'}">${esc(i.status||'Open')}</span></td>
+    <td style="font-size:12px;color:var(--text-muted)">${i.due_date ? formatDate(i.due_date) : '—'}</td>
+    <td>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm btn-icon" title="Edit" onclick="openIssueModal('${esc(i.id)}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" title="Delete" onclick="deleteIssue('${esc(i.id)}')">🗑️</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+function openIssueModal(noteId) {
+  _editingIssueId = noteId || null;
+  let existing = {};
+  if (noteId) {
+    const n = _issuesCache.find(x => x.id == noteId);
+    if (n) try { existing = JSON.parse(typeof n.content==='string'?n.content:JSON.stringify(n.content)); } catch(e){}
+  }
+  const projects = getAllProjects().map(p => `<option value="${esc(p.projectName)}" ${existing.project===p.projectName?'selected':''}>${esc(p.projectName)}</option>`).join('');
+  const overlay = document.createElement('div');
+  overlay.className = 'issue-modal-overlay';
+  overlay.id = 'issue-modal-overlay';
+  overlay.innerHTML = `<div class="issue-modal">
+    <div class="issue-modal-header">
+      <h3>${noteId ? '✏️ Edit Issue' : '＋ Log New Issue'}</h3>
+      <button class="close-btn" onclick="document.getElementById('issue-modal-overlay').remove()">✕</button>
+    </div>
+    <div class="issue-modal-body">
+      <div class="form-grid form-grid-2" style="gap:14px">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Issue Title *</label>
+          <input type="text" id="iss-title" placeholder="Brief description" value="${esc(existing.title||'')}">
+        </div>
+        <div class="form-group">
+          <label>Project</label>
+          <select id="iss-project"><option value="">— Select project —</option>${projects}</select>
+        </div>
+        <div class="form-group">
+          <label>Owner</label>
+          <input type="text" id="iss-owner" placeholder="Who is resolving this?" value="${esc(existing.owner||'')}">
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="iss-priority">
+            ${['Critical','High','Medium','Low'].map(v=>`<option ${existing.priority===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="iss-status">
+            ${['Open','In Progress','Closed'].map(v=>`<option ${existing.status===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" id="iss-due" value="${existing.due_date||''}">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Description</label>
+          <textarea id="iss-desc" rows="3" placeholder="Details, impact, steps to resolve…">${esc(existing.description||'')}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-secondary" onclick="document.getElementById('issue-modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveIssue()">💾 Save Issue</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('issue-modal-overlay')?.remove();
+  document.body.appendChild(overlay);
+}
+
+async function saveIssue() {
+  const title = document.getElementById('iss-title')?.value?.trim();
+  if (!title) { showToast('Issue title is required','error'); return; }
+  const payload = {
+    _type: 'issue',
+    title,
+    project:     document.getElementById('iss-project')?.value||'',
+    owner:       document.getElementById('iss-owner')?.value?.trim()||'',
+    priority:    document.getElementById('iss-priority')?.value||'Medium',
+    status:      document.getElementById('iss-status')?.value||'Open',
+    due_date:    document.getElementById('iss-due')?.value||null,
+    description: document.getElementById('iss-desc')?.value?.trim()||''
+  };
+  try {
+    if (_editingIssueId) {
+      await sbFetch(`notes?id=eq.${_editingIssueId}`, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(payload) }) });
+      showToast('Issue updated ✓','success');
+    } else {
+      await sbFetch('notes', { method:'POST', body: JSON.stringify({ content: JSON.stringify(payload), note_type:'risk', author: currentAdmin||'Admin' }) });
+      showToast('Issue logged ✓','success');
+    }
+    document.getElementById('issue-modal-overlay')?.remove();
+    renderIssuesTab();
+  } catch(e) { showToast('Save failed: '+e.message,'error'); }
+}
+
+async function deleteIssue(noteId) {
+  if (!confirm('Delete this issue?')) return;
+  try {
+    await sbFetch(`notes?id=eq.${noteId}`, { method:'DELETE' });
+    showToast('Issue deleted','success');
+    renderIssuesTab();
+  } catch(e) { showToast('Delete failed: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// LESSONS LEARNED
+// ═══════════════════════════════════════════════════════════
+var _lessonsCache = [];
+var _editingLessonId = null;
+
+async function renderLessonsTab() {
+  const grid = document.getElementById('lessons-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading…</div>';
+  try {
+    const data = await sbFetch('notes?note_type=eq.decision&order=created_at.desc&limit=200');
+    _lessonsCache = (data||[]).filter(n => {
+      try { const c = typeof n.content==='string'?JSON.parse(n.content):n.content; return c && c._type==='lesson'; } catch(e){ return false; }
+    });
+  } catch(e) { _lessonsCache = []; }
+
+  const catF = document.getElementById('lessons-filter-cat')?.value||'';
+  let items = _lessonsCache.map(n => {
+    try { return { id:n.id, ...JSON.parse(typeof n.content==='string'?n.content:JSON.stringify(n.content)), created_at:n.created_at, author:n.author }; }
+    catch(e){ return null; }
+  }).filter(Boolean);
+
+  if (catF) items = items.filter(i => i.category === catF);
+
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🎓</div><h3>No lessons recorded yet</h3><p>Capture what your team has learned</p></div>';
+    return;
+  }
+
+  const catCls = { Process:'process', Technical:'technical', People:'people', Comms:'comms' };
+  grid.innerHTML = items.map(i => `<div class="lesson-card">
+    <div class="lc-header">
+      <span class="lesson-cat-badge ${catCls[i.category]||'process'}">${esc(i.category||'Process')}</span>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-secondary btn-sm btn-icon" title="Edit" onclick="openLessonModal('${esc(i.id)}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" title="Delete" onclick="deleteLesson('${esc(i.id)}')">🗑️</button>
+      </div>
+    </div>
+    <div class="lc-project">📁 ${esc(i.project||'General')}</div>
+    ${i.went_well ? `<div class="lc-section">✅ What went well</div><div class="lc-text">${esc(i.went_well)}</div>` : ''}
+    ${i.went_wrong ? `<div class="lc-section">❌ What didn't work</div><div class="lc-text">${esc(i.went_wrong)}</div>` : ''}
+    ${i.recommendation ? `<div class="lc-section">💡 Recommendation</div><div class="lc-text">${esc(i.recommendation)}</div>` : ''}
+    <div class="lc-footer">
+      <span>By ${esc(i.author||'Admin')}</span>
+      <span>${i.created_at ? new Date(i.created_at).toLocaleDateString('en-GB') : ''}</span>
+    </div>
+  </div>`).join('');
+}
+
+function openLessonModal(noteId) {
+  _editingLessonId = noteId || null;
+  let ex = {};
+  if (noteId) {
+    const n = _lessonsCache.find(x => x.id == noteId);
+    if (n) try { ex = JSON.parse(typeof n.content==='string'?n.content:JSON.stringify(n.content)); } catch(e){}
+  }
+  const projects = getAllProjects().map(p => `<option value="${esc(p.projectName)}" ${ex.project===p.projectName?'selected':''}>${esc(p.projectName)}</option>`).join('');
+  const overlay = document.createElement('div');
+  overlay.className = 'lesson-modal-overlay';
+  overlay.id = 'lesson-modal-overlay';
+  overlay.innerHTML = `<div class="lesson-modal">
+    <div class="lesson-modal-header">
+      <h3>${noteId ? '✏️ Edit Lesson' : '＋ Add Lesson Learned'}</h3>
+      <button class="close-btn" onclick="document.getElementById('lesson-modal-overlay').remove()">✕</button>
+    </div>
+    <div class="issue-modal-body">
+      <div class="form-grid form-grid-2" style="gap:14px">
+        <div class="form-group">
+          <label>Project</label>
+          <select id="les-project"><option value="">— General —</option>${projects}</select>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="les-cat">
+            ${['Process','Technical','People','Comms'].map(v=>`<option ${ex.category===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phase</label>
+          <input type="text" id="les-phase" placeholder="e.g. Planning, Execution" value="${esc(ex.phase||'')}">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>✅ What went well?</label>
+          <textarea id="les-well" rows="2">${esc(ex.went_well||'')}</textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>❌ What didn't work?</label>
+          <textarea id="les-wrong" rows="2">${esc(ex.went_wrong||'')}</textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>💡 Recommendation for next time</label>
+          <textarea id="les-rec" rows="2">${esc(ex.recommendation||'')}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-secondary" onclick="document.getElementById('lesson-modal-overlay').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveLesson()">💾 Save Lesson</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('lesson-modal-overlay')?.remove();
+  document.body.appendChild(overlay);
+}
+
+async function saveLesson() {
+  const payload = {
+    _type: 'lesson',
+    project:        document.getElementById('les-project')?.value||'',
+    category:       document.getElementById('les-cat')?.value||'Process',
+    phase:          document.getElementById('les-phase')?.value?.trim()||'',
+    went_well:      document.getElementById('les-well')?.value?.trim()||'',
+    went_wrong:     document.getElementById('les-wrong')?.value?.trim()||'',
+    recommendation: document.getElementById('les-rec')?.value?.trim()||''
+  };
+  if (!payload.went_well && !payload.went_wrong && !payload.recommendation) {
+    showToast('Please fill at least one field','error'); return;
+  }
+  try {
+    if (_editingLessonId) {
+      await sbFetch(`notes?id=eq.${_editingLessonId}`, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(payload) }) });
+      showToast('Lesson updated ✓','success');
+    } else {
+      await sbFetch('notes', { method:'POST', body: JSON.stringify({ content: JSON.stringify(payload), note_type:'decision', author: currentAdmin||'Admin' }) });
+      showToast('Lesson saved ✓','success');
+    }
+    document.getElementById('lesson-modal-overlay')?.remove();
+    renderLessonsTab();
+  } catch(e) { showToast('Save failed: '+e.message,'error'); }
+}
+
+async function deleteLesson(noteId) {
+  if (!confirm('Delete this lesson?')) return;
+  try {
+    await sbFetch(`notes?id=eq.${noteId}`, { method:'DELETE' });
+    showToast('Lesson deleted','success');
+    renderLessonsTab();
+  } catch(e) { showToast('Delete failed: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RACI MATRIX (per project)
+// ═══════════════════════════════════════════════════════════
+var _raciData = {}; // { taskName: { personName: 'R'|'A'|'C'|'I'|'' } }
+var _raciPeople = [];
+var _raciProjectId = null;
+var _raciNoteId = null;
+
+async function renderRaciMatrix(projectId, projectName) {
+  _raciProjectId = projectId;
+  const container = document.getElementById('pv-raci');
+  if (!container) return;
+  // Load from notes as decision type with _type:'raci'
+  try {
+    const data = await sbFetch(`notes?project_id=eq.${projectId}&note_type=eq.decision&order=created_at.desc&limit=50`);
+    const raciNote = (data||[]).find(n => { try { const c=JSON.parse(typeof n.content==='string'?n.content:JSON.stringify(n.content)); return c._type==='raci'; } catch(e){return false;} });
+    if (raciNote) {
+      _raciNoteId = raciNote.id;
+      const c = JSON.parse(raciNote.content);
+      _raciData   = c.matrix || {};
+      _raciPeople = c.people || [];
+    } else {
+      _raciNoteId = null;
+      // Seed people from tasks
+      const all = getAllProjects();
+      const proj = all.find(p => p.projectName === projectName);
+      const tasks = (proj?.tasks||[]).filter(t => t.taskType==='task');
+      const people = [...new Set(tasks.map(t=>t.responsible).filter(Boolean))];
+      _raciPeople = people.slice(0,6);
+      _raciData = {};
+      tasks.forEach(t => { if (t.taskName) _raciData[t.taskName] = {}; });
+    }
+  } catch(e) { _raciData = {}; _raciPeople = []; }
+  _renderRaciTable(container);
+}
+
+function _renderRaciTable(container) {
+  if (!container) return;
+  const tasks = Object.keys(_raciData);
+  if (!tasks.length && !_raciPeople.length) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">No tasks found. Add tasks to the project first.</div>';
+    return;
+  }
+  const roles = ['R','A','C','I'];
+  const thead = `<tr><th>Deliverable / Task</th>${_raciPeople.map(p=>`<th style="text-align:center;max-width:100px;word-break:break-word">${esc(p)}</th>`).join('')}<th></th></tr>`;
+  const tbody = tasks.map(taskName => {
+    const row = _raciData[taskName] || {};
+    const cells = _raciPeople.map(person => {
+      const cur = row[person] || '';
+      const cycleNext = { '':'R','R':'A','A':'C','C':'I','I':'' };
+      return `<td style="text-align:center"><span class="raci-cell ${cur||'none'}" onclick="_raciToggle('${esc(taskName)}','${esc(person)}')" title="Click to cycle R→A→C→I">${cur||'·'}</span></td>`;
+    }).join('');
+    return `<tr><td style="font-size:12px;font-weight:600;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(taskName)}">${esc(taskName)}</td>${cells}<td><button class="btn btn-ghost btn-sm btn-icon" title="Remove row" onclick="_raciRemoveTask('${esc(taskName)}')">✕</button></td></tr>`;
+  }).join('');
+  container.innerHTML = `<table class="raci-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>
+  <div style="padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border)">
+    <input type="text" id="raci-new-person" placeholder="Add person…" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;width:140px">
+    <button class="btn btn-secondary btn-sm" onclick="_raciAddPerson()">＋ Person</button>
+    <input type="text" id="raci-new-task" placeholder="Add task/deliverable…" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;width:180px">
+    <button class="btn btn-secondary btn-sm" onclick="addRaciRow()">＋ Row</button>
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="_raciSave()">💾 Save RACI</button>
+  </div>`;
+}
+
+function _raciToggle(taskName, person) {
+  if (!_raciData[taskName]) _raciData[taskName] = {};
+  const cur = _raciData[taskName][person] || '';
+  const cycle = { '':'R','R':'A','A':'C','C':'I','I':'' };
+  _raciData[taskName][person] = cycle[cur];
+  _renderRaciTable(document.getElementById('pv-raci'));
+}
+
+function _raciAddPerson() {
+  const inp = document.getElementById('raci-new-person');
+  const name = inp?.value?.trim();
+  if (!name) return;
+  if (!_raciPeople.includes(name)) _raciPeople.push(name);
+  inp.value = '';
+  _renderRaciTable(document.getElementById('pv-raci'));
+}
+
+function addRaciRow() {
+  const inp = document.getElementById('raci-new-task');
+  const name = inp?.value?.trim() || ('Task ' + (Object.keys(_raciData).length+1));
+  if (!_raciData[name]) _raciData[name] = {};
+  if (inp) inp.value = '';
+  _renderRaciTable(document.getElementById('pv-raci'));
+}
+
+function _raciRemoveTask(taskName) {
+  delete _raciData[taskName];
+  _renderRaciTable(document.getElementById('pv-raci'));
+}
+
+async function _raciSave() {
+  if (!_raciProjectId) { showToast('No project loaded','error'); return; }
+  const payload = { _type:'raci', matrix: _raciData, people: _raciPeople };
+  try {
+    if (_raciNoteId) {
+      await sbFetch(`notes?id=eq.${_raciNoteId}`, { method:'PATCH', body: JSON.stringify({ content: JSON.stringify(payload) }) });
+    } else {
+      const res = await sbFetch('notes', { method:'POST', body: JSON.stringify({ project_id: _raciProjectId, content: JSON.stringify(payload), note_type:'decision', author: currentAdmin||'Admin' }) });
+      if (res && res[0]) _raciNoteId = res[0].id;
+    }
+    showToast('RACI matrix saved ✓','success');
+  } catch(e) { showToast('Save failed: '+e.message,'error'); }
+}
+
 </script>
 <div id="kb-hint" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(15,30,53,.92);color:#fff;border-radius:10px;padding:10px 18px;font-size:12px;display:none;z-index:99998;backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap"></div>
 </body>
