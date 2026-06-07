@@ -1761,24 +1761,8 @@ input:focus, textarea:focus, select:focus {
 <body>
 <div id="test-banner" style="background:linear-gradient(90deg,#D97706,#F59E0B);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:.5px;position:sticky;top:0;z-index:99999;box-shadow:0 2px 8px rgba(217,119,6,.4)">⚠️ TESTING ENVIRONMENT — Changes here do NOT affect production<span style="opacity:.85;font-weight:400;margin-left:8px;font-size:12px">testing branch</span></div>
 
-<!-- ADMIN LOGIN OVERLAY -->
-<div class="login-overlay" id="adminLoginOverlay">
-  <div class="login-box">
-    <div class="login-logo">PMO</div>
-    <div class="login-title">Admin Access</div>
-    <div class="login-sub">Enter your admin password to continue</div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="admin-pass-input" placeholder="••••••••"
-        onkeydown="if(event.key==='Enter') doAdminLogin()" />
-    </div>
-    <button class="login-btn" onclick="doAdminLogin()">Unlock Dashboard</button>
-    <div class="login-error" id="admin-login-error">❌ Incorrect password</div>
-  </div>
-</div>
-
 <!-- TOP BAR -->
-<div id="adminApp" style="display:none">
+<div id="adminApp">
 <div class="topbar">
   <div class="topbar-brand">
     <div class="logo">PMO</div>
@@ -2618,7 +2602,6 @@ const ROLE_PRESETS = {
 // STATE
 // ═══════════════════════════════════════════════════════════
 let allProjectsData = {};     // { sheetKey: [{...}, ...] }
-let _adminAuthenticated = false;  // in-memory auth flag (replaces sessionStorage)
 let allResources = [];
 let currentFilter = 'all';
 let currentRagFilter = 'all';
@@ -2663,50 +2646,8 @@ function apiFetch(url) {
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
-const ADMIN_PASSWORD = '1231';
-
-window.addEventListener('DOMContentLoaded', () => {
-  // Check if already authenticated this session
-  if (_adminAuthenticated) {
-    setTimeout(() => showAdminApp(), 0);
-  }
-  // else overlay stays visible
-});
-
-function doAdminLogin() {
-  const input = document.getElementById('admin-pass-input');
-  const val = input ? input.value : '';
-  if (val === ADMIN_PASSWORD) {
-    _adminAuthenticated = true;
-    showAdminApp();
-  } else {
-    const err = document.getElementById('admin-login-error');
-    if (err) {
-      err.style.display = 'block';
-      setTimeout(() => err.style.display = 'none', 3000);
-    }
-    if (input) input.value = '';
-  }
-}
-
-async function showAdminApp() {
-  document.getElementById('adminLoginOverlay').style.display = 'none';
-  document.getElementById('adminApp').style.display = 'block';
-  try {
-    await loadData();
-  } catch (e) {
-    console.error(e);
-    showToast('Dashboard failed to load: ' + (e?.message || e), 'error');
-  }
-}
-
-function doAdminLogout() {
-  _adminAuthenticated = false;
-  document.getElementById('adminApp').style.display = 'none';
-  document.getElementById('adminLoginOverlay').style.display = 'flex';
-  document.getElementById('admin-pass-input').value = '';
-}
-
+window.addEventListener('DOMContentLoaded', () => { setTimeout(() => loadData(), 0); });
+function doAdminLogout() { location.reload(); }
 
 // ════════════════════════════════════════════════════════════
 // SUPABASE API LAYER — replaces Apps Script + JSONP
@@ -4066,7 +4007,7 @@ function renderProjectHeader(proj, taskList, sheetKey) {
   `;
 
   // Actions — Edit button opens existing modal
-  const canEdit = typeof ADMIN_PASSWORD !== 'undefined'; // admin always can; team uses hasPerm
+  const canEdit = true; // admin page always can edit
   const canEditPerm = (typeof hasPerm === 'function') ? hasPerm('editProjects') : canEdit;
   document.getElementById('pv-actions').innerHTML = canEditPerm ? `
     <button class="btn btn-primary btn-sm" onclick="openEditProjectModal('${esc(sheetKey)}','${esc(proj.projectName)}')">✏️ Edit Project</button>
@@ -4947,7 +4888,7 @@ function renderRisksTable() {
 
     // Can current user respond? admin always yes; team checks hasPerm
     const canRespond = !isClosed && (
-      typeof ADMIN_PASSWORD !== 'undefined' ||
+      true ||
       (typeof hasPerm === 'function' ? hasPerm('editProjects') : true)
     );
 
@@ -6169,7 +6110,6 @@ function _tourEnd() {
 // Auto-start tour for first-time visitors
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    if (!localStorage.getItem('pmo_tour_done') && !_adminAuthenticated) return;
     if (!localStorage.getItem('pmo_tour_done')) setTimeout(startTour, 2500);
   } catch(e) {}
 });
