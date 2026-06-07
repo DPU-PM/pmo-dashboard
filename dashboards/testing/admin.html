@@ -2618,6 +2618,7 @@ const ROLE_PRESETS = {
 // STATE
 // ═══════════════════════════════════════════════════════════
 let allProjectsData = {};     // { sheetKey: [{...}, ...] }
+let _adminAuthenticated = false;  // in-memory auth flag (replaces sessionStorage)
 let allResources = [];
 let currentFilter = 'all';
 let currentRagFilter = 'all';
@@ -2666,7 +2667,7 @@ const ADMIN_PASSWORD = '1231';
 
 window.addEventListener('DOMContentLoaded', () => {
   // Check if already authenticated this session
-  if (sessionStorage.getItem('pmo_admin_auth') === 'true') {
+  if (_adminAuthenticated) {
     showAdminApp();
   }
   // else overlay stays visible
@@ -2675,7 +2676,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function doAdminLogin() {
   const val = document.getElementById('admin-pass-input').value;
   if (val === ADMIN_PASSWORD) {
-    sessionStorage.setItem('pmo_admin_auth', 'true');
+    _adminAuthenticated = true;
     showAdminApp();
   } else {
     const err = document.getElementById('admin-login-error');
@@ -2692,7 +2693,7 @@ function showAdminApp() {
 }
 
 function doAdminLogout() {
-  sessionStorage.removeItem('pmo_admin_auth');
+  _adminAuthenticated = false;
   document.getElementById('adminApp').style.display = 'none';
   document.getElementById('adminLoginOverlay').style.display = 'flex';
   document.getElementById('admin-pass-input').value = '';
