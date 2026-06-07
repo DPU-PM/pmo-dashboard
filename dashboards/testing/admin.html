@@ -2668,28 +2668,36 @@ const ADMIN_PASSWORD = '1231';
 window.addEventListener('DOMContentLoaded', () => {
   // Check if already authenticated this session
   if (_adminAuthenticated) {
-    showAdminApp();
+    setTimeout(() => showAdminApp(), 0);
   }
   // else overlay stays visible
 });
 
 function doAdminLogin() {
-  const val = document.getElementById('admin-pass-input').value;
+  const input = document.getElementById('admin-pass-input');
+  const val = input ? input.value : '';
   if (val === ADMIN_PASSWORD) {
     _adminAuthenticated = true;
     showAdminApp();
   } else {
     const err = document.getElementById('admin-login-error');
-    err.style.display = 'block';
-    document.getElementById('admin-pass-input').value = '';
-    setTimeout(() => err.style.display = 'none', 3000);
+    if (err) {
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 3000);
+    }
+    if (input) input.value = '';
   }
 }
 
-function showAdminApp() {
+async function showAdminApp() {
   document.getElementById('adminLoginOverlay').style.display = 'none';
   document.getElementById('adminApp').style.display = 'block';
-  loadData();
+  try {
+    await loadData();
+  } catch (e) {
+    console.error(e);
+    showToast('Dashboard failed to load: ' + (e?.message || e), 'error');
+  }
 }
 
 function doAdminLogout() {
@@ -6161,7 +6169,7 @@ function _tourEnd() {
 // Auto-start tour for first-time visitors
 document.addEventListener('DOMContentLoaded', function() {
   try {
-    if (!localStorage.getItem('pmo_tour_done') && !localStorage.getItem('pmo_admin_auth')) return;
+    if (!localStorage.getItem('pmo_tour_done') && !_adminAuthenticated) return;
     if (!localStorage.getItem('pmo_tour_done')) setTimeout(startTour, 2500);
   } catch(e) {}
 });
